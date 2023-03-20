@@ -42,14 +42,6 @@ IBC Modules are self-contained applications that enable packets to be sent to an
 
 IBC Middleware are self-contained modules that sit between core IBC and an underlying IBC application.  This allows developers to customize lower-level packet handling.  Multiple middleware modules can be chained together.  
 
-🌌🌌🌌🌌 How to Use this repo
-==============================
-
-If you'd like to include software in this repo, please see [contributing](./ibc-apps/CONTRIBUTING.md).
-
-
-🌌🌌🌌🌌🌌 Bonus Content
-=======================
 
 🌌🌌🌌🌌 How to Use this repo
 =============================
