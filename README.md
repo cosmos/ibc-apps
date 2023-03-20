@@ -4,10 +4,12 @@
 
 IBC applications and middleware for Cosmos SDK blockchains
 
-🌌 Why have an IBC-Apps repo?
+🌌 Why have an ibc-apps repo?
 =============================
 
-Once upon a time there was [IBC-Go](https://github.com/cosmos/ibc-go). And it grew and it grew until finally, propagating updates and changes outside the core functionality was becoming cumbersome.
+<!-- Once upon a time there was [ibc-go](https://github.com/cosmos/ibc-go). And it grew and it grew until finally, propagating updates and changes outside the core functionality was becoming cumbersome. -->
+
+Early IBC work started in the [ibc-go](https://github.com/cosmos/ibc-go) repo. As the repo grew, the need arose to parallelize the work among many teams.
 
 This [ibc-apps](https://github.com/cosmos/ibc-apps) repo is meant to be an easily discoverable, navigable, central place for modules and middleware.
 
@@ -15,8 +17,8 @@ This [ibc-apps](https://github.com/cosmos/ibc-apps) repo is meant to be an easil
 =============================
 
 IBC-Apps is for:
-- _Core IBC-Go contributors_; it frees them from having to maintain IBC Apps,
-- _Publishers of IBC Apps_, so their apps can be easily found by
+- _Core **ibc-go** contributors_; it frees them from having to maintain IBC Apps,
+- _Publishers of **ibc apps**_, so their apps can be easily found, and
 - _Everyone who uses IBC_ and wants to benefit from the full range of its capabilities.
 
 🌌🌌🌌 What is it?
@@ -43,9 +45,7 @@ IBC Middleware are self-contained modules that sit between core IBC and an under
 🌌🌌🌌🌌 How to Use this repo
 =============================
 
-If you'd like to include software in this repo, please [submit a PR](https://github.com/cosmos/ibc-apps).
-
-If you'd like to become a maintainer of this repo, WHO SHOULD THEY CONTACT?
+If you'd like to include software in this repo, please see [contributing](../ibc-apps/CONTRIBUTING.md).
 
 🌌🌌🌌🌌🌌 Bonus Content
 =============================
@@ -53,14 +53,6 @@ If you'd like to become a maintainer of this repo, WHO SHOULD THEY CONTACT?
 ## Hello World
 
 An [example IBC app](../examples/hello-world/)
-
-## Contributing
-
-### Some general principles
-
-- A release and tag for _App A_ ought not be blocked on changes in other unrelated or upstream apps
-- Version management must be able to be handled independently. i.e. An _App A_ can upgrade to `ibc-go v8` and release a tag against it, while _App B_ may remain unsupported for `v8`.
-- Teams with general write access to the repo should not be authorized to write to apps that they do not maintain (only default branch/tags/etc). Of course, PRs welcome :-)
 
 
 ## List of Apps
