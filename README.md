@@ -5,24 +5,25 @@
 IBC applications and middleware for Cosmos SDK blockchains
 
 🌌 Why have an ibc-apps repo?
-=============================
+================================
 
-<!-- Once upon a time there was [ibc-go](https://github.com/cosmos/ibc-go). And it grew and it grew until finally, propagating updates and changes outside the core functionality was becoming cumbersome. -->
+Early IBC work started in the [ibc-go](https://github.com/cosmos/ibc-go) repo. As the repo grew, the need arose to parallelize the work among many teams.  
 
-Early IBC work started in the [ibc-go](https://github.com/cosmos/ibc-go) repo. As the repo grew, the need arose to parallelize the work among many teams.
-
-This [ibc-apps](https://github.com/cosmos/ibc-apps) repo is meant to be an easily discoverable, navigable, central place for modules and middleware.
+The ibc-apps repo is meant to be an easily discoverable, navigable, central place for modules and middleware.
 
 🌌🌌 Who's it for?
-=============================
+===================
 
-IBC-Apps is for:
+IBC-Apps is for: 
 - _Core **ibc-go** contributors_; it frees them from having to maintain IBC Apps,
-- _Publishers of **ibc apps**_, so their apps can be easily found, and
+
+- _Publishers of **ibc apps**_, so their apps can be easily found, and 
+
 - _Everyone who uses IBC_ and wants to benefit from the full range of its capabilities.
 
+
 🌌🌌🌌 What is it?
-=============================
+==================
 
 ### What is IBC?
 
@@ -41,6 +42,14 @@ IBC Modules are self-contained applications that enable packets to be sent to an
 
 IBC Middleware are self-contained modules that sit between core IBC and an underlying IBC application.  This allows developers to customize lower-level packet handling.  Multiple middleware modules can be chained together.  
 
+🌌🌌🌌🌌 How to Use this repo
+==============================
+
+If you'd like to include software in this repo, please see [contributing](./ibc-apps/CONTRIBUTING.md).
+
+
+🌌🌌🌌🌌🌌 Bonus Content
+=======================
 
 🌌🌌🌌🌌 How to Use this repo
 =============================
@@ -52,12 +61,12 @@ If you'd like to include software in this repo, please see [contributing](../ibc
 
 ## Hello World
 
-An [example IBC app](../examples/hello-world/)
+An [example IBC app](./examples/hello-world/)
 
 
 ## List of Apps
 
 | Name | Type | Example | Stakeholders | Description |
 | ---- | ---- | ------- | ------------ | ----------- |  
-| [Async Interchain Query](../modules/async-icq/) | Module | Link | [Strangelove](https://github.com/strangelove-ventures/) | Interchain Queries enable blockchains to query the state of an account on another chain without the need for ICA auth. |
-| [Packet Forward Middleware](../middleware/packet-forward-middleware) | Middleware | Link | [Strangelove](https://github.com/strangelove-ventures/) | Middleware for forwarding IBC packets. | 
+| [Async Interchain Query](./modules/async-icq/) | Module | Link | [Strangelove](https://github.com/strangelove-ventures/) | Interchain Queries enable blockchains to query the state of an account on another chain without the need for ICA auth. |
+| [Packet Forward Middleware](./middleware/packet-forward-middleware) | Middleware | Link | [Strangelove](https://github.com/strangelove-ventures/) | Middleware for forwarding IBC packets. | 
