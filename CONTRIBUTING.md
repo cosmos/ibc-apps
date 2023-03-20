@@ -29,11 +29,4 @@ Privileges will be revoked in case of failure to comply with the [Code of Conduc
 
 ## Versioning
 
-We use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-For the repository -
-
-- the major will match the ibc-go major
-- the minor/patch is dissociated from ibc-go, used for ibc-apps versioning
-- the minor/patch updates in ibc-apps should update to the latest minor/patch ibc-go for the same major version.
-
+We use [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and Go modules to manage dependencies.  The main branch should build with go get.
