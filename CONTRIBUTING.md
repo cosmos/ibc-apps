@@ -9,7 +9,7 @@ Every app should be its own module in it's own directory.
 
 ## How can I contribute?
 
-All contributions should abide by the [Code of Conduct](../CODE_OF_CONDUCT.md)
+All contributions should abide by the [Code of Conduct](./CODE_OF_CONDUCT.md)
 
 For issues, create a Github issue and include steps to reproduce, expected behavior, and the version affected.
 
@@ -31,7 +31,7 @@ Privileges will be revoked in case of failure to comply with the [Code of Conduc
 
 We use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-For each module -
+For the repository -
 
 - the major will match the ibc-go major
 - the minor/patch is dissociated from ibc-go, used for ibc-apps versioning
