@@ -59,6 +59,7 @@ An [example IBC app](./examples/hello-world/)
 ## List of Apps
 
 | Name | Type | Example | Stakeholders | Description |
-| ---- | ---- | ------- | ------------ | ----------- |  
+| ---- | ---- | ------- | ------------ | ----------- | 
+| [Alliance](https://github.com/terra-money/alliance) | Module | [Link](https://alliance.terra.money/alliance) | [Terra](https://github.com/terra-money/) | Module used to stake IBC tokens, earn staking rewards and increase the security of the chain. | 
 | [Async Interchain Query](./modules/async-icq/) | Module | Link | [Strangelove](https://github.com/strangelove-ventures/) | Interchain Queries enable blockchains to query the state of an account on another chain without the need for ICA auth. |
 | [Packet Forward Middleware](./middleware/packet-forward-middleware) | Middleware | Link | [Strangelove](https://github.com/strangelove-ventures/) | Middleware for forwarding IBC packets. | 
