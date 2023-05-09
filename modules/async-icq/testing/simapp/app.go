@@ -91,6 +91,9 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v5"
+	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v5/keeper"
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
 	ibc "github.com/cosmos/ibc-go/v5/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v5/modules/core/02-client"
 	ibcclientclient "github.com/cosmos/ibc-go/v5/modules/core/02-client/client"
@@ -101,9 +104,6 @@ import (
 	ibcmock "github.com/cosmos/ibc-go/v5/testing/mock"
 	simappparams "github.com/cosmos/ibc-go/v5/testing/simapp/params"
 	ibctestingtypes "github.com/cosmos/ibc-go/v5/testing/types"
-	icq "github.com/strangelove-ventures/async-icq/v5"
-	icqkeeper "github.com/strangelove-ventures/async-icq/v5/keeper"
-	icqtypes "github.com/strangelove-ventures/async-icq/v5/types"
 )
 
 const appName = "SimApp"

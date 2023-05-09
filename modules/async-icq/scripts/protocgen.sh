@@ -21,4 +21,4 @@ done
 find ${project_dir} -not -path "*github.com*" -and -name "*.pb*.go" -type f -delete
 
 # move proto files to the right places
-cp -r github.com/strangelove-ventures/async-icq/v5/* .
+cp -r github.com/cosmos/ibc-apps/modules/async-icq/v5/* .

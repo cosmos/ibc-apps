@@ -1,4 +1,4 @@
-module github.com/strangelove-ventures/async-icq/v5
+module github.com/cosmos/ibc-apps/modules/async-icq/v5
 
 go 1.18
 
