@@ -25,6 +25,7 @@ var (
 
 	TestQueryPath = "/store/params/key"
 	TestQueryData = "icqhost/HostEnabled"
+	version       = "version"
 )
 
 type InterchainQueriesTestSuite struct {
@@ -111,7 +112,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 		},
 		{
 			"invalid version", func() {
-				channel.Version = "version"
+				channel.Version = version
 			}, false,
 		},
 		{
@@ -191,7 +192,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 		},
 		{
 			"invalid counterparty version", func() {
-				counterpartyVersion = "version"
+				counterpartyVersion = version
 			}, false,
 		},
 	}
@@ -255,7 +256,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenAck() {
 		},
 		{
 			"invalid counterparty version", func() {
-				counterpartyVersion = "version"
+				counterpartyVersion = version
 			}, false,
 		},
 	}
