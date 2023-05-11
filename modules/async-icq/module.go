@@ -15,9 +15,9 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	porttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v5/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
+	porttypes "github.com/cosmos/ibc-go/v5/modules/core/05-port/types"
 )
 
 var (

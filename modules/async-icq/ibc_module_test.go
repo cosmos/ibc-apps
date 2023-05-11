@@ -5,13 +5,13 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v4"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	ibctesting "github.com/cosmos/ibc-go/v4/testing"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v5"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v5/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
+	clienttypes "github.com/cosmos/ibc-go/v5/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v5/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v5/modules/core/24-host"
+	ibctesting "github.com/cosmos/ibc-go/v5/testing"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/suite"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
@@ -25,8 +25,7 @@ var (
 
 	TestQueryPath = "/store/params/key"
 	TestQueryData = "icqhost/HostEnabled"
-
-	version = "version"
+	version       = "version"
 )
 
 type InterchainQueriesTestSuite struct {
