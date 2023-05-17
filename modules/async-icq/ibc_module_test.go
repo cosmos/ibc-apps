@@ -5,13 +5,13 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v5"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v5/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
-	clienttypes "github.com/cosmos/ibc-go/v5/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v5/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v5/modules/core/24-host"
-	ibctesting "github.com/cosmos/ibc-go/v5/testing"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v6"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v6/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
+	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
+	ibctesting "github.com/cosmos/ibc-go/v6/testing"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/suite"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
@@ -25,7 +25,7 @@ var (
 
 	TestQueryPath = "/store/params/key"
 	TestQueryData = "icqhost/HostEnabled"
-	version       = "version"
+	Version       = "version"
 )
 
 type InterchainQueriesTestSuite struct {
@@ -112,7 +112,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 		},
 		{
 			"invalid version", func() {
-				channel.Version = version
+				channel.Version = Version
 			}, false,
 		},
 		{
@@ -192,7 +192,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 		},
 		{
 			"invalid counterparty version", func() {
-				counterpartyVersion = version
+				counterpartyVersion = Version
 			}, false,
 		},
 	}
@@ -256,7 +256,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenAck() {
 		},
 		{
 			"invalid counterparty version", func() {
-				counterpartyVersion = version
+				counterpartyVersion = Version
 			}, false,
 		},
 	}

@@ -15,9 +15,9 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v5/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
-	porttypes "github.com/cosmos/ibc-go/v5/modules/core/05-port/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v6/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
+	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 )
 
 var (
@@ -85,6 +85,10 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
+func (am AppModule) Route() sdk.Route {
+	return sdk.NewRoute(types.RouterKey, nil)
+}
+
 // NewAppModule creates a new IBC interchain query module
 func NewAppModule(keeper keeper.Keeper) AppModule {
 	return AppModule{
@@ -107,11 +111,6 @@ func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
 
 // RegisterInvariants implements the AppModule interface
 func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
-
-// Route implements the AppModule interface
-func (AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, nil)
-}
 
 // NewHandler implements the AppModule interface
 func (AppModule) NewHandler() sdk.Handler {

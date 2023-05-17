@@ -1,11 +1,11 @@
-module github.com/cosmos/ibc-apps/modules/async-icq/v5
+module github.com/cosmos/ibc-apps/modules/async-icq/v6
 
 go 1.18
 
 require (
 	cosmossdk.io/errors v1.0.0-beta.7
 	github.com/cosmos/cosmos-sdk v0.46.7
-	github.com/cosmos/ibc-go/v5 v5.2.0
+	github.com/cosmos/ibc-go/v6 v6.1.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0

@@ -1,4 +1,4 @@
-module github.com/cosmos/ibc-apps/modules/async-icq/e2e
+module github.com/cosmos/ibc-apps/modules/async-icqe2e
 
 go 1.18
 
