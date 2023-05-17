@@ -4,13 +4,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	abcitypes "github.com/tendermint/tendermint/abci/types"
+	abcitypes "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
-	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v6/testing"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 )
 
 func (suite *KeeperTestSuite) TestOnRecvPacket() {

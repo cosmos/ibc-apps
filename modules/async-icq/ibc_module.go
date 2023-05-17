@@ -7,11 +7,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
-	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
-	ibcexported "github.com/cosmos/ibc-go/v6/modules/core/exported"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
 // IBCModule implements the ICS26 interface for interchain query host chains

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -13,11 +14,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
-	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 )
 
 var (
@@ -85,10 +85,6 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
-func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, nil)
-}
-
 // NewAppModule creates a new IBC interchain query module
 func NewAppModule(keeper keeper.Keeper) AppModule {
 	return AppModule{
@@ -120,11 +116,6 @@ func (AppModule) NewHandler() sdk.Handler {
 // QuerierRoute implements the AppModule interface
 func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
-}
-
-// LegacyQuerierHandler implements the AppModule interface
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return nil
 }
 
 // RegisterServices registers module services

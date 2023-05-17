@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 )
 
 func (suite *KeeperTestSuite) TestInitGenesis() {
