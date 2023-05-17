@@ -1,6 +1,6 @@
 package types_test
 
-import "github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
+import "github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
 
 func (suite *TypesTestSuite) TestContainsQueryPath() {
 	allowQueries := []string{
