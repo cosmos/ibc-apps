@@ -25,9 +25,8 @@ var (
 
 	TestQueryPath = "/store/params/key"
 	TestQueryData = "icqhost/HostEnabled"
+	version       = "version"
 )
-
-const version = "version"
 
 type InterchainQueriesTestSuite struct {
 	suite.Suite
