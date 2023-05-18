@@ -1,6 +1,6 @@
 module github.com/cosmos/ibc-apps/modules/async-icq/e2e
 
-go 1.18
+go 1.20
 
 require (
 	github.com/cosmos/cosmos-sdk v0.47.1
