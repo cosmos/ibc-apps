@@ -185,8 +185,6 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 }
 
 func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
-	suite.SetupTest() // reset
-
 	path := NewICQPath(suite.chainA, suite.chainB)
 	suite.coordinator.SetupConnections(path)
 
@@ -194,16 +192,16 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 	suite.Require().NoError(err)
 
 	q := banktypes.QueryAllBalancesRequest{
-		Address: suite.chainA.SenderAccount.GetAddress().String(),
+		Address: suite.chainB.SenderAccount.GetAddress().String(),
 		Pagination: &query.PageRequest{
 			Offset: 0,
-			Limit:  1000000,
+			Limit:  100_000_000,
 		},
 	}
 	reqs := []abcitypes.RequestQuery{
 		{
 			Path: "/cosmos.bank.v1beta1.Query/AllBalances",
-			Data: simapp.GetSimApp(suite.chainA).AppCodec().MustMarshal(&q),
+			Data: simapp.GetSimApp(suite.chainB).AppCodec().MustMarshal(&q),
 		},
 	}
 	data, err := types.SerializeCosmosQuery(reqs)
@@ -230,17 +228,26 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 
 	ctx := suite.chainB.GetContext()
 	ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
-
 	// enough gas for this small query, but not for the larger one. This one should work
 	_, err = simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
 	suite.Require().NoError(err)
 
-	// fund account with 100_000 denoms
-	for i := 0; i < 150_000; i++ {
+	// fund account with 10_000 denoms
+	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
+	for i := 0; i < 10_000; i++ {
 		denom := fmt.Sprintf("denom%d", i)
-		simapp.GetSimApp(suite.chainA).BankKeeper.MintCoins(suite.chainA.GetContext(), minttypes.ModuleName, sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
-		simapp.GetSimApp(suite.chainA).BankKeeper.SendCoinsFromModuleToAccount(suite.chainA.GetContext(), types.ModuleName, suite.chainA.SenderAccount.GetAddress(), sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
+		err = simapp.GetSimApp(suite.chainB).BankKeeper.MintCoins(ctx, minttypes.ModuleName, sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
+		suite.Require().NoError(err)
+		err = simapp.GetSimApp(suite.chainB).BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, suite.chainB.SenderAccount.GetAddress(), sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
+		suite.Require().NoError(err)
+
 	}
+
+	// We need to call NextBlock() so that the context is committed. This doesn't matter as much anymore,
+	// but previous versions didn't pass the context to the query, so the test would've picked the previous
+	// block's data
+	suite.chainB.NextBlock()
+	ctx = suite.chainB.GetContext()
 
 	packet = channeltypes.NewPacket(
 		packetData,
@@ -252,10 +259,11 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 		clienttypes.NewHeight(1, 100),
 		0,
 	)
+	//
 
-	// and this one should panic with 'out of gas
+	// and this one should panic
 	suite.Assert().Panics(func() {
+		ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
 		simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
 	}, "out of gas")
-
 }
