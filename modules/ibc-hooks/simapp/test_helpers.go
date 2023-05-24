@@ -3,7 +3,7 @@ package simapp
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand" /* #nosec */
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
