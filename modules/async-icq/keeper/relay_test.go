@@ -1,8 +1,11 @@
 package keeper_test
 
 import (
+	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 
@@ -179,4 +182,80 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			}
 		})
 	}
+}
+
+func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
+	suite.SetupTest() // reset
+
+	path := NewICQPath(suite.chainA, suite.chainB)
+	suite.coordinator.SetupConnections(path)
+
+	err := SetupICQPath(path)
+	suite.Require().NoError(err)
+
+	q := banktypes.QueryAllBalancesRequest{
+		Address: suite.chainA.SenderAccount.GetAddress().String(),
+		Pagination: &query.PageRequest{
+			Offset: 0,
+			Limit:  1000000,
+		},
+	}
+	reqs := []abcitypes.RequestQuery{
+		{
+			Path: "/cosmos.bank.v1beta1.Query/AllBalances",
+			Data: simapp.GetSimApp(suite.chainA).AppCodec().MustMarshal(&q),
+		},
+	}
+	data, err := types.SerializeCosmosQuery(reqs)
+	suite.Require().NoError(err)
+
+	icqPacketData := types.InterchainQueryPacketData{
+		Data: data,
+	}
+	packetData := icqPacketData.GetBytes()
+
+	params := types.NewParams(true, []string{"/cosmos.bank.v1beta1.Query/AllBalances"})
+	simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params)
+
+	packet := channeltypes.NewPacket(
+		packetData,
+		suite.chainA.SenderAccount.GetSequence(),
+		path.EndpointA.ChannelConfig.PortID,
+		path.EndpointA.ChannelID,
+		path.EndpointB.ChannelConfig.PortID,
+		path.EndpointB.ChannelID,
+		clienttypes.NewHeight(1, 100),
+		0,
+	)
+
+	ctx := suite.chainB.GetContext()
+	ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
+
+	// enough gas for this small query, but not for the larger one. This one should work
+	_, err = simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
+	suite.Require().NoError(err)
+
+	// fund account with 100_000 denoms
+	for i := 0; i < 150_000; i++ {
+		denom := fmt.Sprintf("denom%d", i)
+		simapp.GetSimApp(suite.chainA).BankKeeper.MintCoins(suite.chainA.GetContext(), minttypes.ModuleName, sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
+		simapp.GetSimApp(suite.chainA).BankKeeper.SendCoinsFromModuleToAccount(suite.chainA.GetContext(), types.ModuleName, suite.chainA.SenderAccount.GetAddress(), sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
+	}
+
+	packet = channeltypes.NewPacket(
+		packetData,
+		suite.chainA.SenderAccount.GetSequence(),
+		path.EndpointA.ChannelConfig.PortID,
+		path.EndpointA.ChannelID,
+		path.EndpointB.ChannelConfig.PortID,
+		path.EndpointB.ChannelID,
+		clienttypes.NewHeight(1, 100),
+		0,
+	)
+
+	// and this one should panic with 'out of gas
+	suite.Assert().Panics(func() {
+		simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
+	}, "out of gas")
+
 }
