@@ -188,7 +188,7 @@ func NewAppWithCustomOptions(t *testing.T, isCheckTx bool, options SetupOptions)
 }
 
 // Setup initializes a new WasmApp. A Nop logger is set in WasmApp.
-func Setup(t *testing.T, opts ...wasm.Option) *App {
+func Setup(t *testing.T, opts ...wasm.Option) (*App, sdk.Context, *authtypes.BaseAccount) {
 	t.Helper()
 
 	privVal := mock.NewPV()
@@ -200,8 +200,8 @@ func Setup(t *testing.T, opts ...wasm.Option) *App {
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
 
 	// generate genesis account
-	senderPrivKey := secp256k1.GenPrivKey()
-	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	accPrivKey := secp256k1.GenPrivKey()
+	acc := authtypes.NewBaseAccount(accPrivKey.PubKey().Address().Bytes(), accPrivKey.PubKey(), 1, 1)
 	balance := banktypes.Balance{
 		Address: acc.GetAddress().String(),
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
@@ -209,7 +209,18 @@ func Setup(t *testing.T, opts ...wasm.Option) *App {
 	chainID := "testing"
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, chainID, opts, balance)
 
-	return app
+	ctx := app.BaseApp.NewContext(true, tmproto.Header{
+		Height:  app.LastBlockHeight(),
+		ChainID: chainID,
+		Time:    time.Now().UTC(),
+	})
+
+	// Mint coins to acc
+	err = app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))))
+	require.NoError(t, err)
+	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, acc.GetAddress(), sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))))
+
+	return app, ctx, acc
 }
 
 // SetupWithGenesisValSet initializes a new WasmApp with a validator set and genesis accounts

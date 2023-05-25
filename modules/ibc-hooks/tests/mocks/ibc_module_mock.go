@@ -87,7 +87,7 @@ func (m IBCModuleMock) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	panic("Mock for OnAcknowledgementPacket panic not yet implemented")
+	return nil
 }
 
 func (m IBCModuleMock) OnTimeoutPacket(

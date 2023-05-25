@@ -259,6 +259,7 @@ type App struct {
 	WasmKeeper            wasm.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	IBCFeeKeeper          ibcfeekeeper.Keeper
+	ContractKeeper        wasmtypes.ContractOpsKeeper
 
 	// IBC hooks
 	IBCHooksKeeper   ibchookskeeper.Keeper
@@ -739,7 +740,7 @@ func NewSimApp(
 	govLegacyRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, wasm.EnableAllProposals))
 	modules = append(modules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
 	simModules = append(simModules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
-
+	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(&app.WasmKeeper)
 	// 'ibc-hooks' module - depends on
 	// 1. 'auth'
 	// 2. 'bank'
