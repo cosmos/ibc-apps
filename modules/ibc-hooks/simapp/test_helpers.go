@@ -209,16 +209,25 @@ func Setup(t *testing.T, opts ...wasm.Option) (*App, sdk.Context, *authtypes.Bas
 	chainID := "testing"
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, chainID, opts, balance)
 
-	ctx := app.BaseApp.NewContext(true, tmproto.Header{
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{
 		Height:  app.LastBlockHeight(),
 		ChainID: chainID,
 		Time:    time.Now().UTC(),
 	})
 
-	// Mint coins to acc
-	err = app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))))
+	// Mint coins and send to the acc
+	err = app.BankKeeper.MintCoins(ctx,
+		minttypes.ModuleName,
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom,
+			sdk.NewInt(100000000000000))),
+	)
 	require.NoError(t, err)
-	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, acc.GetAddress(), sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))))
+	err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx,
+		minttypes.ModuleName,
+		acc.GetAddress(),
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+	)
+	require.NoError(t, err)
 
 	return app, ctx, acc
 }

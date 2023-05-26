@@ -733,7 +733,7 @@ func NewSimApp(
 		app.GRPCQueryRouter(),
 		filepath.Join(homePath, "wasm"),
 		wasmConfig,
-		"iterator,staking,stargate,token_factory,cosmwasm_1_1", // TODO: Find out what this configures
+		"iterator,staking,stargate,token_factory,cosmwasm_1_1",
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		GetWasmOpts(app, appOpts)...,
 	)

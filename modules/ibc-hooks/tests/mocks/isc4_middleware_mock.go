@@ -10,7 +10,8 @@ import (
 
 var _ porttypes.ICS4Wrapper = &ICS4WrapperMock{}
 
-type ICS4WrapperMock struct{}
+type ICS4WrapperMock struct {
+}
 
 func (m *ICS4WrapperMock) SendPacket(
 	ctx sdk.Context,
