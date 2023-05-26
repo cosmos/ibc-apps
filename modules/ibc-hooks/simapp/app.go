@@ -262,10 +262,7 @@ type App struct {
 	ContractKeeper        wasmtypes.ContractOpsKeeper
 
 	// IBC hooks
-	IBCHooksKeeper   ibchookskeeper.Keeper
-	TransferStack    ibchooks.IBCMiddleware
-	Ics20WasmHooks   ibchooks.WasmHooks
-	HooksICS4Wrapper ibchooks.ICS4Middleware
+	IBCHooksKeeper ibchookskeeper.Keeper
 
 	// ModuleManager is the module manager
 	ModuleManager *module.Manager
@@ -621,7 +618,6 @@ func NewSimApp(
 		app.AuthKeeper,
 		app.BankKeeper,
 	)
-	hooksTransferStack := ibchooks.NewIBCMiddleware(&app.TransferStack, &app.HooksICS4Wrapper)
 	app.keys[ibcporttypes.StoreKey] = storetypes.NewKVStoreKey(ibcporttypes.StoreKey)
 	app.AuthKeeper.GetModulePermissions()[ibctransfertypes.ModuleName] = authtypes.NewPermissionsForAddress(ibcfeetypes.ModuleName, nil)
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
@@ -637,7 +633,6 @@ func NewSimApp(
 
 	app.IBCKeeper.SetRouter(ibcporttypes.NewRouter().
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(ibctransfertypes.ModuleName, hooksTransferStack).
 		AddRoute(wasm.ModuleName, wasmStack))
 
 	// 'ibc-hooks' module - depends on
@@ -648,10 +643,10 @@ func NewSimApp(
 	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
 		app.keys[ibchookstypes.StoreKey],
 	)
-	app.Ics20WasmHooks = ibchooks.NewWasmHooks(&app.IBCHooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
-	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+	ics20WasmHooks := ibchooks.NewWasmHooks(&app.IBCHooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
+	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		app.Ics20WasmHooks,
+		ics20WasmHooks,
 	)
 
 	// 'ibctransfer' module - depends on
@@ -666,7 +661,7 @@ func NewSimApp(
 		cdc,
 		app.keys[ibctransfertypes.StoreKey],
 		app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName),
-		app.HooksICS4Wrapper,
+		hooksICS4Wrapper,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AuthKeeper,
@@ -755,10 +750,6 @@ func NewSimApp(
 	modules = append(modules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
 	simModules = append(simModules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(&app.WasmKeeper)
-
-	// Hooks Middleware
-	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
-	app.TransferStack = ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
 
 	/****  Module Options ****/
 

@@ -1,4 +1,4 @@
-package tests
+package tests_unit
 
 import (
 	"fmt"
@@ -10,8 +10,8 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	ibc_hooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/tests/helpers"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/tests/mocks"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/tests/unit/helpers"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/tests/unit/mocks"
 	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
