@@ -1,22 +1,24 @@
 # IBC-hooks
 
-> Forked from https://github.com/osmosis-labs/osmosis/tree/main/x/ibc-hooks
+> This module is forked from https://github.com/osmosis-labs/osmosis/tree/main/x/ibc-hooks
 
 ## Wasm Hooks
 
-The wasm hook is an IBC middleware which is used to allow ICS-20 token transfers to initiate contract calls.
-This allows cross-chain contract calls, that involve token movement. 
-This is useful for a variety of usecases.
-One of primary importance is cross-chain swaps, which is an extremely powerful primitive.
+Wasm hooks are an IBC middleware that enables ICS-20 token transfers to initiate contract calls.
+This functionality allows cross-chain contract calls that involve token movement. 
+Wasm hooks are useful for a variety of use cases, including cross-chain swaps, which are an extremely powerful primitive.
 
-The mechanism enabling this is a `memo` field on every ICS20 transfer packet as of [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
-Wasm hooks is an IBC middleware that parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a wasm contract call. We now detail the `memo` format for `wasm` contract calls, and the execution guarantees provided.
+## How do Wasm Hooks work?
+
+Wasm hooks are made possible through the `memo` field included in every ICS-20 transfer packet, as introduced in [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
+
+The Wasm hooks IBC middleware parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a Wasm contract call. 
+
+The following sections detail the `memo` format for Wasm contract calls and the execution guarantees provided.
 
 ### Cosmwasm Contract Execution Format
 
-Before we dive into the IBC metadata format, we show the cosmwasm execute message format, so the reader has a sense of what are the fields we need to be setting in.
-The cosmwasm `MsgExecuteContract` is defined [here](https://github.com/CosmWasm/wasmd/blob/4fe2fbc8f322efdaf187e2e5c99ce32fd1df06f0/x/wasm/types/tx.pb.go#L340-L349
-) as the following type:
+Before diving into the IBC metadata format, it's important to understand the Cosmwasm execute message format to get a sense of the specific fields that need to be set. Provided below is the CosmWasm `MsgExecuteContract` format as defined in the [Wasm module](https://github.com/CosmWasm/wasmd/blob/4fe2fbc8f322efdaf187e2e5c99ce32fd1df06f0/x/wasm/types/tx.pb.go#L340-L349).
 
 ```go
 type MsgExecuteContract struct {
@@ -31,17 +33,15 @@ type MsgExecuteContract struct {
 }
 ```
 
-So we detail where we want to get each of these fields from:
+For use with Wasm hooks, the message fields above can be derived from the following: 
 
-* Sender: We cannot trust the sender of an IBC packet, the counterparty chain has full ability to lie about it. 
-We cannot risk this sender being confused for a particular user or module address on Osmosis.
-So we replace the sender with an account to represent the sender prefixed by the channel and a wasm module prefix.
-This is done by setting the sender to `Bech32(Hash("ibc-wasm-hook-intermediary" || channelID || sender))`, where the channelId is the channel id on the local chain. 
-* Contract: This field should be directly obtained from the ICS-20 packet metadata
-* Msg: This field should be directly obtained from the ICS-20 packet metadata.
-* Funds: This field is set to the amount of funds being sent over in the ICS 20 packet. One detail is that the denom in the packet is the counterparty chains representation of the denom, so we have to translate it to Osmosis' representation.
+- `Sender`: IBC packet senders cannot be explicitly trusted, as they can be deceitful. Chains cannot risk the sender being confused with a particular local user or module address. To prevent this, the `sender` is replaced with an account that represents the sender prefixed by the channel and a Wasm module prefix. This is done by setting the sender to `Bech32(Hash("ibc-wasm-hook-intermediary" || channelID || sender))`, where the `channelId` is the channel id on the local chain. 
+- `Contract`: This field should be directly obtained from the ICS-20 packet metadata
+- `Msg`: This field should be directly obtained from the ICS-20 packet metadata.
+- `Funds`: This field is set to the amount of funds being sent over in the ICS-20 packet. The denom in the packet must be specified as the counterparty chain's representation of the denom.
 
-So our constructed cosmwasm message that we execute will look like:
+
+The fully constructed execute message will look like the following:
 
 ```go
 msg := MsgExecuteContract{
@@ -53,12 +53,13 @@ msg := MsgExecuteContract{
 	Msg: packet.data.memo["wasm"]["Msg"],
 	// Funds coins that are transferred to the contract on execution
 	Funds: sdk.NewCoin{Denom: ibc.ConvertSenderDenomToLocalDenom(packet.data.Denom), Amount: packet.data.Amount}
+}
 ```
 
 ### ICS20 packet structure
 
-So given the details above, we propogate the implied ICS20 packet data structure.
-ICS20 is JSON native, so we use JSON for the memo format.
+Given the details above, you can propagate the implied ICS-20 packet data structure.
+ICS20 is JSON native, so you can use JSON for the memo format.
 
 ```json 
 {
@@ -80,71 +81,70 @@ ICS20 is JSON native, so we use JSON for the memo format.
 }
 ```
 
-An ICS20 packet is formatted correctly for wasmhooks iff the following all hold:
+An ICS-20 packet is formatted correctly for Wasm hooks if all of the following are true:
 
-* `memo` is not blank
-* `memo` is valid JSON
-* `memo` has at least one key, with value `"wasm"`
-* `memo["wasm"]` has exactly two entries, `"contract"` and `"msg"`
-* `memo["wasm"]["msg"]` is a valid JSON object
-* `receiver == "" || receiver == memo["wasm"]["contract"]`
+- The `memo` is not blank.
+- The`memo` is valid JSON. 
+- The `memo` has at least one key, with the value `"wasm"`.
+- The `memo["wasm"]` has exactly two entries, `"contract"` and `"msg"`. 
+- The `memo["wasm"]["msg"]` is a valid JSON object.
+- The `receiver == "" || receiver == memo["wasm"]["contract"]`. 
 
-We consider an ICS20 packet as directed towards wasmhooks iff all of the following hold:
+An ICS-20 packet is directed toward Wasm hooks if all of the following are true:
 
-* `memo` is not blank
-* `memo` is valid JSON
-* `memo` has at least one key, with name `"wasm"`
+- The `memo` is not blank. 
+- The `memo` is valid JSON.
+- The `memo` has at least one key, with the name `"wasm"`.
 
-If an ICS20 packet is not directed towards wasmhooks, wasmhooks doesn't do anything.
-If an ICS20 packet is directed towards wasmhooks, and is formated incorrectly, then wasmhooks returns an error.
+If an ICS-20 packet is not directed towards Wasm hooks, Wasm hooks doesn't do anything.
+If an ICS-20 packet is directed towards Wasm hooks, and is formatted incorrectly, then Wasm hooks returns an error.
 
 ### Execution flow
 
-Pre wasm hooks:
+1. Pre-Wasm hooks:
 
-* Ensure the incoming IBC packet is cryptogaphically valid
-* Ensure the incoming IBC packet is not timed out.
+- Ensure the incoming IBC packet is cryptographically valid. 
+- Ensure the incoming IBC packet is not timed out.
 
-In Wasm hooks, pre packet execution:
+2. In Wasm hooks, pre-packet execution:
 
-* Ensure the packet is correctly formatted (as defined above)
-* Edit the receiver to be the hardcoded IBC module account
+- Ensure the packet is correctly formatted (as defined above).
+- Edit the receiver to be the hardcoded IBC module account.
 
-In wasm hooks, post packet execution:
+3. In wasm hooks, post packet execution:
 
-* Construct wasm message as defined before
-* Execute wasm message
-* if wasm message has error, return ErrAck
-* otherwise continue through middleware
+- Construct a Wasm message as defined before.
+- Execute the Wasm message.
+- If the Wasm message has an error, return `ErrAck`.
+- Otherwise, continue through middleware.
 
 ## Ack callbacks
 
-A contract that sends an IBC transfer, may need to listen for the ACK from that packet. To allow
-contracts to listen on the ack of specific packets, we provide Ack callbacks. 
+A contract that sends an IBC transfer may need to listen for the `ack` from that packet. `Ack` callbacks allow
+contracts to listen in on the `ack` of specific packets.
 
 ### Design
 
-The sender of an IBC transfer packet may specify a callback for when the ack of that packet is received in the memo 
+The sender of an IBC transfer packet may specify a callback for when the `Ack` of that packet is received in the memo 
 field of the transfer packet. 
 
-Crucially, _only_ the IBC packet sender can set the callback.
+Crucially, **only the IBC packet sender can set the callback**.
 
 ### Use case
 
-The crosschain swaps implementation sends an IBC transfer. If the transfer were to fail, we want to allow the sender
-to be able to retrieve their funds (which would otherwise be stuck in the contract). To do this, we allow users to 
-retrieve the funds after the timeout has passed, but without the ack information, we cannot guarantee that the send 
-hasn't failed (i.e.: returned an error ack notifying that the receiving change didn't accept it)
+The cross-chain swaps implementation sends an IBC transfer. If the transfer were to fail, the sender should be able to retrieve their funds which would otherwise be stuck in the contract. To do this, users should be allowed to retrieve the funds after the timeout has passed. However, without the `Ack` information, one cannot guarantee that the send hasn't failed (i.e.: returned an error ack notifying that the receiving chain didn't accept it). 
 
 ### Implementation
 
 #### Callback information in memo
 
-For the callback to be processed, the transfer packet's memo should contain the following in its JSON:
+For the callback to be processed, the transfer packet's `memo` should contain the following in its JSON:
 
-`{"ibc_callback": "osmo1contractAddr"}`
+```json
+{"ibc_callback": "osmo1contractAddr"}
+```
 
-The wasm hooks will keep the mapping from the packet's channel and sequence to the contract in storage. When an ack is
+The Wasm hooks will keep the mapping from the packet's channel and sequence to the contract in storage. When an `Ack` is
 received, it will notify the specified contract via a sudo message.
 
 #### Interface for receiving the Acks and Timeouts
@@ -160,9 +160,9 @@ pub enum IBCLifecycleComplete {
         channel: String,
         /// The sequence number that the packet was sent with
         sequence: u64,
-        /// String encoded version of the ack as seen by OnAcknowledgementPacket(..)
+        /// String encoded version of the `Ack` as seen by OnAcknowledgementPacket(..)
         ack: String,
-        /// Weather an ack is a success of failure according to the transfer spec
+        /// Weather an `Ack` is a success of failure according to the transfer spec
         success: bool,
     },
     #[serde(rename = "ibc_timeout")]
@@ -182,6 +182,6 @@ pub enum SudoMsg {
 }
 ```
 
-# Testing strategy
+## Tests
 
-See go tests.
+Tests are included in the [tests folder](./tests/testdata/counter/README.md). 
