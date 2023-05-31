@@ -17,4 +17,4 @@ jobs:
           # You can target a project in a different organization
           # to the issue
           project-url: https://github.com/orgs/strangelove-ventures/projects/4
-          github-token: ${{ secrets.pat }}
+          github-token: ${{ secrets.strangelove_motherboard_access_token }}
