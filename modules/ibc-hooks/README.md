@@ -198,7 +198,7 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 // )
 ```
 
-1. Add the module. 
+2. Add the module. 
 
 ```go
 // var (
@@ -210,7 +210,7 @@ Follow these steps to install the IBC hooks module. The following lines are all 
     // ) 
 ```
 
-1. Add the IBC hooks keeper. 
+3. Add the IBC hooks keeper. 
 
 ```go
 
