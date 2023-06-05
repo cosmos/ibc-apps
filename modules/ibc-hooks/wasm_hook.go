@@ -227,12 +227,12 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 }
 
 func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight ibcclienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {
-	isIcs20, icsdata := isIcs20Packet(data)
+	isIcs20, ics20data := isIcs20Packet(data)
 	if !isIcs20 {
 		return i.channel.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data) // continue
 	}
 
-	isCallbackRouted, metadata := jsonStringHasKey(icsdata.GetMemo(), types.IBCCallbackKey)
+	isCallbackRouted, metadata := jsonStringHasKey(ics20data.GetMemo(), types.IBCCallbackKey)
 	if !isCallbackRouted {
 		return i.channel.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data) // continue
 	}
@@ -242,22 +242,21 @@ func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap
 	// If the only available key in the memo is the callback, we should remove the memo
 	// from the data completely so the packet is sent without it.
 	// This way receiver chains that are on old versions of IBC will be able to process the packet
-
 	callbackRaw := metadata[types.IBCCallbackKey] // This will be used later.
 	delete(metadata, types.IBCCallbackKey)
 	bzMetadata, err := json.Marshal(metadata)
 	if err != nil {
-		return 0, errors.Wrap(err, "Send packet with callback error")
+		return 0, errors.Wrap(err, "ibc_callback marshall error")
 	}
 	stringMetadata := string(bzMetadata)
 	if stringMetadata == "{}" {
-		icsdata.Memo = ""
+		ics20data.Memo = ""
 	} else {
-		icsdata.Memo = stringMetadata
+		ics20data.Memo = stringMetadata
 	}
-	dataBytes, err := json.Marshal(icsdata)
+	dataBytes, err := json.Marshal(ics20data)
 	if err != nil {
-		return 0, errors.Wrap(err, "Send packet with callback error")
+		return 0, errors.Wrap(err, "ics20data marshall error")
 	}
 
 	seq, err := i.channel.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, dataBytes)
@@ -302,7 +301,7 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 	}
 
 	success := "false"
-	if !IsAckError(acknowledgement) {
+	if !IsJsonAckError(acknowledgement) {
 		success = "true"
 	}
 
@@ -372,15 +371,19 @@ func (h WasmHooks) OnTimeoutPacketOverride(im IBCMiddleware, ctx sdk.Context, pa
 // NewEmitErrorAcknowledgement creates a new error acknowledgement after having emitted an event with the
 // details of the error.
 func NewEmitErrorAcknowledgement(ctx sdk.Context, err error, errorContexts ...string) channeltypes.Acknowledgement {
+	errorType := "ibc-acknowledgement-error"
+	logger := ctx.Logger().With("module", errorType)
+
 	attributes := make([]sdk.Attribute, len(errorContexts)+1)
 	attributes[0] = sdk.NewAttribute("error", err.Error())
 	for i, s := range errorContexts {
 		attributes[i+1] = sdk.NewAttribute("error-context", s)
+		logger.Error(fmt.Sprintf("error-context: %v", s))
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			"ibc-acknowledgement-error",
+			errorType,
 			attributes...,
 		),
 	})
@@ -388,9 +391,9 @@ func NewEmitErrorAcknowledgement(ctx sdk.Context, err error, errorContexts ...st
 	return channeltypes.NewErrorAcknowledgement(err)
 }
 
-// IsAckError checks an IBC acknowledgement to see if it's an error.
+// IsJsonAckError checks an IBC acknowledgement to see if it's an error.
 // This is a replacement for ack.Success() which is currently not working on some circumstances
-func IsAckError(acknowledgement []byte) bool {
+func IsJsonAckError(acknowledgement []byte) bool {
 	var ackErr channeltypes.Acknowledgement_Error
 	if err := json.Unmarshal(acknowledgement, &ackErr); err == nil && len(ackErr.Error) > 0 {
 		return true
