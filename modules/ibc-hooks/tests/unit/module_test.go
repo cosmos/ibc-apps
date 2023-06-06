@@ -1,36 +1,100 @@
 package tests_unit
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
 	_ "embed"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	ibc_hooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/tests/unit/helpers"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/simapp"
 	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/tests/unit/mocks"
 	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	ibcmock "github.com/cosmos/ibc-go/v7/testing/mock"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestOnRecvPacket(t *testing.T) {
+//go:embed testdata/counter/artifacts/counter.wasm
+var counterWasm []byte
+
+//go:embed testdata/echo/artifacts/echo.wasm
+var echoWasm []byte
+
+type HooksTestSuite struct {
+	suite.Suite
+
+	App                 *simapp.App
+	Ctx                 sdk.Context
+	EchoContractAddr    sdk.AccAddress
+	CounterContractAddr sdk.AccAddress
+	TestAddress         *types.BaseAccount
+}
+
+func TestIBCHooksTestSuite(t *testing.T) {
+	suite.Run(t, new(HooksTestSuite))
+}
+
+func (suite *HooksTestSuite) SetupEnv() {
+	// Setup the environment
+	app, ctx, acc := simapp.Setup(suite.T())
+
+	// create the echo contract
+	contractID, _, err := app.ContractKeeper.Create(ctx, acc.GetAddress(), counterWasm, nil)
+	suite.NoError(err)
+	counterContractAddr, _, err := app.ContractKeeper.Instantiate(
+		ctx,
+		contractID,
+		acc.GetAddress(),
+		nil,
+		[]byte(`{"count": 0}`),
+		"counter contract",
+		nil,
+	)
+	suite.NoError(err)
+	suite.Equal("cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr", counterContractAddr.String())
+
+	// create the counter contract
+	contractID, _, err = app.ContractKeeper.Create(ctx, acc.GetAddress(), echoWasm, nil)
+	suite.NoError(err)
+	echoContractAddr, _, err := app.ContractKeeper.Instantiate(
+		ctx,
+		contractID,
+		acc.GetAddress(),
+		nil,
+		[]byte(`{}`),
+		"echo contract",
+		nil,
+	)
+	suite.NoError(err)
+	suite.Equal("cosmos1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqez7la9", echoContractAddr.String())
+
+	suite.App = app
+	suite.Ctx = ctx
+	suite.EchoContractAddr = echoContractAddr
+	suite.CounterContractAddr = counterContractAddr
+	suite.TestAddress = acc
+}
+
+func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 	// create en env
-	app, ctx, contractAddr, sender := helpers.SetupEnv(t)
+	suite.SetupEnv()
+
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
 			Denom:    "transfer/channel-0/stake",
 			Amount:   "1",
-			Sender:   sender.GetAddress().String(),
-			Receiver: contractAddr.String(),
-			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, contractAddr.String()),
+			Sender:   suite.TestAddress.GetAddress().String(),
+			Receiver: suite.EchoContractAddr.String(),
+			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"echo":{"msg":"test"}}}}`, suite.EchoContractAddr.String()),
 		}.GetBytes(),
 		SourcePort:    "transfer",
 		SourceChannel: "channel-0",
@@ -38,24 +102,24 @@ func TestOnRecvPacket(t *testing.T) {
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
 	escrowAddress := transfertypes.GetEscrowAddress(recvPacket.GetDestPort(), recvPacket.GetDestChannel())
-	err := app.BankKeeper.SendCoins(ctx, sender.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
-	require.NoError(t, err)
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	suite.NoError(err)
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
-		&app.IBCHooksKeeper,
-		&app.WasmKeeper,
+		&suite.App.IBCHooksKeeper,
+		&suite.App.WasmKeeper,
 		"cosmos",
 	)
 
 	// create the ics4 middleware
 	ics4Middleware := ibc_hooks.NewICS4Middleware(
-		app.IBCKeeper.ChannelKeeper,
+		suite.App.IBCKeeper.ChannelKeeper,
 		wasmHooks,
 	)
 
 	// create the ibc middleware
-	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
+	transferIBCModule := ibctransfer.NewIBCModule(suite.App.TransferKeeper)
 	ibcmiddleware := ibc_hooks.NewIBCMiddleware(
 		transferIBCModule,
 		&ics4Middleware,
@@ -63,44 +127,101 @@ func TestOnRecvPacket(t *testing.T) {
 
 	// call the hook twice
 	res := ibcmiddleware.OnRecvPacket(
-		ctx,
+		suite.Ctx,
 		recvPacket,
-		sender.GetAddress(),
+		suite.TestAddress.GetAddress(),
 	)
-	require.True(t, res.Success())
+	suite.True(res.Success())
+	var ack map[string]string // This can't be unmarshalled to Acknowledgement because it's fetched from the events
+	err = json.Unmarshal(res.Acknowledgement(), &ack)
+	suite.Require().NoError(err)
+	suite.Require().NotContains(ack, "error")
+	suite.Require().Equal(ack["result"], "eyJjb250cmFjdF9yZXN1bHQiOiJkR2hwY3lCemFHOTFiR1FnWldOb2J3PT0iLCJpYmNfYWNrIjoiZXlKeVpYTjFiSFFpT2lKQlVUMDlJbjA9In0=")
+}
+
+func (suite *HooksTestSuite) TestOnRecvPacketCounterContract() {
+	// create en env
+	suite.SetupEnv()
+
+	// Create the packet
+	recvPacket := channeltypes.Packet{
+		Data: transfertypes.FungibleTokenPacketData{
+			Denom:    "transfer/channel-0/stake",
+			Amount:   "1",
+			Sender:   suite.TestAddress.GetAddress().String(),
+			Receiver: suite.CounterContractAddr.String(),
+			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
+		}.GetBytes(),
+		SourcePort:    "transfer",
+		SourceChannel: "channel-0",
+	}
+
+	// send funds to the escrow address to simulate a transfer from the ibc module
+	escrowAddress := transfertypes.GetEscrowAddress(recvPacket.GetDestPort(), recvPacket.GetDestChannel())
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	suite.NoError(err)
+
+	// create the wasm hooks
+	wasmHooks := ibc_hooks.NewWasmHooks(
+		&suite.App.IBCHooksKeeper,
+		&suite.App.WasmKeeper,
+		"cosmos",
+	)
+
+	// create the ics4 middleware
+	ics4Middleware := ibc_hooks.NewICS4Middleware(
+		suite.App.IBCKeeper.ChannelKeeper,
+		wasmHooks,
+	)
+
+	// create the ibc middleware
+	transferIBCModule := ibctransfer.NewIBCModule(suite.App.TransferKeeper)
+	ibcmiddleware := ibc_hooks.NewIBCMiddleware(
+		transferIBCModule,
+		&ics4Middleware,
+	)
+
+	// call the hook twice
+	res := ibcmiddleware.OnRecvPacket(
+		suite.Ctx,
+		recvPacket,
+		suite.TestAddress.GetAddress(),
+	)
+	suite.True(res.Success())
 	res = ibcmiddleware.OnRecvPacket(
-		ctx,
+		suite.Ctx,
 		recvPacket,
-		sender.GetAddress(),
+		suite.TestAddress.GetAddress(),
 	)
-	require.True(t, res.Success())
+	suite.True(res.Success())
 
 	// get the derived account to check the count
 	senderBech32, err := ibchookskeeper.DeriveIntermediateSender(
 		recvPacket.GetDestChannel(),
-		sender.GetAddress().String(),
+		suite.TestAddress.GetAddress().String(),
 		"cosmos",
 	)
-	require.NoError(t, err)
+	suite.NoError(err)
 	// query the smart contract to assert the count
-	count, err := app.WasmKeeper.QuerySmart(
-		ctx,
-		contractAddr,
+	count, err := suite.App.WasmKeeper.QuerySmart(
+		suite.Ctx,
+		suite.CounterContractAddr,
 		[]byte(fmt.Sprintf(`{"get_count":{"addr": "%s"}}`, senderBech32)),
 	)
-	require.NoError(t, err)
-	require.Equal(t, `{"count":1}`, string(count))
+	suite.NoError(err)
+	suite.Equal(`{"count":1}`, string(count))
 }
 
-func TestOnAcknowledgementPacket(t *testing.T) {
-	app, ctx, contractAddr, sender := helpers.SetupEnv(t)
+func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
+	suite.SetupEnv()
+
 	callbackPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
 			Denom:    "transfer/channel-0/stake",
 			Amount:   "1",
-			Sender:   sender.GetAddress().String(),
-			Receiver: contractAddr.String(),
-			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, contractAddr),
+			Sender:   suite.TestAddress.GetAddress().String(),
+			Receiver: suite.CounterContractAddr.String(),
+			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, suite.CounterContractAddr),
 		}.GetBytes(),
 		Sequence:      1,
 		SourcePort:    "transfer",
@@ -109,13 +230,13 @@ func TestOnAcknowledgementPacket(t *testing.T) {
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
 	escrowAddress := transfertypes.GetEscrowAddress(callbackPacket.GetDestPort(), callbackPacket.GetDestChannel())
-	err := app.BankKeeper.SendCoins(ctx, sender.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
-	require.NoError(t, err)
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	suite.NoError(err)
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
-		&app.IBCHooksKeeper,
-		&app.WasmKeeper,
+		&suite.App.IBCHooksKeeper,
+		&suite.App.WasmKeeper,
 		"cosmos",
 	)
 
@@ -126,7 +247,7 @@ func TestOnAcknowledgementPacket(t *testing.T) {
 	)
 
 	// create the ibc middleware
-	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
+	transferIBCModule := ibctransfer.NewIBCModule(suite.App.TransferKeeper)
 	ibcmiddleware := ibc_hooks.NewIBCMiddleware(
 		transferIBCModule,
 		&ics4Middleware,
@@ -134,7 +255,7 @@ func TestOnAcknowledgementPacket(t *testing.T) {
 
 	// call the hook
 	seq, err := ibcmiddleware.SendPacket(
-		ctx,
+		suite.Ctx,
 		&capabilitytypes.Capability{Index: 1},
 		callbackPacket.SourcePort,
 		callbackPacket.SourceChannel,
@@ -147,53 +268,53 @@ func TestOnAcknowledgementPacket(t *testing.T) {
 	)
 
 	// require to be the first sequence
-	require.Equal(t, uint64(1), seq)
+	suite.Equal(uint64(1), seq)
 	// assert the request was successful
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
 			Denom:    "transfer/channel-0/stake",
 			Amount:   "1",
-			Sender:   sender.GetAddress().String(),
-			Receiver: contractAddr.String(),
-			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, contractAddr.String()),
+			Sender:   suite.TestAddress.GetAddress().String(),
+			Receiver: suite.CounterContractAddr.String(),
+			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
 		Sequence:      1,
 		SourcePort:    "transfer",
 		SourceChannel: "channel-0",
 	}
-	require.NoError(t, err)
+	suite.NoError(err)
 	err = wasmHooks.OnAcknowledgementPacketOverride(
 		ibcmiddleware,
-		ctx,
+		suite.Ctx,
 		recvPacket,
 		ibcmock.MockAcknowledgement.Acknowledgement(),
-		sender.GetAddress(),
+		suite.TestAddress.GetAddress(),
 	)
 	// assert the request was successful
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// query the smart contract to assert the count
-	count, err := app.WasmKeeper.QuerySmart(
-		ctx,
-		contractAddr,
-		[]byte(fmt.Sprintf(`{"get_count":{"addr": %q}}`, contractAddr.String())),
+	count, err := suite.App.WasmKeeper.QuerySmart(
+		suite.Ctx,
+		suite.CounterContractAddr,
+		[]byte(fmt.Sprintf(`{"get_count":{"addr": %q}}`, suite.CounterContractAddr.String())),
 	)
-	require.NoError(t, err)
-	require.Equal(t, `{"count":1}`, string(count))
+	suite.NoError(err)
+	suite.Equal(`{"count":1}`, string(count))
 }
 
-func TestOnTimeoutPacketOverride(t *testing.T) {
-	app, ctx, contractAddr, sender := helpers.SetupEnv(t)
+func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
+	suite.SetupEnv()
 	callbackPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
 			Denom:    "transfer/channel-0/stake",
 			Amount:   "1",
-			Sender:   sender.GetAddress().String(),
-			Receiver: contractAddr.String(),
-			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, contractAddr),
+			Sender:   suite.TestAddress.GetAddress().String(),
+			Receiver: suite.CounterContractAddr.String(),
+			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, suite.CounterContractAddr),
 		}.GetBytes(),
 		Sequence:      1,
 		SourcePort:    "transfer",
@@ -202,13 +323,13 @@ func TestOnTimeoutPacketOverride(t *testing.T) {
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
 	escrowAddress := transfertypes.GetEscrowAddress(callbackPacket.GetDestPort(), callbackPacket.GetDestChannel())
-	err := app.BankKeeper.SendCoins(ctx, sender.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
-	require.NoError(t, err)
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	suite.NoError(err)
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
-		&app.IBCHooksKeeper,
-		&app.WasmKeeper,
+		&suite.App.IBCHooksKeeper,
+		&suite.App.WasmKeeper,
 		"cosmos",
 	)
 
@@ -219,7 +340,7 @@ func TestOnTimeoutPacketOverride(t *testing.T) {
 	)
 
 	// create the ibc middleware
-	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
+	transferIBCModule := ibctransfer.NewIBCModule(suite.App.TransferKeeper)
 	ibcmiddleware := ibc_hooks.NewIBCMiddleware(
 		transferIBCModule,
 		&ics4Middleware,
@@ -227,7 +348,7 @@ func TestOnTimeoutPacketOverride(t *testing.T) {
 
 	// call the hook
 	seq, err := ibcmiddleware.SendPacket(
-		ctx,
+		suite.Ctx,
 		&capabilitytypes.Capability{Index: 1},
 		callbackPacket.SourcePort,
 		callbackPacket.SourceChannel,
@@ -240,39 +361,39 @@ func TestOnTimeoutPacketOverride(t *testing.T) {
 	)
 
 	// require to be the first sequence
-	require.Equal(t, uint64(1), seq)
+	suite.Equal(uint64(1), seq)
 	// assert the request was successful
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
 			Denom:    "transfer/channel-0/stake",
 			Amount:   "1",
-			Sender:   sender.GetAddress().String(),
-			Receiver: contractAddr.String(),
-			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, contractAddr.String()),
+			Sender:   suite.TestAddress.GetAddress().String(),
+			Receiver: suite.CounterContractAddr.String(),
+			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
 		Sequence:      1,
 		SourcePort:    "transfer",
 		SourceChannel: "channel-0",
 	}
-	require.NoError(t, err)
+	suite.NoError(err)
 	err = wasmHooks.OnTimeoutPacketOverride(
 		ibcmiddleware,
-		ctx,
+		suite.Ctx,
 		recvPacket,
-		sender.GetAddress(),
+		suite.TestAddress.GetAddress(),
 	)
 	// assert the request was successful
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// query the smart contract to assert the count
-	count, err := app.WasmKeeper.QuerySmart(
-		ctx,
-		contractAddr,
-		[]byte(fmt.Sprintf(`{"get_count":{"addr": %q}}`, contractAddr.String())),
+	count, err := suite.App.WasmKeeper.QuerySmart(
+		suite.Ctx,
+		suite.CounterContractAddr,
+		[]byte(fmt.Sprintf(`{"get_count":{"addr": %q}}`, suite.CounterContractAddr.String())),
 	)
-	require.NoError(t, err)
-	require.Equal(t, `{"count":10}`, string(count))
+	suite.NoError(err)
+	suite.Equal(`{"count":10}`, string(count))
 }
