@@ -235,6 +235,14 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 		app.keys[ibchookstypes.StoreKey],
 	)
 	app.Ics20WasmHooks = ibchooks.NewWasmHooks(&app.IBCHooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
+	
+	// initialize the wasm keeper with
+	// wasmKeeper := wasm.NewKeeper( ... )
+	app.WasmKeeper = &wasmKeeper
+
+	// Pass the contract keeper to all the structs (generally ICS4Wrappers for ibc middlewares) that need it
+	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	app.Ics20WasmHooks.ContractKeeper = app.ContractKeeper
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
 		app.Ics20WasmHooks,
