@@ -2,17 +2,17 @@
 
 > This module is forked from https://github.com/osmosis-labs/osmosis/tree/main/x/ibc-hooks
 
-## Wasm Hooks
+## IBC hooks
 
-Wasm hooks are an IBC middleware that enables ICS-20 token transfers to initiate contract calls.
+The IBC hooks module is an IBC middleware that enables ICS-20 token transfers to initiate contract calls.
 This functionality allows cross-chain contract calls that involve token movement. 
-Wasm hooks are useful for a variety of use cases, including cross-chain swaps, which are an extremely powerful primitive.
+IBC hooks are useful for a variety of use cases, including cross-chain swaps, which are an extremely powerful primitive.
 
-## How do Wasm Hooks work?
+## How do IBC hooks work?
 
-Wasm hooks are made possible through the `memo` field included in every ICS-20 transfer packet, as introduced in [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
+IBC hooks are made possible through the `memo` field included in every ICS-20 transfer packet, as introduced in [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
 
-The Wasm hooks IBC middleware parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a Wasm contract call. 
+The IBC hooks IBC middleware parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a Wasm contract call. 
 
 The following sections detail the `memo` format for Wasm contract calls and the execution guarantees provided.
 
@@ -33,7 +33,7 @@ type MsgExecuteContract struct {
 }
 ```
 
-For use with Wasm hooks, the message fields above can be derived from the following: 
+For use with IBC hooks, the message fields above can be derived from the following: 
 
 - `Sender`: IBC packet senders cannot be explicitly trusted, as they can be deceitful. Chains cannot risk the sender being confused with a particular local user or module address. To prevent this, the `sender` is replaced with an account that represents the sender prefixed by the channel and a Wasm module prefix. This is done by setting the sender to `Bech32(Hash("ibc-wasm-hook-intermediary" || channelID || sender))`, where the `channelId` is the channel id on the local chain. 
 - `Contract`: This field should be directly obtained from the ICS-20 packet metadata
@@ -81,7 +81,7 @@ ICS20 is JSON native, so you can use JSON for the memo format.
 }
 ```
 
-An ICS-20 packet is formatted correctly for Wasm hooks if all of the following are true:
+An ICS-20 packet is formatted correctly for IBC hooks if all of the following are true:
 
 - The `memo` is not blank.
 - The`memo` is valid JSON. 
@@ -90,28 +90,28 @@ An ICS-20 packet is formatted correctly for Wasm hooks if all of the following a
 - The `memo["wasm"]["msg"]` is a valid JSON object.
 - The `receiver == "" || receiver == memo["wasm"]["contract"]`. 
 
-An ICS-20 packet is directed toward Wasm hooks if all of the following are true:
+An ICS-20 packet is directed toward IBC hooks if all of the following are true:
 
 - The `memo` is not blank. 
 - The `memo` is valid JSON.
 - The `memo` has at least one key, with the name `"wasm"`.
 
-If an ICS-20 packet is not directed towards Wasm hooks, Wasm hooks doesn't do anything.
-If an ICS-20 packet is directed towards Wasm hooks, and is formatted incorrectly, then Wasm hooks returns an error.
+If an ICS-20 packet is not directed towards IBC hooks, IBC hooks doesn't do anything.
+If an ICS-20 packet is directed towards IBC hooks, and is formatted incorrectly, then IBC hooks returns an error.
 
 ### Execution flow
 
-1. Pre-Wasm hooks:
+1. Pre-IBC hooks:
 
 - Ensure the incoming IBC packet is cryptographically valid. 
 - Ensure the incoming IBC packet is not timed out.
 
-2. In Wasm hooks, pre-packet execution:
+2. In IBC hooks, pre-packet execution:
 
 - Ensure the packet is correctly formatted (as defined above).
 - Edit the receiver to be the hardcoded IBC module account.
 
-3. In wasm hooks, post packet execution:
+3. In IBC hooks, post packet execution:
 
 - Construct a Wasm message as defined before.
 - Execute the Wasm message.
@@ -144,7 +144,7 @@ For the callback to be processed, the transfer packet's `memo` should contain th
 {"ibc_callback": "osmo1contractAddr"}
 ```
 
-The Wasm hooks will keep the mapping from the packet's channel and sequence to the contract in storage. When an `Ack` is
+The IBC hooks will keep the mapping from the packet's channel and sequence to the contract in storage. When an `Ack` is
 received, it will notify the specified contract via a sudo message.
 
 #### Interface for receiving the Acks and Timeouts
@@ -182,6 +182,170 @@ pub enum SudoMsg {
 }
 ```
 
+## Installation
+
+Follow these steps to install the IBC hooks module. The following lines are all added to `app.go`
+
+1. Import the following packages. 
+
+```go
+// import (
+    ...
+    ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
+	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+    ...
+// )
+```
+
+2. Add the module. 
+
+```go
+// var (
+	//DefaultNodeHome string
+	//ModuleBasics = module.NewBasicManager(
+        ...
+        ibchooks.AppModuleBasic{},
+        ...
+    // ) 
+```
+
+3. Add the IBC hooks keeper. 
+
+```go
+
+// type App struct {
+    ...
+    IBCHooksKeeper   ibchookskeeper.Keeper
+    ...
+// }
+
+```
+4. Initiate the keepers and helpers.
+
+```go
+...
+
+	// 'ibc-hooks' module - depends on
+	// 1. 'auth'
+	// 2. 'bank'
+	// 3. 'distr'
+	app.keys[ibchookstypes.StoreKey] = storetypes.NewKVStoreKey(ibchookstypes.StoreKey)
+	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
+		app.keys[ibchookstypes.StoreKey],
+	)
+	app.Ics20WasmHooks = ibchooks.NewWasmHooks(&app.IBCHooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
+	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
+		app.IBCKeeper.ChannelKeeper,
+		app.Ics20WasmHooks,
+	)
+	// Hooks Middleware
+	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
+	app.TransferStack = ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
+
+...
+```
+
+5. Register the genesis, begin blocker and end block hooks. 
+
+```go
+...
+
+	app.ModuleManager.SetOrderBeginBlockers(
+		// upgrades should be run first
+		upgradetypes.ModuleName,
+		capabilitytypes.ModuleName,
+		minttypes.ModuleName,
+		consensustypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		stakingtypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		govtypes.ModuleName,
+		crisistypes.ModuleName,
+		ibctransfertypes.ModuleName,
+		ibcexported.ModuleName,
+		icatypes.ModuleName,
+		ibcfeetypes.ModuleName,
+		genutiltypes.ModuleName,
+		authz.ModuleName,
+		feegrant.ModuleName,
+		group.ModuleName,
+		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
+		nft.ModuleName,
+		ibchookstypes.ModuleName,
+		wasm.ModuleName,
+		// this line is used by starport scaffolding # stargate/app/beginBlockers
+	)
+
+	app.ModuleManager.SetOrderEndBlockers(
+		crisistypes.ModuleName,
+		govtypes.ModuleName,
+		stakingtypes.ModuleName,
+		consensustypes.ModuleName,
+		ibctransfertypes.ModuleName,
+		ibcexported.ModuleName,
+		icatypes.ModuleName,
+		capabilitytypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		minttypes.ModuleName,
+		genutiltypes.ModuleName,
+		evidencetypes.ModuleName,
+		authz.ModuleName,
+		feegrant.ModuleName,
+		group.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		nft.ModuleName,
+		ibcfeetypes.ModuleName,
+		ibchookstypes.ModuleName,
+		wasm.ModuleName,
+		// this line is used by starport scaffolding # stargate/app/endBlockers
+	)
+
+	// NOTE: The genutils module must occur after staking so that pools are
+	// properly initialized with tokens from genesis accounts.
+	// NOTE: Capability module must occur first so that it can initialize any capabilities
+	// so that other modules that want to create or claim capabilities afterwards in InitChain
+	// can do so safely.
+	app.ModuleManager.SetOrderInitGenesis(
+		capabilitytypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		distrtypes.ModuleName,
+		stakingtypes.ModuleName,
+		slashingtypes.ModuleName,
+		consensustypes.ModuleName,
+		govtypes.ModuleName,
+		minttypes.ModuleName,
+		crisistypes.ModuleName,
+		genutiltypes.ModuleName,
+		ibctransfertypes.ModuleName,
+		ibcexported.ModuleName,
+		icatypes.ModuleName,
+		evidencetypes.ModuleName,
+		authz.ModuleName,
+		feegrant.ModuleName,
+		group.ModuleName,
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		nft.ModuleName,
+		ibcfeetypes.ModuleName,
+		ibchookstypes.ModuleName,
+		wasm.ModuleName,
+		// this line is used by starport scaffolding # stargate/app/initGenesis
+	)
+
+...
+```
 ## Tests
 
 Tests are included in the [tests folder](./tests/testdata/counter/README.md). 
