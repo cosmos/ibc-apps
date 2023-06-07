@@ -1,0 +1,29 @@
+name: golangci-lint
+on: 
+  pull_request:
+
+jobs:
+  resolve-modules:
+    name: Resolve Modules
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout Sources
+        uses: actions/checkout@v3
+      - id: set-matrix
+        run: ./tools/resolve-modules.sh
+  golangci:
+    name: Linter
+    needs: resolve-modules
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.resolve-modules.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.52
+          working-directory: ${{ matrix.workdir }}
+          args: --timeout=5m
