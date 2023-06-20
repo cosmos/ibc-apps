@@ -1,9 +1,10 @@
 package types
 
 import (
-	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+
+	abcitypes "github.com/cometbft/cometbft/abci/types"
 )
 
 // ModuleCdc references the global interchain queries module codec. Note, the codec
