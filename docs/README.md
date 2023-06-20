@@ -4,9 +4,9 @@ Documentation for IBC apps
 
 ## Backporting to Maintained Branches
 
-Because chains are on different versions of IBC-Go, we strive to have app compatibility across older versions of IBC-Go.
+Because chains are on different versions of ibc-go, we strive to have app compatibility across older versions of ibc-go.
 
-To do this, we maintain several branches each targeting a different version of IBC-Go. You can view our maintained branches [here](https://github.com/cosmos/ibc-apps/tree/main#maintained-branches)
+To do this, we maintain several branches each targeting a different version of ibc-go. You can view our maintained branches [here](https://github.com/cosmos/ibc-apps/tree/main#maintained-branches)
 
 
 [`Mergify`](https://mergify.com/) has been integrated into this repo to help keep these branches in sync. 
