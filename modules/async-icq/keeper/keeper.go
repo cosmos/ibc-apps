@@ -3,17 +3,19 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cometbft/cometbft/libs/log"
+
 	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
 // Keeper defines the IBC interchain query host keeper

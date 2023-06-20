@@ -55,6 +55,14 @@ If you'd like to include software in this repo, please see [contributing](../ibc
 
 An [example IBC app](./examples/hello-world/)
 
+## Maintained Branches
+
+|                          **Branch Name**                         | **IBC-Go** |
+|:----------------------------------------------------------------:|:----------:|
+|            [main](https://github.com/cosmos/ibc-apps)            |     v7     |
+| [release/v6](https://github.com/cosmos/ibc-apps/tree/release/v6) |     v6     |
+| [release/v5](https://github.com/cosmos/ibc-apps/tree/release/v5) |     v5     |
+| [release/v4](https://github.com/cosmos/ibc-apps/tree/release/v4) |     v4     |
 
 ## List of Apps
 
