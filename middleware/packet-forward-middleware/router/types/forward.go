@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
 	"github.com/iancoleman/orderedmap"
+
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
 )
 
 type PacketMetadata struct {

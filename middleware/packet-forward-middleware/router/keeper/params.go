@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetSendEnabled retrieves the send enabled boolean from the paramstore

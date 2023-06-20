@@ -3,11 +3,12 @@ package cli
 import (
 	"fmt"
 
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
-	"github.com/spf13/cobra"
 )
 
 // GetQueryCmd returns the query commands for router

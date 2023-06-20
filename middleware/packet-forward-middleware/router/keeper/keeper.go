@@ -6,9 +6,11 @@ import (
 	"strings"
 	"time"
 
-	errorsmod "cosmossdk.io/errors"
 	"github.com/armon/go-metrics"
-	"github.com/cometbft/cometbft/libs/log"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+
+	errorsmod "cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -16,7 +18,9 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+
+	"github.com/cometbft/cometbft/libs/log"
+
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
