@@ -1,9 +1,10 @@
 package types
 
 import (
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // ModuleCdc references the global interchain queries module codec. Note, the codec

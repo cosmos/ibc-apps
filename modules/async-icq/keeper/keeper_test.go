@@ -3,10 +3,10 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/cosmos/ibc-apps/modules/async-icq/v4/testing/simapp"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
+	"github.com/stretchr/testify/suite"
+
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v4/testing"
 )

@@ -3,9 +3,9 @@ package types_test
 import (
 	"testing"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
 	ibctesting "github.com/cosmos/ibc-go/v4/testing"
 )
 

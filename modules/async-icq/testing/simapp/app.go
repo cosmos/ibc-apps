@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v4"
+	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v4/keeper"
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
@@ -15,6 +18,9 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+
+	// unnamed import of statik for swagger UI support
+	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -39,13 +45,15 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
@@ -82,9 +90,7 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v4"
-	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v4/keeper"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
+
 	ibc "github.com/cosmos/ibc-go/v4/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v4/modules/core/02-client"
 	ibcclientclient "github.com/cosmos/ibc-go/v4/modules/core/02-client/client"
@@ -95,13 +101,6 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v4/testing"
 	ibcmock "github.com/cosmos/ibc-go/v4/testing/mock"
 	simappparams "github.com/cosmos/ibc-go/v4/testing/simapp/params"
-
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
-
-	// unnamed import of statik for swagger UI support
-	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 )
 
 const appName = "SimApp"
