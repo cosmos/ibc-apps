@@ -1,13 +1,13 @@
 package keeper_test
 
 import (
+	"github.com/cosmos/ibc-apps/modules/async-icq/v4/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
+	abcitypes "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/cosmos/cosmos-sdk/types/query"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	abcitypes "github.com/tendermint/tendermint/abci/types"
-
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
 	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v4/testing"
