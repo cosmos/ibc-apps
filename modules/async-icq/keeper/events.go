@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 )
 

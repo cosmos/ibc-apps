@@ -3,12 +3,14 @@ package icq
 import (
 	"strings"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v6/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
+
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 	ibcexported "github.com/cosmos/ibc-go/v6/modules/core/exported"
