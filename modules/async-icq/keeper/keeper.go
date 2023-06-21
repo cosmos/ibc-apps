@@ -3,15 +3,16 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
+	"github.com/tendermint/tendermint/libs/log"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
 	host "github.com/cosmos/ibc-go/v5/modules/core/24-host"
 )
 

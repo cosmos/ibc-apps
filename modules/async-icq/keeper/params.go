@@ -1,9 +1,9 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // IsHostEnabled retrieves the host enabled boolean from the paramstore.

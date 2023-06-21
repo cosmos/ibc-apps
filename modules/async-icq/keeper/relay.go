@@ -1,13 +1,14 @@
 package keeper
 
 import (
+	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-
-	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
 	channeltypes "github.com/cosmos/ibc-go/v5/modules/core/04-channel/types"
 )
 
