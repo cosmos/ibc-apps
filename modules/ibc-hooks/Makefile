@@ -17,3 +17,21 @@ optimize-workspace:
 		cosmwasm/workspace-optimizer:0.12.13
 
 .PHONY: optimize-workspace
+
+
+###############################################################################
+###                                Linting                                  ###
+###############################################################################
+
+golangci_lint_cmd=golangci-lint
+golangci_version=v1.52.2
+
+lint:
+	@echo "--> Running linter"
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
+	@./scripts/go-lint-all.bash --timeout=15m
+
+lint-fix:
+	@echo "--> Running linter"
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
+	@./scripts/go-lint-all.bash --fix
