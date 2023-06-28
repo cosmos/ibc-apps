@@ -9,6 +9,7 @@ import (
 
 	"github.com/cometbft/cometbft/libs/log"
 
+	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
@@ -18,6 +19,7 @@ type Keeper struct {
 	storeKey storetypes.StoreKey
 
 	StakingKeeper types.StakingKeeper
+	ICS4Wrapper   porttypes.ICS4Wrapper
 }
 
 // NewKeeper creates a new forward Keeper instance
@@ -25,12 +27,14 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	key storetypes.StoreKey,
 	stakingKeeper types.StakingKeeper,
+	ics4wrapper porttypes.ICS4Wrapper,
 ) *Keeper {
 
 	return &Keeper{
 		cdc:           cdc,
 		storeKey:      key,
 		StakingKeeper: stakingKeeper,
+		ICS4Wrapper:   ics4wrapper,
 	}
 }
 

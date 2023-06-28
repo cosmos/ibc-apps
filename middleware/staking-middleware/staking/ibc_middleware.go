@@ -1,14 +1,17 @@
 package router
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/ibc-apps/middleware/staking-middleware/v7/staking/keeper"
 	"github.com/cosmos/ibc-apps/middleware/staking-middleware/v7/staking/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -135,6 +138,20 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
+	_, sbz, err := bech32.DecodeAndConvert(data.Sender)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
+	_, rbz, err := bech32.DecodeAndConvert(data.Receiver)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
+	if !bytes.Equal(sbz, rbz) {
+		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("staking middleware only staking from the same address as was sent"))
+	}
+
 	im.keeper.Logger(ctx).Debug("stakingMiddleWare OnRecvPacket",
 		"sequence", packet.Sequence,
 		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
@@ -143,8 +160,8 @@ func (im IBCMiddleware) OnRecvPacket(
 	)
 
 	d := make(map[string]interface{})
-	err := json.Unmarshal([]byte(data.Memo), &d)
-	if err != nil || d["stake"] == nil {
+
+	if err = json.Unmarshal([]byte(data.Memo), &d); err != nil || d["stake"] == nil {
 		// not a packet that should be staked
 		im.keeper.Logger(ctx).Debug("stakingMiddleware OnRecvPacket staking metadata does not exist")
 		return im.app.OnRecvPacket(ctx, packet, relayer)
@@ -155,16 +172,33 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("stakingMiddleware error parsing staking metadata, %s", err))
 	}
 
-	// get the denom for this chain out of the transfer packet
-	// I don't think the one in the packet is right. some key error conditions here
-
-	metadata := m.Stake
-
-	if err := metadata.Validate(); err != nil {
+	// validate middleware args
+	if err := m.Stake.Validate(); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	validator, found := im.keeper.StakingKeeper.GetValidator(ctx, metadata.ValAddr())
+	// if the denom sent isn't the bond denom for the chain then do this
+	bondDenom := im.keeper.StakingKeeper.BondDenom(ctx)
+	if getDenomForThisChain(packet.DestinationPort, packet.DestinationChannel, packet.SourcePort, packet.SourceChannel, data.Denom) != bondDenom {
+		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("invalid coin denomination: got %s, expected %s", data.Denom, bondDenom))
+	}
+
+	// ensure that stake amount isn't greater than amount sent
+	packetAmount, _ := math.NewIntFromString(data.Amount)
+	stakeAmount := m.Stake.AmountInt()
+	if stakeAmount.GT(packetAmount) {
+		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("stake amount (%s) greater than amount sent over (%s)", m.Stake.StakeAmount, data.Amount))
+	}
+
+	// special case 0 amount to mean whole packet
+	var delegationAmount math.Int
+	if stakeAmount.IsZero() {
+		delegationAmount = packetAmount
+	} else {
+		delegationAmount = stakeAmount
+	}
+	// make sure that the validator exists on this chain
+	validator, found := im.keeper.StakingKeeper.GetValidator(ctx, m.Stake.ValAddr())
 	if !found {
 		return channeltypes.NewErrorAcknowledgement(stakingTypes.ErrNoValidatorFound)
 	}
@@ -174,45 +208,28 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("stakingMiddleware invalid address, %s", err))
 	}
 
-	bondDenom := im.keeper.StakingKeeper.BondDenom(ctx)
-	if data.Denom != bondDenom {
-		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("invalid coin denomination: got %s, expected %s", data.Denom, bondDenom))
-
+	ack := im.app.OnRecvPacket(ctx, packet, relayer)
+	if !ack.Success() {
+		return ack
 	}
 
-	// TODO: we might need to get the the tokens out of the bank module here first then delegate them. that would be harder
-
-	// NOTE: source funds are always unbonded
-	// NOTE: log the amount staked amount to consume the var
-	_, err = im.keeper.StakingKeeper.Delegate(ctx, delegatorAddress, metadata.AmountInt(), stakingTypes.Unbonded, validator, true)
+	newShares, err := im.keeper.StakingKeeper.Delegate(ctx, delegatorAddress, delegationAmount, stakingTypes.Unbonded, validator, true)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("error bonding tokens: %w", err))
 	}
 
-	// ctx.EventManager().EmitEvents(sdk.Events{
-	// 	sdk.NewEvent(
-	// 		types.EventTypeDelegate,
-	// 		sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
-	// 		sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.String()),
-	// 		sdk.NewAttribute(types.AttributeKeyNewShares, newShares.String()),
-	// 	),
-	// })
-
-	// check that token is the staking token for this chain, error if it isn't
-	// denom := "stakingDenom"
-
-	// amountInt, ok := sdk.NewIntFromString(metadata.StakeAmount)
-	// if !ok {
-	// 	return channeltypes.NewErrorAcknowledgement(fmt.Errorf("error parsing amount for staking: %s", data.Amount))
-	// }
-
-	// check that amount is less than users balance
-
-	// stake the tokens to the reciever's account
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			stakingTypes.EventTypeDelegate,
+			sdk.NewAttribute(stakingTypes.AttributeKeyValidator, m.Stake.ValidatorAddress),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, m.Stake.StakeAmount),
+			sdk.NewAttribute(stakingTypes.AttributeKeyNewShares, newShares.String()),
+		),
+	})
 
 	// returning nil ack will prevent WriteAcknowledgement from occurring for forwarded packet.
 	// This is intentional so that the acknowledgement will be written later based on the ack/timeout of the forwarded packet.
-	return nil
+	return ack
 }
 
 // OnAcknowledgementPacket implements the IBCModule interface.
@@ -232,6 +249,14 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 	return im.app.OnTimeoutPacket(ctx, packet, relayer)
 }
 
+func (im IBCMiddleware) GetAppVersion(
+	ctx sdk.Context,
+	portID,
+	channelID string,
+) (string, bool) {
+	return im.keeper.ICS4Wrapper.GetAppVersion(ctx, portID, channelID)
+}
+
 // SendPacket implements the ICS4 Wrapper interface.
 func (im IBCMiddleware) SendPacket(
 	ctx sdk.Context,
@@ -241,7 +266,7 @@ func (im IBCMiddleware) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
-	return im.keeper.TransferKeeper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	return im.keeper.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
 
 // WriteAcknowledgement implements the ICS4 Wrapper interface.
@@ -251,13 +276,5 @@ func (im IBCMiddleware) WriteAcknowledgement(
 	packet ibcexported.PacketI,
 	ack ibcexported.Acknowledgement,
 ) error {
-	return im.keeper.TransferKeeper.WriteAcknowledgement(ctx, chanCap, packet, ack)
-}
-
-func (im IBCMiddleware) GetAppVersion(
-	ctx sdk.Context,
-	portID,
-	channelID string,
-) (string, bool) {
-	return im.keeper.TransferKeeper.GetAppVersion(ctx, portID, channelID)
+	return im.keeper.ICS4Wrapper.WriteAcknowledgement(ctx, chanCap, packet, ack)
 }

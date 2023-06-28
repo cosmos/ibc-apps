@@ -3,8 +3,8 @@ package router
 import (
 	"encoding/json"
 
-	"github.com/cosmos/ibc-apps/middleware/staking-middleware/v7/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/staking-middleware/v7/router/types"
+	"github.com/cosmos/ibc-apps/middleware/staking-middleware/v7/staking/keeper"
+	"github.com/cosmos/ibc-apps/middleware/staking-middleware/v7/staking/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -41,9 +41,7 @@ func (AppModuleBasic) RegisterInterfaces(_ codectypes.InterfaceRegistry) {}
 
 // DefaultGenesis returns default genesis state as raw bytes for the ibc
 // router module.
-func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(types.DefaultGenesisState())
-}
+func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage { return nil }
 
 // ValidateGenesis performs genesis state validation for the router module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
@@ -81,9 +79,7 @@ func (AppModule) QuerierRoute() string {
 }
 
 // RegisterServices registers module services.
-func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-}
+func (am AppModule) RegisterServices(cfg module.Configurator) {}
 
 // InitGenesis performs genesis initialization for the ibc-staking module. It returns
 // no validator updates.

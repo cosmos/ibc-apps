@@ -36,7 +36,7 @@ func (sm *StakeMetadata) ValAddr() sdk.ValAddress {
 	return val
 }
 
-func (sm *StakeMetadata) AmountInt() sdk.Int {
+func (sm *StakeMetadata) AmountInt() math.Int {
 	out, _ := math.NewIntFromString(sm.StakeAmount)
 	return out
 }
