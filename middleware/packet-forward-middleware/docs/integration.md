@@ -3,6 +3,13 @@ This document provides instructions on integrating and configuring the Packet Fo
 existing chain implementation. This document is _NOT_ a guide on developing with the Cosmos SDK or ibc-go and makes
 the assumption that you have some existing codebase for your chain with IBC already enabled.
 
+The integration steps include the following:
+1. Import the PFM, initialize the PFM Module & Keeper, initialize the store keys and module params, and initialize the Begin/End Block logic and InitGenesis order.
+2. Configure the IBC application stack including the transfer module.
+3. Configuration of additional options such as timeout period, number of retries on timeout, refund timeout period, and fee percentage.
+
+Integration of the PFM should take approximately 20 minutes.
+
 ## Example integration of the Packet Forward Middleware
 
 ```go
@@ -149,8 +156,17 @@ ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
 
 ## Configurable options in the Packet Forward Middleware
 
-Provide description of these configurable params
+The Packet Forward Middleware has several configurable options available when initializing the IBC application stack. 
+You can see these passed in as arguments to `packetforward.NewIBCMiddleware` and they include the number of retries that
+will be performed on a forward timeout, the timeout period that will be used for a forward, and the timeout period that
+will be used for performing refunds in the case that a forward is taking too long.
 
-- Retries
-- Timeouts
-- Fee distribution to community pool
+Additionally, there is a fee percentage parameter that can be set in `InitGenesis`, this is an optional parameter that
+can be used to take a fee from each forwarded packet which will then be distributed to the community pool. In the 
+`OnRecvPacket` callback `ForwardTransferPacket` is invoked which will attempt to subtract a fee from the forwarded
+packet amount if the fee percentage is non-zero.
+
+- Retries On Timeout - how many times will a forward be re-attempted in the case of a timeout.
+- Timeout Period - how long can a forward be in progress before giving up.
+- Refund Timeout - how long can a forward be in progress before issuing a refund back to the original source chain.
+- Fee Percentage - % of the forwarded packet amount which will be subtracted and distributed to the community pool.
