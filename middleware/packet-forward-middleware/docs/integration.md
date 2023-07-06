@@ -108,7 +108,7 @@ app.moduleManager.SetOrderEndBlockers(
 // Add packet forward middleware to init genesis logic
 app.moduleManager.SetOrderInitGenesis(
     ...
-    ibcfeetypes.ModuleName,
+    packetforwardtypes.ModuleName,
     ...
 )
 
