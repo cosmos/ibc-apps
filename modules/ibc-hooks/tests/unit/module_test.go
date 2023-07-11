@@ -102,8 +102,14 @@ func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
 	escrowAddress := transfertypes.GetEscrowAddress(recvPacket.GetDestPort(), recvPacket.GetDestChannel())
-	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	testEscrowAmount := sdk.NewInt64Coin("stake", 2)
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(testEscrowAmount))
 	suite.NoError(err)
+
+	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
+	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
+	}
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
@@ -158,8 +164,14 @@ func (suite *HooksTestSuite) TestOnRecvPacketCounterContract() {
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
 	escrowAddress := transfertypes.GetEscrowAddress(recvPacket.GetDestPort(), recvPacket.GetDestChannel())
-	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	testEscrowAmount := sdk.NewInt64Coin("stake", 2)
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(testEscrowAmount))
 	suite.NoError(err)
+
+	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
+	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
+	}
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
@@ -230,8 +242,14 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
 	escrowAddress := transfertypes.GetEscrowAddress(callbackPacket.GetDestPort(), callbackPacket.GetDestChannel())
-	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	testEscrowAmount := sdk.NewInt64Coin("stake", 2)
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(testEscrowAmount))
 	suite.NoError(err)
+
+	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
+	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
+	}
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
@@ -323,8 +341,14 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
 	escrowAddress := transfertypes.GetEscrowAddress(callbackPacket.GetDestPort(), callbackPacket.GetDestChannel())
-	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(sdk.NewInt64Coin("stake", 2)))
+	testEscrowAmount := sdk.NewInt64Coin("stake", 2)
+	err := suite.App.BankKeeper.SendCoins(suite.Ctx, suite.TestAddress.GetAddress(), escrowAddress, sdk.NewCoins(testEscrowAmount))
 	suite.NoError(err)
+
+	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
+	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
+	}
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
@@ -396,4 +420,11 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	)
 	suite.NoError(err)
 	suite.Equal(`{"count":10}`, string(count))
+}
+
+// TransferKeeperWithTotalEscrowTracking defines an interface to check for existing methods
+// in TransferKeeper.
+type TransferKeeperWithTotalEscrowTracking interface {
+	SetTotalEscrowForDenom(ctx sdk.Context, coin sdk.Coin)
+	GetTotalEscrowForDenom(ctx sdk.Context, denom string) sdk.Coin
 }
