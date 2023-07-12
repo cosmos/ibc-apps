@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package ibc_hooks.v7;
+
+option go_package = "github.com/cosmos/ibc-apps/modules/ibc_hooks/v7/types";
+
+import "gogoproto/gogo.proto";
+import "ibc_hooks/v7/ibc_hooks.proto";
+
+// GenesisState defines the interchain query genesis state
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}

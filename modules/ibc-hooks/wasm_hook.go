@@ -55,7 +55,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 	}
 
 	// Validate the memo
-	isWasmRouted, contractAddr, msgBytes, err := ValidateAndParseMemo(data.GetMemo(), data.Receiver)
+	isWasmRouted, contractAddr, msgBytes, wasm, err := ValidateAndParseMemo(data.GetMemo(), data.Receiver)
 	if !isWasmRouted {
 		return im.App.OnRecvPacket(ctx, packet, relayer)
 	}
@@ -69,7 +69,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 	// Calculate the receiver / contract caller based on the packet's channel and sender
 	channel := packet.GetDestChannel()
 	sender := data.GetSender()
-	senderBech32, err := keeper.DeriveIntermediateSender(channel, sender, h.bech32PrefixAccAddr)
+	senderBech32, err := h.ibcHooksKeeper.DeriveIntermediateSender(ctx, channel, sender, h.bech32PrefixAccAddr, wasm)
 	if err != nil {
 		return NewEmitErrorAcknowledgement(ctx, types.ErrBadSender, fmt.Sprintf("cannot convert sender address %s/%s to bech32: %s", channel, sender, err.Error()))
 	}
@@ -167,10 +167,16 @@ func jsonStringHasKey(memo, key string) (found bool, jsonObject map[string]inter
 	return true, jsonObject
 }
 
-func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, contractAddr sdk.AccAddress, msgBytes []byte, err error) {
+func ValidateAndParseMemo(memo string, receiver string) (
+	isWasmRouted bool,
+	contractAddr sdk.AccAddress,
+	msgBytes []byte,
+	wasm map[string]interface{},
+	err error,
+) {
 	isWasmRouted, metadata := jsonStringHasKey(memo, "wasm")
 	if !isWasmRouted {
-		return isWasmRouted, sdk.AccAddress{}, nil, nil
+		return isWasmRouted, sdk.AccAddress{}, nil, nil, nil
 	}
 
 	wasmRaw := metadata["wasm"]
@@ -178,7 +184,7 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 	// Make sure the wasm key is a map. If it isn't, ignore this packet
 	wasm, ok := wasmRaw.(map[string]interface{})
 	if !ok {
-		return isWasmRouted, sdk.AccAddress{}, nil,
+		return isWasmRouted, sdk.AccAddress{}, nil, nil,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, "wasm metadata is not a valid JSON map object")
 	}
 
@@ -186,32 +192,32 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 	contract, ok := wasm["contract"].(string)
 	if !ok {
 		// The tokens will be returned
-		return isWasmRouted, sdk.AccAddress{}, nil,
+		return isWasmRouted, sdk.AccAddress{}, nil, wasm,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `Could not find key wasm["contract"]`)
 	}
 
 	contractAddr, err = sdk.AccAddressFromBech32(contract)
 	if err != nil {
-		return isWasmRouted, sdk.AccAddress{}, nil,
+		return isWasmRouted, sdk.AccAddress{}, nil, wasm,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `wasm["contract"] is not a valid bech32 address`)
 	}
 
 	// The contract and the receiver should be the same for the packet to be valid
 	if contract != receiver {
-		return isWasmRouted, sdk.AccAddress{}, nil,
+		return isWasmRouted, sdk.AccAddress{}, nil, wasm,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `wasm["contract"] should be the same as the receiver of the packet`)
 	}
 
 	// Ensure the message key is provided
 	if wasm["msg"] == nil {
-		return isWasmRouted, sdk.AccAddress{}, nil,
+		return isWasmRouted, sdk.AccAddress{}, nil, wasm,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `Could not find key wasm["msg"]`)
 	}
 
 	// Make sure the msg key is a map. If it isn't, return an error
 	_, ok = wasm["msg"].(map[string]interface{})
 	if !ok {
-		return isWasmRouted, sdk.AccAddress{}, nil,
+		return isWasmRouted, sdk.AccAddress{}, nil, wasm,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `wasm["msg"] is not a map object`)
 	}
 
@@ -219,11 +225,11 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 	msgBytes, err = json.Marshal(wasm["msg"])
 	if err != nil {
 		// The tokens will be returned
-		return isWasmRouted, sdk.AccAddress{}, nil,
+		return isWasmRouted, sdk.AccAddress{}, nil, wasm,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, err.Error())
 	}
 
-	return isWasmRouted, contractAddr, msgBytes, nil
+	return isWasmRouted, contractAddr, msgBytes, wasm, nil
 }
 
 func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight ibcclienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {

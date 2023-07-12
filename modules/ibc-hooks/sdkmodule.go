@@ -2,6 +2,7 @@ package ibc_hooks
 
 import (
 	"encoding/json"
+	"fmt"
 
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
@@ -13,8 +14,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/client/cli"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
 	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 
+	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -45,13 +48,17 @@ func (b AppModuleBasic) RegisterInterfaces(_ cdctypes.InterfaceRegistry) {}
 // DefaultGenesis returns default genesis state as raw bytes for the
 // module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	emptyString := "{}"
-	return []byte(emptyString)
+	return cdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
-// ValidateGenesis performs genesis state validation for the ibc-hooks module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
-	return nil
+// ValidateGenesis performs genesis state validation for the distribution module.
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config sdkclient.TxEncodingConfig, bz json.RawMessage) error {
+	var data types.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+
+	return types.ValidateGenesis(&data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the ibc-hooks module.
@@ -73,7 +80,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 // AppModule implements an application module for the ibc-hooks module.
 type AppModule struct {
 	AppModuleBasic
-
+	keeper     keeper.Keeper
 	authKeeper authkeeper.AccountKeeper
 }
 
@@ -101,11 +108,14 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 // InitGenesis performs genesis initialization for the ibc-hooks module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
+	var genesisState types.GenesisState
+	cdc.MustUnmarshalJSON(data, &genesisState)
 	return []abci.ValidatorUpdate{}
 }
 
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	return json.RawMessage([]byte("{}"))
+	gs := am.keeper.ExportGenesis(ctx)
+	return cdc.MustMarshalJSON(gs)
 }
 
 // BeginBlock returns the begin blocker for the ibc-hooks module.

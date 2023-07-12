@@ -641,7 +641,9 @@ func NewSimApp(
 	// 3. 'distr'
 	app.keys[ibchookstypes.StoreKey] = storetypes.NewKVStoreKey(ibchookstypes.StoreKey)
 	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
+		app.cdc,
 		app.keys[ibchookstypes.StoreKey],
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	ics20WasmHooks := ibchooks.NewWasmHooks(&app.IBCHooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
 	hooksICS4Wrapper := ibchooks.NewICS4Middleware(

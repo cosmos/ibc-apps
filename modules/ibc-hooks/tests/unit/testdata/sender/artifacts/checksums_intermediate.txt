@@ -1,0 +1,1 @@
+eb0144c15f50aa0089c96d520425e3c817e92f4a565ee163fb727b26e696c636  ./target/wasm32-unknown-unknown/release/sender.wasm

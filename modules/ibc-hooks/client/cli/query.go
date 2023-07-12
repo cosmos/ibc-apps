@@ -62,7 +62,7 @@ $ %s query ibc-hooks wasm-hooks-sender channel-42 juno12smx2wdlyttvyzvzg54y2vnqw
 			originalSender := args[1]
 			// ToDo: Make this flexible as an arg
 			prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
-			senderBech32, err := keeper.DeriveIntermediateSender(channelID, originalSender, prefix)
+			senderBech32, err := keeper.DeriveDefaultIntermediateSender(channelID, originalSender, prefix)
 			if err != nil {
 				return err
 			}

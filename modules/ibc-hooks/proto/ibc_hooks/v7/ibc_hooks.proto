@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ibc_hooks.v7;
+
+option go_package = "github.com/cosmos/ibc-apps/modules/ibc_hooks/v7/types";
+
+import "gogoproto/gogo.proto";
+
+// Params defines the set of on-chain interchain query parameters.
+message Params {
+  // optionally set axelar account & channel data to pass origin source_address to info.sender
+  Axelar axelar = 1 [(gogoproto.moretags) = "yaml:\"axelar\""];
+}
+
+message Axelar {
+  // the canonical GMP account on the Axelar chain
+  string gmp_account = 1 [(gogoproto.moretags) = "yaml:\"gmp_account\""];
+  // the channel ID that the chain is connected via
+  string channel_id = 2 [(gogoproto.moretags) = "yaml:\"channel_id\""];
+}
