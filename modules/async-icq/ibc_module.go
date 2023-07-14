@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
@@ -154,7 +155,8 @@ func (im IBCModule) OnChanCloseInit(
 	_ string,
 	_ string,
 ) error {
-	return nil
+	// Ensure channels cannot be closed by users
+	return errors.Wrap(sdkerrors.ErrInvalidRequest, "user cannot close channel")
 }
 
 // OnChanCloseConfirm implements the IBCModule interface
