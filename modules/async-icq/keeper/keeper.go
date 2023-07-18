@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	"github.com/cometbft/cometbft/libs/log"
+
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
 // Keeper defines the IBC interchain query host keeper
@@ -56,7 +59,7 @@ func NewKeeper(
 
 // Logger returns the application logger, scoped to the associated module
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s-%s", host.ModuleName, types.ModuleName))
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s-%s", ibcexported.ModuleName, types.ModuleName))
 }
 
 // BindPort stores the provided portID and binds to it, returning the associated capability

@@ -3,15 +3,18 @@ package icq
 import (
 	"strings"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	ibcexported "github.com/cosmos/ibc-go/v4/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
 // IBCModule implements the ICS26 interface for interchain query host chains
@@ -152,7 +155,8 @@ func (im IBCModule) OnChanCloseInit(
 	_ string,
 	_ string,
 ) error {
-	return nil
+	// Ensure channels cannot be closed by users
+	return errors.Wrap(sdkerrors.ErrInvalidRequest, "user cannot close channel")
 }
 
 // OnChanCloseConfirm implements the IBCModule interface

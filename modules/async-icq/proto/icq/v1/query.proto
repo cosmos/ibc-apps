@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package icq.v1;
 
-option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v4/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v7/types";
 
 import "google/api/annotations.proto";
 import "icq/v1/icq.proto";

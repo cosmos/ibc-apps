@@ -3,20 +3,23 @@ package icq_test
 import (
 	"testing"
 
+	"github.com/cosmos/gogoproto/proto"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/stretchr/testify/suite"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v4"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	ibctesting "github.com/cosmos/ibc-go/v4/testing"
-	"github.com/gogo/protobuf/proto"
-	"github.com/stretchr/testify/suite"
-	abcitypes "github.com/tendermint/tendermint/abci/types"
-	tmprotostate "github.com/tendermint/tendermint/proto/tendermint/state"
-	tmstate "github.com/tendermint/tendermint/state"
+
+	abcitypes "github.com/cometbft/cometbft/abci/types"
+	tmprotostate "github.com/cometbft/cometbft/proto/tendermint/state"
+	tmstate "github.com/cometbft/cometbft/state"
+
+	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 )
 
 var (
@@ -25,8 +28,7 @@ var (
 
 	TestQueryPath = "/store/params/key"
 	TestQueryData = "icqhost/HostEnabled"
-
-	version = "version"
+	version       = "version"
 )
 
 type InterchainQueriesTestSuite struct {
@@ -98,29 +100,29 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 		},
 		{
 			"empty version string", func() {
-				channel.Version = ""
-			}, true,
+			channel.Version = ""
+		}, true,
 		},
 		{
 			"invalid order - ORDERED", func() {
-				channel.Ordering = channeltypes.ORDERED
-			}, false,
+			channel.Ordering = channeltypes.ORDERED
+		}, false,
 		},
 		{
 			"invalid port ID", func() {
-				path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
-			}, false,
+			path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
+		}, false,
 		},
 		{
 			"invalid version", func() {
-				channel.Version = version
-			}, false,
+			channel.Version = version
+		}, false,
 		},
 		{
 			"capability already claimed", func() {
-				err := simapp.GetSimApp(suite.chainA).ScopedICQKeeper.ClaimCapability(suite.chainA.GetContext(), chanCap, host.ChannelCapabilityPath(path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID))
-				suite.Require().NoError(err)
-			}, false,
+			err := simapp.GetSimApp(suite.chainA).ScopedICQKeeper.ClaimCapability(suite.chainA.GetContext(), chanCap, host.ChannelCapabilityPath(path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID))
+			suite.Require().NoError(err)
+		}, false,
 		},
 	}
 
@@ -183,18 +185,18 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 		},
 		{
 			"invalid order - ORDERED", func() {
-				channel.Ordering = channeltypes.ORDERED
-			}, false,
+			channel.Ordering = channeltypes.ORDERED
+		}, false,
 		},
 		{
 			"invalid port ID", func() {
-				path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
-			}, false,
+			path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
+		}, false,
 		},
 		{
 			"invalid counterparty version", func() {
-				counterpartyVersion = version
-			}, false,
+			counterpartyVersion = version
+		}, false,
 		},
 	}
 
@@ -257,8 +259,8 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenAck() {
 		},
 		{
 			"invalid counterparty version", func() {
-				counterpartyVersion = version
-			}, false,
+			counterpartyVersion = version
+		}, false,
 		},
 	}
 
@@ -311,7 +313,7 @@ func (suite *InterchainQueriesTestSuite) TestOnAcknowledgementPacket() {
 
 			path := NewICQPath(suite.chainA, suite.chainB)
 			suite.coordinator.SetupConnections(path)
-
+ 
 			err := SetupICQPath(path)
 			suite.Require().NoError(err)
 

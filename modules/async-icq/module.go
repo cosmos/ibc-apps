@@ -5,19 +5,21 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
-	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	porttypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
+	abci "github.com/cometbft/cometbft/abci/types"
+
+	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 )
 
 var (
@@ -108,11 +110,6 @@ func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
 // RegisterInvariants implements the AppModule interface
 func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// Route implements the AppModule interface
-func (AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, nil)
-}
-
 // NewHandler implements the AppModule interface
 func (AppModule) NewHandler() sdk.Handler {
 	return nil
@@ -121,11 +118,6 @@ func (AppModule) NewHandler() sdk.Handler {
 // QuerierRoute implements the AppModule interface
 func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
-}
-
-// LegacyQuerierHandler implements the AppModule interface
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return nil
 }
 
 // RegisterServices registers module services

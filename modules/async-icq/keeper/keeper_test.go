@@ -3,12 +3,12 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v4/testing"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 )
 
 var TestPort = "icq-test"
@@ -21,14 +21,16 @@ type KeeperTestSuite struct {
 	// testing chains used for convenience and readability
 	chainA *ibctesting.TestChain
 	chainB *ibctesting.TestChain
+	chainC *ibctesting.TestChain
 }
 
 func (suite *KeeperTestSuite) SetupTest() {
 	ibctesting.DefaultTestingAppInit = simapp.SetupTestingApp
 
-	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 2)
+	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 3)
 	suite.chainA = suite.coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.chainB = suite.coordinator.GetChain(ibctesting.GetChainID(2))
+	suite.chainC = suite.coordinator.GetChain(ibctesting.GetChainID(3))
 }
 
 func NewICQPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {

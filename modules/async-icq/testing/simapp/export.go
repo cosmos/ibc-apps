@@ -9,13 +9,16 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
 // file.
 func (app *SimApp) ExportAppStateAndValidators(
-	forZeroHeight bool, jailAllowedAddrs []string,
+	forZeroHeight bool,
+	jailAllowedAddrs []string,
+	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	// as if they could withdraw from the start of the next block
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
@@ -27,6 +30,8 @@ func (app *SimApp) ExportAppStateAndValidators(
 		height = 0
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
+
+	app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
 
 	genState := app.mm.ExportGenesis(ctx, app.appCodec)
 	appState, err := json.MarshalIndent(genState, "", "  ")
@@ -45,8 +50,7 @@ func (app *SimApp) ExportAppStateAndValidators(
 
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature which will be deprecated
-//
-//	in favour of export at a block height
+// in favour of export at a block height
 func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
 	applyAllowedAddrs := false
 
@@ -109,8 +113,8 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		app.DistrKeeper.SetFeePool(ctx, feePool)
 
-		app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
-		return false
+		err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
+		return err != nil
 	})
 
 	// reinitialize all delegations
@@ -123,8 +127,14 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 		if err != nil {
 			panic(err)
 		}
-		app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr)
-		app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr)
+		err = app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr)
+		if err != nil {
+			panic(err)
+		}
+		err = app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// reset context height

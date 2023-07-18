@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	"github.com/cosmos/ibc-go/v4/modules/core/exported"
+	"github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
 // EmitWriteErrorAcknowledgementEvent emits an event signalling an error acknowledgement and including the error details

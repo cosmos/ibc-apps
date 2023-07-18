@@ -1,0 +1,27 @@
+# If labeled: "BACKPORT", mergify will cherry-pick PR into all maintained branches
+pull_request_rules:
+  - name: backport to maintained branches
+    conditions:
+      - base~=^(main|release/v4|release/v5|release/v6)$
+      - label=BACKPORT
+    actions:
+      backport:
+        branches:
+          - main
+          - release/v4
+          - release/v5
+          - release/v6
+        assignees: 
+            - "{{ author }}"
+        labels:
+          - automerge
+          - backported
+        title: "`[BP: {{ destination_branch }} <- #{{ number }}]` {{ title }}"
+
+  - name: automerge backported PR's for maintained branches
+    conditions:
+      - label=automerge
+      - base~=^(release/v4|release/v5|release/v6)$
+    actions:
+      merge:
+        method: squash

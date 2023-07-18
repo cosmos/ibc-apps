@@ -55,10 +55,31 @@ If you'd like to include software in this repo, please see [contributing](../ibc
 
 An [example IBC app](./examples/hello-world/)
 
+## Maintained Branches
+
+|                          **Branch Name**                         | **IBC-Go** |
+|:----------------------------------------------------------------:|:----------:|
+|            [main](https://github.com/cosmos/ibc-apps)            |     v7     |
+| [release/v6](https://github.com/cosmos/ibc-apps/tree/release/v6) |     v6     |
+| [release/v5](https://github.com/cosmos/ibc-apps/tree/release/v5) |     v5     |
+| [release/v4](https://github.com/cosmos/ibc-apps/tree/release/v4) |     v4     |
 
 ## List of Apps
 
 | Name | Type | Example | Stakeholders | Description |
 | ---- | ---- | ------- | ------------ | ----------- |  
 | [Async Interchain Query](./modules/async-icq/) | Module | Link | [Strangelove](https://github.com/strangelove-ventures/) | Interchain Queries enable blockchains to query the state of an account on another chain without the need for ICA auth. |
-| [Packet Forward Middleware](./middleware/packet-forward-middleware) | Middleware | Link | [Strangelove](https://github.com/strangelove-ventures/) | Middleware for forwarding IBC packets. | 
+| [IBC Hooks](./modules/ibc-hooks/) | Module | [Link](./modules/ibc-hooks/simapp/app.go) | [Osmosis](https://github.com/osmosis-labs) | The IBC hooks module is an IBC middleware that enables ICS-20 token transfers to initiate contract calls. |
+| [Packet Forward Middleware](./middleware/packet-forward-middleware) | Middleware | Link | [Strangelove](https://github.com/strangelove-ventures/) | Middleware for forwarding IBC packets. |
+
+## Ecosystem Apps
+
+Modules and middleware developed by other awesome teams in the ecosystem:
+
+| Name | Type | Stakeholders | Description |
+| ---- | ---- | ------------ | ----------- |  
+| [Interchain KV Queries](https://github.com/ingenuity-build/interchain-queries) | Module | [Ingenuity](https://github.com/ingenuity-build) | An application that enables on chain querying of another IBC enabled chains state without the need for the chain being queried to implement the application. |
+| [query](https://github.com/defund-labs/defund/tree/main/x/query) | Module | [Defund Labs](https://github.com/defund-labs) | An application that enables on chain querying of another IBC enabled chains state without the need for the chain being queried to implement the application. Similar to the interchain-queries application in the row above but without callbacks. |
+| [NFT Transfer (ICS 721)](https://github.com/bianjieai/nft-transfer) | Module | [Bianjieai](https://github.com/bianjieai) | An application that enables cross chain NFT transfer. |
+| [recovery](https://github.com/evmos/evmos/tree/main/x/recovery) | Middleware | [Evmos](https://github.com/evmos) | Middleware enabling the recovery of tokens sent to unsupported addresses. |
+| [ibc-rate-limit](https://github.com/osmosis-labs/osmosis/tree/main/x/ibc-rate-limit) | Middleware | [Osmosis Labs](https://github.com/osmosis-labs) | Middleware that limits the in or out flow of an asset in a certain time period to minimise the risks of cross chain token transfers. This is implemented as a middleware wrapping ICS20 with the rate limiting logic implemented by cosmwasm contracts. |

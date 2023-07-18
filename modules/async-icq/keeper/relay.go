@@ -1,13 +1,16 @@
 package keeper
 
 import (
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v4/types"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	abci "github.com/cometbft/cometbft/abci/types"
+
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 )
 
 // OnRecvPacket handles a given interchain queries packet on a destination host chain.
