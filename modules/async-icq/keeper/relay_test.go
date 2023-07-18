@@ -1,10 +1,11 @@
 package keeper_test
 
 import (
+	"fmt"
+
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -265,6 +266,6 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 	// and this one should panic
 	suite.Assert().Panics(func() {
 		ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
-		simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
+		_, _ = simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
 	}, "out of gas")
 }

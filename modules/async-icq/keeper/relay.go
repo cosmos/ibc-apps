@@ -58,7 +58,7 @@ func (k Keeper) executeQuery(ctx sdk.Context, reqs []abci.RequestQuery) ([]byte,
 		// Remove non-deterministic fields from response
 		resps[i] = abci.ResponseQuery{
 			// Codespace is not currently part of consensus, but it will probablyy be added in the future
-			//Codespace: resp.Codespace,
+			// Codespace: resp.Codespace,
 			Code:   resp.Code,
 			Index:  resp.Index,
 			Key:    resp.Key,

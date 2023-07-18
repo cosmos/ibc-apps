@@ -2,10 +2,9 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/baseapp"
-
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

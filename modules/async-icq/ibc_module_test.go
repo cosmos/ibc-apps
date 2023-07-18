@@ -100,29 +100,29 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 		},
 		{
 			"empty version string", func() {
-			channel.Version = ""
-		}, true,
+				channel.Version = ""
+			}, true,
 		},
 		{
 			"invalid order - ORDERED", func() {
-			channel.Ordering = channeltypes.ORDERED
-		}, false,
+				channel.Ordering = channeltypes.ORDERED
+			}, false,
 		},
 		{
 			"invalid port ID", func() {
-			path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
-		}, false,
+				path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
+			}, false,
 		},
 		{
 			"invalid version", func() {
-			channel.Version = version
-		}, false,
+				channel.Version = version
+			}, false,
 		},
 		{
 			"capability already claimed", func() {
-			err := simapp.GetSimApp(suite.chainA).ScopedICQKeeper.ClaimCapability(suite.chainA.GetContext(), chanCap, host.ChannelCapabilityPath(path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID))
-			suite.Require().NoError(err)
-		}, false,
+				err := simapp.GetSimApp(suite.chainA).ScopedICQKeeper.ClaimCapability(suite.chainA.GetContext(), chanCap, host.ChannelCapabilityPath(path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID))
+				suite.Require().NoError(err)
+			}, false,
 		},
 	}
 
@@ -185,18 +185,18 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 		},
 		{
 			"invalid order - ORDERED", func() {
-			channel.Ordering = channeltypes.ORDERED
-		}, false,
+				channel.Ordering = channeltypes.ORDERED
+			}, false,
 		},
 		{
 			"invalid port ID", func() {
-			path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
-		}, false,
+				path.EndpointA.ChannelConfig.PortID = ibctesting.MockPort
+			}, false,
 		},
 		{
 			"invalid counterparty version", func() {
-			counterpartyVersion = version
-		}, false,
+				counterpartyVersion = version
+			}, false,
 		},
 	}
 
@@ -259,8 +259,8 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenAck() {
 		},
 		{
 			"invalid counterparty version", func() {
-			counterpartyVersion = version
-		}, false,
+				counterpartyVersion = version
+			}, false,
 		},
 	}
 
@@ -313,7 +313,7 @@ func (suite *InterchainQueriesTestSuite) TestOnAcknowledgementPacket() {
 
 			path := NewICQPath(suite.chainA, suite.chainB)
 			suite.coordinator.SetupConnections(path)
- 
+
 			err := SetupICQPath(path)
 			suite.Require().NoError(err)
 
