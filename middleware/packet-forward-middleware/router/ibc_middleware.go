@@ -162,6 +162,12 @@ func (im IBCMiddleware) OnRecvPacket(
 		im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnRecvPacket forward metadata does not exist")
 		return im.app.OnRecvPacket(ctx, packet, relayer)
 	}
+	
+	forwarder := im.keeper.GetForwarderAddress(ctx)
+	if data.Receiver != forwarder.String() {
+		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("packetForwardMiddleware invalid receiver address, expected %s, got %s", forwarder, data.Receiver))
+	}
+
 	m := &types.PacketMetadata{}
 	err = json.Unmarshal([]byte(data.Memo), m)
 	if err != nil {

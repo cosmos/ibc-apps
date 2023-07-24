@@ -259,6 +259,8 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr)),
+
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
 			Return(acknowledgement),
 
@@ -326,6 +328,8 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr)),
+
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
 			Return(acknowledgement),
 
@@ -393,6 +397,8 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr)),
+
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
 			Return(acknowledgement),
 
@@ -504,6 +510,8 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr)),
+
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
 			Return(acknowledgement),
 
@@ -511,6 +519,8 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 			sdk.WrapSDKContext(ctx),
 			msgTransfer1,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
+
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr2)),
 
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2, senderAccAddr2).
 			Return(acknowledgement),
@@ -623,6 +633,8 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr)),
+
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
 			Return(acknowledgement),
 
@@ -630,6 +642,8 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 			sdk.WrapSDKContext(ctx),
 			msgTransfer1,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
+
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr2)),
 
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2, senderAccAddr2).
 			Return(acknowledgement),
@@ -661,4 +675,44 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 	// ack returned from chain C to chain B
 	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packet2, successAck, senderAccAddr)
 	require.NoError(t, err)
+}
+
+func TestOnRecvPacket_WrongHostAddr(t *testing.T) {
+	ctl := gomock.NewController(t)
+	defer ctl.Finish()
+	setup := test.NewTestSetup(t, ctl)
+	ctx := setup.Initializer.Ctx
+	cdc := setup.Initializer.Marshaler
+	forwardMiddleware := setup.ForwardMiddleware
+
+	// Test data
+	const (
+		hostAddr  = "cosmos1vzxkv3lxccnttr9rs0002s93sgw72h7ghukuhs"
+		hostAddr2 = "cosmos1q4p4gx889lfek5augdurrjclwtqvjhuntm6j4m"
+		destAddr  = "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k"
+		port      = "transfer"
+		channel   = "channel-0"
+	)
+	senderAccAddr := test.AccAddress()
+
+	packetOrig := transferPacket(t, hostAddr2, &types.PacketMetadata{
+		Forward: &types.ForwardMetadata{
+			Receiver: destAddr,
+			Port:     port,
+			Channel:  channel,
+		},
+	})
+
+	// Expected mocks
+	gomock.InOrder(
+		setup.Mocks.AuthKeeperMock.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.MustAccAddressFromBech32(hostAddr)),
+	)
+
+	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
+	require.False(t, ack.Success())
+
+	expectedAck := &channeltypes.Acknowledgement{}
+	err := cdc.UnmarshalJSON(ack.Acknowledgement(), expectedAck)
+	require.NoError(t, err)
+	require.Equal(t, "ABCI code: 1: error handling packet: see events for details", expectedAck.GetError())
 }

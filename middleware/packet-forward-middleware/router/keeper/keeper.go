@@ -54,6 +54,7 @@ type Keeper struct {
 	distrKeeper    types.DistributionKeeper
 	bankKeeper     types.BankKeeper
 	ics4Wrapper    porttypes.ICS4Wrapper
+	authKeeper     types.AuthKeeper
 }
 
 // NewKeeper creates a new forward Keeper instance
@@ -66,6 +67,7 @@ func NewKeeper(
 	distrKeeper types.DistributionKeeper,
 	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
+	authKeeper types.AuthKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
@@ -81,6 +83,7 @@ func NewKeeper(
 		distrKeeper:    distrKeeper,
 		bankKeeper:     bankKeeper,
 		ics4Wrapper:    ics4Wrapper,
+		authKeeper:     authKeeper,
 	}
 }
 
@@ -473,4 +476,8 @@ func (k *Keeper) GetAppVersion(
 // LookupModuleByChannel wraps ChannelKeeper LookupModuleByChannel function.
 func (k *Keeper) LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, *capabilitytypes.Capability, error) {
 	return k.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
+}
+
+func (k *Keeper) GetForwarderAddress(ctx sdk.Context) sdk.AccAddress {
+	return k.authKeeper.GetModuleAddress(types.ModuleName)
 }
