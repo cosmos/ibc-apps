@@ -142,7 +142,7 @@ func getBoolFromAny(value any) bool {
 // initial chain.
 func getReceiver(channel string, originalSender string) (string, error) {
 	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
-	senderHash32 := address.Hash("packet-forward-middleware", []byte(senderStr))
+	senderHash32 := address.Hash(types.ModuleName, []byte(senderStr))
 	sender := sdk.AccAddress(senderHash32)
 	return sdk.Bech32ifyAddressBytes(sdk.Bech32MainPrefix, sender)
 }
