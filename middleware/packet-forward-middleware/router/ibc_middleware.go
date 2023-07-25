@@ -13,6 +13,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
@@ -135,6 +136,17 @@ func getBoolFromAny(value any) bool {
 	return boolVal
 }
 
+// getReceiver returns the receiver address for a given channel and original sender.
+// it overrides the receiver address to be a hash of the channel/origSender so that
+// the receiver address is deterministic and can be used to identify the sender on the
+// initial chain.
+func getReceiver(channel string, originalSender string) (string, error) {
+	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
+	senderHash32 := address.Hash("packet-forward-middleware", []byte(senderStr))
+	sender := sdk.AccAddress(senderHash32[:])
+	return sdk.Bech32ifyAddressBytes(sdk.Bech32MainPrefix, sender)
+}
+
 // OnRecvPacket checks the memo field on this packet and if the metadata inside's root key indicates this packet
 // should be handled by the swap middleware it attempts to perform a swap. If the swap is successful
 // the underlying application's OnRecvPacket callback is invoked, an ack error is returned otherwise.
@@ -179,10 +191,18 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
+	// override the receiver so that senders cannot move funds through arbitrary addresses.
+	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
 	// if this packet has been handled by another middleware in the stack there may be no need to call into the
 	// underlying app, otherwise the transfer module's OnRecvPacket callback could be invoked more than once
 	// which would mint/burn vouchers more than once
 	if !processed {
+		data.Receiver = overrideReceiver
+		packet.Data = transfertypes.ModuleCdc.MustMarshalJSON(&data)
 		ack := im.app.OnRecvPacket(ctx, packet, relayer)
 		if ack == nil || !ack.Success() {
 			return ack
@@ -220,7 +240,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		retries = im.retriesOnTimeout
 	}
 
-	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, data.Receiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
+	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, overrideReceiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
