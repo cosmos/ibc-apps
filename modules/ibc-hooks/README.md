@@ -40,6 +40,8 @@ For use with IBC hooks, the message fields above can be derived from the followi
 - `Msg`: This field should be directly obtained from the ICS-20 packet metadata.
 - `Funds`: This field is set to the amount of funds being sent over in the ICS-20 packet. The denom in the packet must be specified as the counterparty chain's representation of the denom.
 
+> **_WARNING:_**  Due to a [bug](https://twitter.com/SCVSecurity/status/1682329758020022272) in the packet forward middleware, we cannot trust the sender from chains that use PFM. Until that is fixed, we recommend chains to not trust the sender on contracts executed via IBC hooks.
+
 
 The fully constructed execute message will look like the following:
 
