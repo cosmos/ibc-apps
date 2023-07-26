@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/client/cli"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"

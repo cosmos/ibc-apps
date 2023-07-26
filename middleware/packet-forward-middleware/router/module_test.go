@@ -3,6 +3,7 @@ package router_test
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 	"testing"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
@@ -23,6 +24,8 @@ var (
 	testAmount    = "100"
 	testAmount256 = "100000000000000000000"
 
+	testSender             = "cosmos1xccz356ckk4xdx8nn7w9jlyaet2n98yzdkygse"
+	testIntermediateAddr   = "cosmos17ctzmesd7c4guzyznugm7gl885ae7hk2q6lyftj7kmjtflgw3cnsrgq8x4"
 	testSourcePort         = "transfer"
 	testSourceChannel      = "channel-10"
 	testDestinationPort    = "transfer"
@@ -41,6 +44,7 @@ func emptyPacket() channeltypes.Packet {
 func transferPacket(t *testing.T, receiver string, metadata any) channeltypes.Packet {
 	t.Helper()
 	transferPacket := transfertypes.FungibleTokenPacketData{
+		Sender:   testSender,
 		Denom:    testDenom,
 		Amount:   testAmount,
 		Receiver: receiver,
@@ -71,6 +75,7 @@ func transferPacket(t *testing.T, receiver string, metadata any) channeltypes.Pa
 func transferPacket256(t *testing.T, receiver string, metadata any) channeltypes.Packet {
 	t.Helper()
 	transferPacket := transfertypes.FungibleTokenPacketData{
+		Sender:   testSender,
 		Denom:    testDenom,
 		Amount:   testAmount256,
 		Receiver: receiver,
@@ -252,6 +257,13 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 			Channel:  channel,
 		},
 	})
+	packetOrigWithNewReceiver := transferPacket(t, testIntermediateAddr, &types.PacketMetadata{
+		Forward: &types.ForwardMetadata{
+			Receiver: destAddr,
+			Port:     port,
+			Channel:  channel,
+		},
+	})
 	packetFwd := transferPacket(t, destAddr, nil)
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
@@ -259,7 +271,7 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrigWithNewReceiver, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -268,7 +280,7 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 				port,
 				channel,
 				testCoin,
-				hostAddr,
+				testIntermediateAddr,
 				destAddr,
 				keeper.DefaultTransferPacketTimeoutHeight,
 				uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
@@ -319,6 +331,13 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 			Channel:  channel,
 		},
 	})
+	packetOrigWithNewReceiver := transferPacket256(t, testIntermediateAddr, &types.PacketMetadata{
+		Forward: &types.ForwardMetadata{
+			Receiver: destAddr,
+			Port:     port,
+			Channel:  channel,
+		},
+	})
 	packetFwd := transferPacket256(t, destAddr, nil)
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
@@ -326,7 +345,7 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrigWithNewReceiver, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -335,7 +354,7 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 				port,
 				channel,
 				testCoin,
-				hostAddr,
+				testIntermediateAddr,
 				destAddr,
 				keeper.DefaultTransferPacketTimeoutHeight,
 				uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
@@ -387,13 +406,20 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 			Channel:  channel,
 		},
 	})
+	packetOrigWithNewReceiver := transferPacket(t, testIntermediateAddr, &types.PacketMetadata{
+		Forward: &types.ForwardMetadata{
+			Receiver: destAddr,
+			Port:     port,
+			Channel:  channel,
+		},
+	})
 	packetFwd := transferPacket(t, destAddr, nil)
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
 	successAck := cdc.MustMarshalJSON(&acknowledgement)
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrigWithNewReceiver, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.DistributionKeeperMock.EXPECT().FundCommunityPool(
@@ -408,7 +434,7 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 				port,
 				channel,
 				testCoin,
-				hostAddr,
+				testIntermediateAddr,
 				destAddr,
 				keeper.DefaultTransferPacketTimeoutHeight,
 				uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
@@ -470,7 +496,18 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 			Next:     types.NewJSONObject(false, nextBz, orderedmap.OrderedMap{}),
 		},
 	})
+
+	packetOrigWithNewReceiver := transferPacket(t, testIntermediateAddr, &types.PacketMetadata{
+		Forward: &types.ForwardMetadata{
+			Receiver: hostAddr2,
+			Port:     port,
+			Channel:  channel,
+			Next:     types.NewJSONObject(false, nextBz, orderedmap.OrderedMap{}),
+		},
+	})
+
 	packet2 := transferPacket(t, hostAddr2, nextMetadata)
+	packet2WithNewReceiver := transferPacket(t, testIntermediateAddr, nextMetadata)
 	packetFwd := transferPacket(t, destAddr, nil)
 
 	memo1, err := json.Marshal(nextMetadata)
@@ -480,7 +517,7 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 		port,
 		channel,
 		testCoin,
-		hostAddr,
+		testIntermediateAddr,
 		hostAddr2,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
@@ -492,7 +529,7 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 		port,
 		channel2,
 		testCoin,
-		hostAddr2,
+		testIntermediateAddr,
 		destAddr,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
@@ -504,7 +541,7 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrigWithNewReceiver, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -512,7 +549,7 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 			msgTransfer1,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2, senderAccAddr2).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2WithNewReceiver, senderAccAddr2).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -589,7 +626,18 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 			Next:     nextJSONObject,
 		},
 	})
+
+	packetOrigWithNewReceiver := transferPacket(t, testIntermediateAddr, &types.PacketMetadata{
+		Forward: &types.ForwardMetadata{
+			Receiver: hostAddr2,
+			Port:     port,
+			Channel:  channel,
+			Next:     types.NewJSONObject(false, nextBz, orderedmap.OrderedMap{}),
+		},
+	})
+
 	packet2 := transferPacket(t, hostAddr2, nextMetadata)
+	packet2WithNewReceiver := transferPacket(t, testIntermediateAddr, nextMetadata)
 	packetFwd := transferPacket(t, destAddr, nil)
 
 	memo1, err := json.Marshal(nextMetadata)
@@ -599,7 +647,7 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 		port,
 		channel,
 		testCoin,
-		hostAddr,
+		testIntermediateAddr,
 		hostAddr2,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
@@ -611,7 +659,7 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 		port,
 		channel2,
 		testCoin,
-		hostAddr2,
+		testIntermediateAddr,
 		destAddr,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
@@ -623,7 +671,7 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrig, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetOrigWithNewReceiver, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -631,7 +679,7 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 			msgTransfer1,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2, senderAccAddr2).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2WithNewReceiver, senderAccAddr2).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -661,4 +709,10 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 	// ack returned from chain C to chain B
 	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packet2, successAck, senderAccAddr)
 	require.NoError(t, err)
+}
+
+func TestDeriveIntermediateAddress(t *testing.T) {
+	intermediateAddr, err := router.DeriveIntermediateAddress(testSourcePort, testSourceChannel, testSender)
+	require.NoError(t, err)
+	require.Equal(t, testIntermediateAddr, intermediateAddr)
 }

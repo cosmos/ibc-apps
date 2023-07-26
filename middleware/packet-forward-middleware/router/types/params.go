@@ -10,7 +10,8 @@ import (
 var (
 	DefaultFeePercentage = sdk.NewDec(0)
 	// KeyFeePercentage is store's key for FeePercentage Params
-	KeyFeePercentage = []byte("FeePercentage")
+	KeyFeePercentage       = []byte("FeePercentage")
+	IntermediateAddrPrefix = "packet-fowarder"
 )
 
 // ParamKeyTable type declaration for parameters

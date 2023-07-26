@@ -3,6 +3,7 @@ package router
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	"strings"
 	"time"
 
@@ -143,6 +144,8 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
+	var err error
+
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
@@ -156,11 +159,19 @@ func (im IBCMiddleware) OnRecvPacket(
 	)
 
 	d := make(map[string]interface{})
-	err := json.Unmarshal([]byte(data.Memo), &d)
+	err = json.Unmarshal([]byte(data.Memo), &d)
 	if err != nil || d["forward"] == nil {
 		// not a packet that should be forwarded
 		im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnRecvPacket forward metadata does not exist")
 		return im.app.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	// originalReceiver will pay fees for the forwarded packet
+	originalReceiver := data.Receiver
+	// Ignore the receiver on the packet and use a generated address instead
+	data.Receiver, err = DeriveIntermediateAddress(packet.SourcePort, packet.SourceChannel, data.Sender)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
 	}
 	m := &types.PacketMetadata{}
 	err = json.Unmarshal([]byte(data.Memo), m)
@@ -183,6 +194,11 @@ func (im IBCMiddleware) OnRecvPacket(
 	// underlying app, otherwise the transfer module's OnRecvPacket callback could be invoked more than once
 	// which would mint/burn vouchers more than once
 	if !processed {
+		// Replace the packet receiver with the address of the generated intermediate account
+		packet.Data, err = transfertypes.ModuleCdc.MarshalJSON(&data)
+		if err != nil {
+			return channeltypes.NewErrorAcknowledgement(err)
+		}
 		ack := im.app.OnRecvPacket(ctx, packet, relayer)
 		if ack == nil || !ack.Success() {
 			return ack
@@ -220,7 +236,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		retries = im.retriesOnTimeout
 	}
 
-	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, data.Receiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
+	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, originalReceiver, data.Receiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
@@ -335,4 +351,12 @@ func (im IBCMiddleware) GetAppVersion(
 	channelID string,
 ) (string, bool) {
 	return im.keeper.GetAppVersion(ctx, portID, channelID)
+}
+
+func DeriveIntermediateAddress(port, channel, originalSender string) (string, error) {
+	senderStr := fmt.Sprintf("%s/%s/%s", port, channel, originalSender)
+	senderHash32 := address.Hash(types.IntermediateAddrPrefix, []byte(senderStr))
+	addr := sdk.AccAddress(senderHash32[:])
+	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
+	return sdk.Bech32ifyAddressBytes(bech32Prefix, addr)
 }

@@ -202,7 +202,8 @@ func (k *Keeper) ForwardTransferPacket(
 	inFlightPacket *types.InFlightPacket,
 	srcPacket channeltypes.Packet,
 	srcPacketSender string,
-	receiver string,
+	feePayer string,
+	intermediateSender string,
 	metadata *types.ForwardMetadata,
 	token sdk.Coin,
 	maxRetries uint8,
@@ -218,7 +219,7 @@ func (k *Keeper) ForwardTransferPacket(
 
 	// pay fees
 	if feeAmount.IsPositive() {
-		hostAccAddr, err := sdk.AccAddressFromBech32(receiver)
+		hostAccAddr, err := sdk.AccAddressFromBech32(feePayer)
 		if err != nil {
 			return err
 		}
@@ -249,7 +250,7 @@ func (k *Keeper) ForwardTransferPacket(
 		metadata.Port,
 		metadata.Channel,
 		packetCoin,
-		receiver,
+		intermediateSender,
 		metadata.Receiver,
 		DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(timeout.Nanoseconds()),
@@ -258,7 +259,7 @@ func (k *Keeper) ForwardTransferPacket(
 
 	k.Logger(ctx).Debug("packetForwardMiddleware ForwardTransferPacket",
 		"port", metadata.Port, "channel", metadata.Channel,
-		"sender", receiver, "receiver", metadata.Receiver,
+		"sender", intermediateSender, "receiver", metadata.Receiver,
 		"amount", packetCoin.Amount.String(), "denom", packetCoin.Denom,
 	)
 
@@ -270,7 +271,7 @@ func (k *Keeper) ForwardTransferPacket(
 	if err != nil {
 		k.Logger(ctx).Error("packetForwardMiddleware ForwardTransferPacket error",
 			"port", metadata.Port, "channel", metadata.Channel,
-			"sender", receiver, "receiver", metadata.Receiver,
+			"sender", intermediateSender, "receiver", metadata.Receiver,
 			"amount", packetCoin.Amount.String(), "denom", packetCoin.Denom,
 			"error", err,
 		)
@@ -285,6 +286,7 @@ func (k *Keeper) ForwardTransferPacket(
 		inFlightPacket = &types.InFlightPacket{
 			PacketData:            srcPacket.Data,
 			OriginalSenderAddress: srcPacketSender,
+			FeePayer:              feePayer,
 			RefundChannelId:       srcPacket.DestinationChannel,
 			RefundPortId:          srcPacket.DestinationPort,
 			RefundSequence:        srcPacket.Sequence,
@@ -391,12 +393,21 @@ func (k *Keeper) RetryTimeout(
 
 	token := sdk.NewCoin(denom, amount)
 
+	// Handle backward compatibility for inflight packets right after the middleware upgrade
+	var feePayer string
+	if inFlightPacket.FeePayer == "" {
+		feePayer = data.Sender
+	} else {
+		feePayer = inFlightPacket.FeePayer
+	}
+
 	// srcPacket and srcPacketSender are empty because inFlightPacket is non-nil.
 	return k.ForwardTransferPacket(
 		ctx,
 		inFlightPacket,
 		channeltypes.Packet{},
 		"",
+		feePayer,
 		data.Sender,
 		metadata,
 		token,
