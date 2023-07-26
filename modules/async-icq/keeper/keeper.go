@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v6/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,14 +29,14 @@ type Keeper struct {
 
 	scopedKeeper capabilitykeeper.ScopedKeeper
 
-	querier sdk.Queryable
+	queryRouter *baseapp.GRPCQueryRouter
 }
 
 // NewKeeper creates a new interchain query Keeper instance
 func NewKeeper(
 	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
 	ics4Wrapper types.ICS4Wrapper, channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
-	scopedKeeper capabilitykeeper.ScopedKeeper, querier sdk.Queryable,
+	scopedKeeper capabilitykeeper.ScopedKeeper, queryRouter *baseapp.GRPCQueryRouter,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
@@ -50,7 +51,7 @@ func NewKeeper(
 		channelKeeper: channelKeeper,
 		portKeeper:    portKeeper,
 		scopedKeeper:  scopedKeeper,
-		querier:       querier,
+		queryRouter:   queryRouter,
 	}
 }
 
