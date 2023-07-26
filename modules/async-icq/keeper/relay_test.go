@@ -1,16 +1,11 @@
 package keeper_test
 
 import (
-<<<<<<< HEAD
+	"fmt"
+
 	"github.com/cosmos/ibc-apps/modules/async-icq/v5/testing/simapp"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v5/types"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
-=======
-	"fmt"
-
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
->>>>>>> 3a9d46a (Use query routes in async_icq (#67))
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
