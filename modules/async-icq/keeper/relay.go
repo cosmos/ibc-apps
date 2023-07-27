@@ -41,9 +41,23 @@ func (k Keeper) executeQuery(ctx sdk.Context, reqs []abci.RequestQuery) ([]byte,
 			return nil, err
 		}
 
-		resp := k.querier.Query(req)
+		route := k.queryRouter.Route(req.Path)
+		if route == nil {
+			return nil, errors.Wrapf(sdkerrors.ErrUnauthorized, "no route found for: %s", req.Path)
+		}
+
+		resp, err := route(ctx, abci.RequestQuery{
+			Data: req.Data,
+			Path: req.Path,
+		})
+		if err != nil {
+			return nil, err
+		}
+
 		// Remove non-deterministic fields from response
 		resps[i] = abci.ResponseQuery{
+			// Codespace is not currently part of consensus, but it will probablyy be added in the future
+			// Codespace: resp.Codespace,
 			Code:   resp.Code,
 			Index:  resp.Index,
 			Key:    resp.Key,
