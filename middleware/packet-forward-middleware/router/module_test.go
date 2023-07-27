@@ -3,9 +3,9 @@ package router_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 	"testing"
 
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test"

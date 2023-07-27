@@ -3,7 +3,6 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/types/address"
 	"strings"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
@@ -354,7 +354,7 @@ func (im IBCMiddleware) GetAppVersion(
 func DeriveIntermediateAddress(port, channel, originalSender string) (string, error) {
 	senderStr := fmt.Sprintf("%s/%s/%s", port, channel, originalSender)
 	senderHash32 := address.Hash(types.IntermediateAddrPrefix, []byte(senderStr))
-	addr := sdk.AccAddress(senderHash32[:])
+	addr := sdk.AccAddress(senderHash32)
 	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	return sdk.Bech32ifyAddressBytes(bech32Prefix, addr)
 }

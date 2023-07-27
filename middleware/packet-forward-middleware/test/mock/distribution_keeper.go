@@ -7,8 +7,9 @@ package mock
 import (
 	reflect "reflect"
 
-	types "github.com/cosmos/cosmos-sdk/types"
 	gomock "github.com/golang/mock/gomock"
+
+	types "github.com/cosmos/cosmos-sdk/types"
 )
 
 // MockDistributionKeeper is a mock of DistributionKeeper interface.

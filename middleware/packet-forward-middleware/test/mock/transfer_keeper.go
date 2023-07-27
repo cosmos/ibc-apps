@@ -8,9 +8,10 @@ import (
 	context "context"
 	reflect "reflect"
 
-	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	gomock "github.com/golang/mock/gomock"
+
+	types "github.com/cosmos/cosmos-sdk/types"
 )
 
 // MockTransferKeeper is a mock of TransferKeeper interface.
