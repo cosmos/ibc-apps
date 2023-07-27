@@ -128,7 +128,7 @@ func TestOnRecvPacket_EmptyPacket(t *testing.T) {
 	expectedAck := &channeltypes.Acknowledgement{}
 	err := cdc.UnmarshalJSON(ack.Acknowledgement(), expectedAck)
 	require.NoError(t, err)
-	require.Equal(t, "ABCI code: 1: error handling packet: see events for details", expectedAck.GetError())
+	require.Equal(t, "packet-forward-middleware error: failed to unmarshal packet data as FungibleTokenPacketData: EOF", expectedAck.GetError())
 }
 
 func TestOnRecvPacket_InvalidReceiver(t *testing.T) {

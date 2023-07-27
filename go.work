@@ -1,0 +1,7 @@
+go 1.20
+
+use (
+	./middleware/packet-forward-middleware
+	./modules/async-icq
+    ./modules/ibc-hooks
+)

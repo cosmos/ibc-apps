@@ -16,3 +16,5 @@
 # vendor/
 
 target/
+
+go.work.sum

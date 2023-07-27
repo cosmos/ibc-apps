@@ -147,6 +147,15 @@ func getReceiver(channel string, originalSender string) (string, error) {
 	return sdk.Bech32ifyAddressBytes(sdk.Bech32MainPrefix, sender)
 }
 
+// IMPORTANT: ensure errors are deterministic, otherwise the app hash will be non-deterministic across validators.
+func newErrorAcknowledgement(err error) channeltypes.Acknowledgement {
+	return channeltypes.Acknowledgement{
+		Response: &channeltypes.Acknowledgement_Error{
+			Error: fmt.Sprintf("packet-forward-middleware error: %s", err.Error()),
+		},
+	}
+}
+
 // OnRecvPacket checks the memo field on this packet and if the metadata inside's root key indicates this packet
 // should be handled by the swap middleware it attempts to perform a swap. If the swap is successful
 // the underlying application's OnRecvPacket callback is invoked, an ack error is returned otherwise.
@@ -157,7 +166,7 @@ func (im IBCMiddleware) OnRecvPacket(
 ) ibcexported.Acknowledgement {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return newErrorAcknowledgement(fmt.Errorf("failed to unmarshal packet data as FungibleTokenPacketData: %s", err.Error()))
 	}
 
 	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnRecvPacket",
@@ -177,7 +186,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	m := &types.PacketMetadata{}
 	err = json.Unmarshal([]byte(data.Memo), m)
 	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("packetForwardMiddleware error parsing forward metadata, %s", err))
+		return newErrorAcknowledgement(fmt.Errorf("error parsing forward metadata: %s", err.Error()))
 	}
 
 	metadata := m.Forward
@@ -188,13 +197,13 @@ func (im IBCMiddleware) OnRecvPacket(
 	disableDenomComposition := getBoolFromAny(goCtx.Value(types.DisableDenomCompositionKey{}))
 
 	if err := metadata.Validate(); err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return newErrorAcknowledgement(err)
 	}
 
 	// override the receiver so that senders cannot move funds through arbitrary addresses.
 	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
 	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %s", err.Error()))
 	}
 
 	// if this packet has been handled by another middleware in the stack there may be no need to call into the
@@ -222,7 +231,7 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	amountInt, ok := sdk.NewIntFromString(data.Amount)
 	if !ok {
-		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("error parsing amount for forward: %s", data.Amount))
+		return newErrorAcknowledgement(fmt.Errorf("error parsing amount for forward: %s", data.Amount))
 	}
 
 	token := sdk.NewCoin(denomOnThisChain, amountInt)
@@ -242,7 +251,7 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, overrideReceiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
 	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return newErrorAcknowledgement(err)
 	}
 
 	// returning nil ack will prevent WriteAcknowledgement from occurring for forwarded packet.
@@ -315,7 +324,7 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 			im.keeper.RemoveInFlightPacket(ctx, packet)
 			// this is a forwarded packet, so override handling to avoid refund from being processed on this chain.
 			// WriteAcknowledgement with proxied ack to return success/fail to previous chain.
-			return im.keeper.WriteAcknowledgementForForwardedPacket(ctx, packet, data, inFlightPacket, channeltypes.NewErrorAcknowledgement(err))
+			return im.keeper.WriteAcknowledgementForForwardedPacket(ctx, packet, data, inFlightPacket, newErrorAcknowledgement(err))
 		}
 		// timeout should be retried. In order to do that, we need to handle this timeout to refund on this chain first.
 		if err := im.app.OnTimeoutPacket(ctx, packet, relayer); err != nil {
