@@ -25,7 +25,7 @@ var (
 	testAmount256 = "100000000000000000000"
 
 	testSender             = "cosmos1xccz356ckk4xdx8nn7w9jlyaet2n98yzdkygse"
-	testIntermediateAddr   = "cosmos17ctzmesd7c4guzyznugm7gl885ae7hk2q6lyftj7kmjtflgw3cnsrgq8x4"
+	testIntermediateAddr   = "cosmos1ye2e3njcuauzw7ccc62mmxh0j8nuslyqmrse2f8qg7tehtrxr8rqz2meck"
 	testSourcePort         = "transfer"
 	testSourceChannel      = "channel-10"
 	testDestinationPort    = "transfer"
@@ -396,7 +396,7 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	)
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()
-	hostAccAddr := test.AccAddressFromBech32(t, hostAddr)
+	intermediateAccAddr := test.AccAddressFromBech32(t, testIntermediateAddr)
 	testCoin := sdk.NewCoin(denom, sdk.NewInt(90))
 	feeCoins := sdk.Coins{sdk.NewCoin(denom, sdk.NewInt(10))}
 	packetOrig := transferPacket(t, hostAddr, &types.PacketMetadata{
@@ -425,7 +425,7 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 		setup.Mocks.DistributionKeeperMock.EXPECT().FundCommunityPool(
 			ctx,
 			feeCoins,
-			hostAccAddr,
+			intermediateAccAddr,
 		).Return(nil),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(

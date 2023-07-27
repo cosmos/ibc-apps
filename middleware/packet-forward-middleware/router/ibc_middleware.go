@@ -166,8 +166,6 @@ func (im IBCMiddleware) OnRecvPacket(
 		return im.app.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	// originalReceiver will pay fees for the forwarded packet
-	originalReceiver := data.Receiver
 	// Ignore the receiver on the packet and use a generated address instead
 	data.Receiver, err = DeriveIntermediateAddress(packet.SourcePort, packet.SourceChannel, data.Sender)
 	if err != nil {
@@ -236,7 +234,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		retries = im.retriesOnTimeout
 	}
 
-	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, originalReceiver, data.Receiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
+	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, data.Receiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
