@@ -164,12 +164,15 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
+	logger := im.keeper.Logger(ctx)
+
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+		logger.Error("packetForwardMiddleware OnRecvPacketfailed to unmarshal packet data as FungibleTokenPacketData", "error", err)
 		return newErrorAcknowledgement(fmt.Errorf("failed to unmarshal packet data as FungibleTokenPacketData: %s", err.Error()))
 	}
 
-	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnRecvPacket",
+	logger.Debug("packetForwardMiddleware OnRecvPacket",
 		"sequence", packet.Sequence,
 		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
@@ -180,12 +183,13 @@ func (im IBCMiddleware) OnRecvPacket(
 	err := json.Unmarshal([]byte(data.Memo), &d)
 	if err != nil || d["forward"] == nil {
 		// not a packet that should be forwarded
-		im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnRecvPacket forward metadata does not exist")
+		logger.Debug("packetForwardMiddleware OnRecvPacket forward metadata does not exist")
 		return im.app.OnRecvPacket(ctx, packet, relayer)
 	}
 	m := &types.PacketMetadata{}
 	err = json.Unmarshal([]byte(data.Memo), m)
 	if err != nil {
+		logger.Error("packetForwardMiddleware OnRecvPacket error parsing forward metadata", "error", err)
 		return newErrorAcknowledgement(fmt.Errorf("error parsing forward metadata: %s", err.Error()))
 	}
 
@@ -197,12 +201,14 @@ func (im IBCMiddleware) OnRecvPacket(
 	disableDenomComposition := getBoolFromAny(goCtx.Value(types.DisableDenomCompositionKey{}))
 
 	if err := metadata.Validate(); err != nil {
+		logger.Error("packetForwardMiddleware OnRecvPacket forward metadata is invalid", "error", err)
 		return newErrorAcknowledgement(err)
 	}
 
 	// override the receiver so that senders cannot move funds through arbitrary addresses.
 	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
 	if err != nil {
+		logger.Error("packetForwardMiddleware OnRecvPacket failed to construct override receiver", "error", err)
 		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %s", err.Error()))
 	}
 
@@ -231,6 +237,7 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	amountInt, ok := sdk.NewIntFromString(data.Amount)
 	if !ok {
+		logger.Error("packetForwardMiddleware OnRecvPacket error parsing amount for forward", "amount", data.Amount)
 		return newErrorAcknowledgement(fmt.Errorf("error parsing amount for forward: %s", data.Amount))
 	}
 
@@ -251,6 +258,7 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, overrideReceiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
 	if err != nil {
+		logger.Error("packetForwardMiddleware OnRecvPacket error forwarding packet", "error", err)
 		return newErrorAcknowledgement(err)
 	}
 
