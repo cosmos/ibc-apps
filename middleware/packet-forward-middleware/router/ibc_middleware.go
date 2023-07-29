@@ -144,7 +144,8 @@ func getReceiver(channel string, originalSender string) (string, error) {
 	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
 	senderHash32 := address.Hash(types.ModuleName, []byte(senderStr))
 	sender := sdk.AccAddress(senderHash32[:20])
-	return sdk.Bech32ifyAddressBytes(sdk.Bech32MainPrefix, sender)
+	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()
+	return sdk.Bech32ifyAddressBytes(bech32Prefix, sender)
 }
 
 // IMPORTANT: ensure errors are deterministic, otherwise the app hash will be non-deterministic across validators.
@@ -193,13 +194,6 @@ func (im IBCMiddleware) OnRecvPacket(
 		return newErrorAcknowledgement(fmt.Errorf("error parsing forward metadata: %s", err.Error()))
 	}
 
-	logger.Debug("packetForwardMiddleware OnRecvPacket 2",
-		"sequence", packet.Sequence,
-		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
-		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
-		"amount", data.Amount, "denom", data.Denom, "memo", data.Memo,
-	)
-
 	metadata := m.Forward
 
 	goCtx := ctx.Context()
@@ -212,26 +206,12 @@ func (im IBCMiddleware) OnRecvPacket(
 		return newErrorAcknowledgement(err)
 	}
 
-	logger.Debug("packetForwardMiddleware OnRecvPacket 3",
-		"sequence", packet.Sequence,
-		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
-		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
-		"amount", data.Amount, "denom", data.Denom, "memo", data.Memo,
-	)
-
 	// override the receiver so that senders cannot move funds through arbitrary addresses.
 	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
 	if err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket failed to construct override receiver", "error", err)
 		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %s", err.Error()))
 	}
-
-	logger.Debug("packetForwardMiddleware OnRecvPacket 4",
-		"sequence", packet.Sequence,
-		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
-		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
-		"amount", data.Amount, "denom", data.Denom, "memo", data.Memo,
-	)
 
 	// if this packet has been handled by another middleware in the stack there may be no need to call into the
 	// underlying app, otherwise the transfer module's OnRecvPacket callback could be invoked more than once
@@ -265,13 +245,6 @@ func (im IBCMiddleware) OnRecvPacket(
 		}
 	}
 
-	logger.Debug("packetForwardMiddleware OnRecvPacket 5",
-		"sequence", packet.Sequence,
-		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
-		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
-		"amount", data.Amount, "denom", data.Denom, "memo", data.Memo,
-	)
-
 	// if this packet's token denom is already the base denom for some native token on this chain,
 	// we do not need to do any further composition of the denom before forwarding the packet
 	denomOnThisChain := data.Denom
@@ -282,13 +255,6 @@ func (im IBCMiddleware) OnRecvPacket(
 			data.Denom,
 		)
 	}
-
-	logger.Debug("packetForwardMiddleware OnRecvPacket 6",
-		"sequence", packet.Sequence,
-		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
-		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
-		"amount", data.Amount, "denom", data.Denom, "memo", data.Memo,
-	)
 
 	amountInt, ok := sdk.NewIntFromString(data.Amount)
 	if !ok {
