@@ -153,7 +153,7 @@ func getReceiver(channel string, originalSender string) (string, error) {
 func newErrorAcknowledgement(err error) channeltypes.Acknowledgement {
 	return channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Error{
-			Error: fmt.Sprintf("packet-forward-middleware error: %w", err),
+			Error: fmt.Sprintf("packet-forward-middleware error: %s", err.Error()),
 		},
 	}
 }
