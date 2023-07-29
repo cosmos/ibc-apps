@@ -237,23 +237,31 @@ func (im IBCMiddleware) OnRecvPacket(
 	// underlying app, otherwise the transfer module's OnRecvPacket callback could be invoked more than once
 	// which would mint/burn vouchers more than once
 	if !processed {
-		data.Receiver = overrideReceiver
-		packet.Data = transfertypes.ModuleCdc.MustMarshalJSON(&data)
-		logger.Debug("packetForwardMiddleware OnRecvPacket receiving packet",
-			"sequence", packet.Sequence,
-			"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
-			"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
-			"receiver", data.Receiver,
-			"amount", data.Amount, "denom", data.Denom, "memo", data.Memo,
-		)
-		ack := im.app.OnRecvPacket(ctx, packet, relayer)
-		if ack == nil || !ack.Success() {
-			if ack == nil {
-				logger.Error("packetForwardMiddleware OnRecvPacket nil ack")
-			} else {
-				logger.Error("packetForwardMiddleware OnRecvPacket ack err", "ack", string(ack.Acknowledgement()))
-			}
-			return ack
+		overrideData := transfertypes.FungibleTokenPacketData{
+			Denom:    data.Denom,
+			Amount:   data.Amount,
+			Sender:   data.Sender,
+			Receiver: overrideReceiver,
+			// explicitly no memo
+		}
+		overrideDataBz := transfertypes.ModuleCdc.MustMarshalJSON(&overrideData)
+		overridePacket := channeltypes.Packet{
+			Sequence:           packet.Sequence,
+			SourcePort:         packet.SourcePort,
+			SourceChannel:      packet.SourceChannel,
+			DestinationPort:    packet.DestinationPort,
+			DestinationChannel: packet.DestinationChannel,
+			Data:               overrideDataBz,
+			TimeoutHeight:      packet.TimeoutHeight,
+			TimeoutTimestamp:   packet.TimeoutTimestamp,
+		}
+		ack := im.app.OnRecvPacket(ctx, overridePacket, relayer)
+		if ack == nil {
+			return nil
+		}
+		if !ack.Success() {
+			logger.Error("packetForwardMiddleware OnRecvPacket ack err", "ack", string(ack.Acknowledgement()))
+			return newErrorAcknowledgement(fmt.Errorf("error receiving packet: %s", string(ack.Acknowledgement())))
 		}
 	}
 
