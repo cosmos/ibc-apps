@@ -34,10 +34,10 @@ func (m *ForwardMetadata) Validate() error {
 		return fmt.Errorf("failed to validate metadata. receiver cannot be empty")
 	}
 	if err := host.PortIdentifierValidator(m.Port); err != nil {
-		return fmt.Errorf("failed to validate metadata: %s", err.Error())
+		return fmt.Errorf("failed to validate metadata: %w", err)
 	}
 	if err := host.ChannelIdentifierValidator(m.Channel); err != nil {
-		return fmt.Errorf("failed to validate metadata: %s", err.Error())
+		return fmt.Errorf("failed to validate metadata: %w", err)
 	}
 
 	return nil

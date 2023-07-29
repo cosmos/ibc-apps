@@ -153,7 +153,7 @@ func getReceiver(channel string, originalSender string) (string, error) {
 func newErrorAcknowledgement(err error) channeltypes.Acknowledgement {
 	return channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Error{
-			Error: fmt.Sprintf("packet-forward-middleware error: %s", err.Error()),
+			Error: fmt.Sprintf("packet-forward-middleware error: %w", err),
 		},
 	}
 }
@@ -171,7 +171,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacketfailed to unmarshal packet data as FungibleTokenPacketData", "error", err)
-		return newErrorAcknowledgement(fmt.Errorf("failed to unmarshal packet data as FungibleTokenPacketData: %s", err.Error()))
+		return newErrorAcknowledgement(fmt.Errorf("failed to unmarshal packet data as FungibleTokenPacketData: %w", err))
 	}
 
 	logger.Debug("packetForwardMiddleware OnRecvPacket",
@@ -192,7 +192,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	err = json.Unmarshal([]byte(data.Memo), m)
 	if err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket error parsing forward metadata", "error", err)
-		return newErrorAcknowledgement(fmt.Errorf("error parsing forward metadata: %s", err.Error()))
+		return newErrorAcknowledgement(fmt.Errorf("error parsing forward metadata: %w", err))
 	}
 
 	metadata := m.Forward
@@ -211,7 +211,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
 	if err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket failed to construct override receiver", "error", err)
-		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %s", err.Error()))
+		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %w", err))
 	}
 
 	// if this packet has been handled by another middleware in the stack there may be no need to call into the
@@ -220,7 +220,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	if !processed {
 		if err := im.receiveFunds(ctx, packet, data, overrideReceiver, relayer); err != nil {
 			logger.Error("packetForwardMiddleware OnRecvPacket error receiving packet", "error", err)
-			return newErrorAcknowledgement(err)
+			return newErrorAcknowledgement(fmt.Errorf("error receiving packet: %w", err))
 		}
 	}
 
@@ -302,7 +302,7 @@ func (im IBCMiddleware) receiveFunds(
 	}
 
 	if !ack.Success() {
-		return fmt.Errorf("error receiving packet: %s", string(ack.Acknowledgement()))
+		return fmt.Errorf("ack error: %s", string(ack.Acknowledgement()))
 	}
 
 	return nil
