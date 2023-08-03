@@ -14,10 +14,6 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-<<<<<<< HEAD
-=======
-
 target/
 
 go.work.sum
->>>>>>> d72e83c ([pfm][fix] patch arbitrary account passthrough (#71))
