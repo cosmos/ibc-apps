@@ -141,13 +141,8 @@ func TestOnRecvPacket_InvalidReceiver(t *testing.T) {
 	forwardMiddleware := setup.ForwardMiddleware
 
 	// Test data
-<<<<<<< HEAD
 	senderAccAddr := test.AccAddress(t)
-	packet := transferPacket(t, "", nil)
-=======
-	senderAccAddr := test.AccAddress()
-	packet := transferPacket(t, test.AccAddress().String(), "", nil)
->>>>>>> d72e83c ([pfm][fix] patch arbitrary account passthrough (#71))
+	packet := transferPacket(t, test.AccAddress(t).String(), "", nil)
 
 	// Expected mocks
 	gomock.InOrder(
@@ -172,13 +167,8 @@ func TestOnRecvPacket_NoForward(t *testing.T) {
 	forwardMiddleware := setup.ForwardMiddleware
 
 	// Test data
-<<<<<<< HEAD
 	senderAccAddr := test.AccAddress(t)
-	packet := transferPacket(t, "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", nil)
-=======
-	senderAccAddr := test.AccAddress()
-	packet := transferPacket(t, test.AccAddress().String(), "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", nil)
->>>>>>> d72e83c ([pfm][fix] patch arbitrary account passthrough (#71))
+	packet := transferPacket(t, test.AccAddress(t).String(), "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", nil)
 
 	// Expected mocks
 	gomock.InOrder(
@@ -204,13 +194,8 @@ func TestOnRecvPacket_NoMemo(t *testing.T) {
 	forwardMiddleware := setup.ForwardMiddleware
 
 	// Test data
-<<<<<<< HEAD
 	senderAccAddr := test.AccAddress(t)
-	packet := transferPacket(t, "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", "{}")
-=======
-	senderAccAddr := test.AccAddress()
-	packet := transferPacket(t, test.AccAddress().String(), "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", "{}")
->>>>>>> d72e83c ([pfm][fix] patch arbitrary account passthrough (#71))
+	packet := transferPacket(t, test.AccAddress(t).String(), "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", "{}")
 
 	// Expected mocks
 	gomock.InOrder(
@@ -235,13 +220,8 @@ func TestOnRecvPacket_RecvPacketFailed(t *testing.T) {
 	cdc := setup.Initializer.Marshaler
 	forwardMiddleware := setup.ForwardMiddleware
 
-<<<<<<< HEAD
 	senderAccAddr := test.AccAddress(t)
-	packet := transferPacket(t, "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", nil)
-=======
-	senderAccAddr := test.AccAddress()
-	packet := transferPacket(t, test.AccAddress().String(), "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", nil)
->>>>>>> d72e83c ([pfm][fix] patch arbitrary account passthrough (#71))
+	packet := transferPacket(t, test.AccAddress(t).String(), "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k", nil)
 
 	// Expected mocks
 	gomock.InOrder(
@@ -268,17 +248,6 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 	cdc := setup.Initializer.Marshaler
 	forwardMiddleware := setup.ForwardMiddleware
 
-<<<<<<< HEAD
-	// Test data
-	const (
-		hostAddr = "cosmos1vzxkv3lxccnttr9rs0002s93sgw72h7ghukuhs"
-		destAddr = "cosmos16plylpsgxechajltx9yeseqexzdzut9g8vla4k"
-		port     = "transfer"
-		channel  = "channel-0"
-	)
-
-=======
->>>>>>> d72e83c ([pfm][fix] patch arbitrary account passthrough (#71))
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress(t)
 	testCoin := sdk.NewCoin(denom, sdk.NewInt(100))
@@ -398,13 +367,8 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	setup.Keepers.RouterKeeper.SetParams(ctx, types.NewParams(sdk.NewDecWithPrec(10, 2)))
 
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
-<<<<<<< HEAD
 	senderAccAddr := test.AccAddress(t)
-	hostAccAddr := test.AccAddressFromBech32(t, hostAddr)
-=======
-	senderAccAddr := test.AccAddress()
 	intermediateAccAddr := test.AccAddressFromBech32(t, intermediateAddr)
->>>>>>> d72e83c ([pfm][fix] patch arbitrary account passthrough (#71))
 	testCoin := sdk.NewCoin(denom, sdk.NewInt(90))
 	feeCoins := sdk.Coins{sdk.NewCoin(denom, sdk.NewInt(10))}
 	metadata := &types.PacketMetadata{Forward: &types.ForwardMetadata{
