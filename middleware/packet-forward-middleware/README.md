@@ -61,8 +61,10 @@ Utilizing the packet `memo` field, instructions can be encoded as JSON for multi
 ### Minimal Example - Chain forward A->B->C
 
 - The packet-forward-middleware integrated on Chain B.
+- The packet data `receiver` for the `MsgTransfer` on Chain A is set to `"pfm"` or some other invalid bech32 string.*
 - The packet `memo` is included in `MsgTransfer` by user on Chain A.
 
+memo:
 ```
 {
   "forward": {
@@ -76,6 +78,8 @@ Utilizing the packet `memo` field, instructions can be encoded as JSON for multi
 ### Full Example - Chain forward A->B->C->D with retry on timeout
 
 - The packet-forward-middleware integrated on Chain B and Chain C.
+- The packet data `receiver` for the `MsgTransfer` on Chain A is set to `"pfm"` or some other invalid bech32 string.*
+- The forward metadata `receiver` for the hop from Chain B to Chain C is set to `"pfm"` or some other invalid bech32 string.*
 - The packet `memo` is included in `MsgTransfer` by user on Chain A.
 - A packet timeout of 10 minutes and 2 retries is set for both forwards. 
 
@@ -87,7 +91,7 @@ In the case of a timeout after 10 minutes for either forward, the packet would b
 ```
 {
   "forward": {
-    "receiver": "chain-c-bech32-address",
+    "receiver": "pfm", // purposely using invalid bech32 here*
     "port": "transfer",
     "channel": "channel-123",
     "timeout": "10m",
@@ -109,7 +113,7 @@ In the case of a timeout after 10 minutes for either forward, the packet would b
 ```
 {
   "forward": {
-    "receiver": "chain-c-bech32-address",
+    "receiver": "pfm", // purposely using invalid bech32 here*
     "port": "transfer",
     "channel": "channel-123",
     "timeout": "10m",
@@ -118,6 +122,14 @@ In the case of a timeout after 10 minutes for either forward, the packet would b
   }
 }
 ```
+
+## Intermediate Receivers*
+
+PFM does not need the packet data `receiver` address to be valid, as it will create a hash of the sender and channel to derive a receiver address on the intermediate chains. This is done for security purposes to ensure that users cannot move funds through arbitrary accounts on intermediate chains.
+
+To prevent accidentally sending funds to a chain which does not have PFM, it is recommended to use an invalid bech32 string (such as `"pfm"`) for the `receiver` on intermediate chains.  By using an invalid bech32 string, a transfer that is accidentally sent to a chain that does not have PFM would fail to be received, and properly refunded to the user on the source chain, rather than having funds get stuck on the intermediate chain.
+
+The examples above show the intended usage of the `receiver` field for one or multiple intermediate PFM chains.
 
 ## References
 
