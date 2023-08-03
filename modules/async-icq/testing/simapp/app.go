@@ -440,7 +440,7 @@ func NewSimApp(
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		scopedICQKeeper,
-		app.BaseApp, // may be replaced
+		app.BaseApp.GRPCQueryRouter(),
 	)
 
 	// Create IBC Router

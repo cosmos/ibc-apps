@@ -4,21 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 
-	errors "cosmossdk.io/errors"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-
 	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
 	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+
+	errors "cosmossdk.io/errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
 type ContractAck struct {
