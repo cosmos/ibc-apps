@@ -370,6 +370,7 @@ func (k *Keeper) RetryTimeout(
 	}
 
 	if data.Memo != "" {
+		metadata.Next = &types.JSONObject{}
 		if err := json.Unmarshal([]byte(data.Memo), metadata.Next); err != nil {
 			return fmt.Errorf("error unmarshaling memo json: %w", err)
 		}
