@@ -33,9 +33,9 @@ func TestForwardMetadataUnmarshalJSONNext(t *testing.T) {
 }
 
 func TestTimeoutUnmarshalString(t *testing.T) {
-	const memo = "{\"forward\":{\"receiver\":\"noble1f4cur2krsua2th9kkp7n0zje4stea4p9tu70u8\",\"port\":\"transfer\",\"channel\":\"channel-0\",\"timeout\":\"60s\"}}"
+	//const memo = "{\"forward\":{\"receiver\":\"noble1f4cur2krsua2th9kkp7n0zje4stea4p9tu70u8\",\"port\":\"transfer\",\"channel\":\"channel-0\",\"timeout\":\"60s\"}}"
 	var packetMetadata types.PacketMetadata
-
+	memo := "trest"
 	err := json.Unmarshal([]byte(memo), &packetMetadata)
 	require.NoError(t, err)
 
