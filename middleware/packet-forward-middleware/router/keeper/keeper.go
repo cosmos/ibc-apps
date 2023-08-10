@@ -3,7 +3,6 @@ package keeper
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/iancoleman/orderedmap"
 	"strings"
 	"time"
 
@@ -375,11 +374,17 @@ func (k *Keeper) RetryTimeout(
 	)
 
 	if data.Memo != "" {
-		metadata.Next = &types.JSONObject{}
-		if err := json.Unmarshal([]byte(data.Memo), metadata.Next); err != nil {
-			metadata.Next = types.NewJSONObject(false, []byte(data.Memo), orderedmap.OrderedMap{})
-			//return fmt.Errorf("error unmarshaling memo json: %w", err)
+		//metadata.Next = &types.JSONObject{}
+		//if err := json.Unmarshal([]byte(data.Memo), metadata.Next); err != nil {
+		//	metadata.Next = types.NewJSONObject(false, []byte(data.Memo), orderedmap.OrderedMap{})
+		//	//return fmt.Errorf("error unmarshaling memo json: %w", err)
+		//}
+		m := &types.PacketMetadata{}
+		err := json.Unmarshal([]byte(data.Memo), m)
+		if err != nil {
+			return fmt.Errorf("error parsing forward metadata 1: %w", err)
 		}
+		metadata.Next = m.Forward.Next
 	}
 
 	amount, ok := sdk.NewIntFromString(data.Amount)
