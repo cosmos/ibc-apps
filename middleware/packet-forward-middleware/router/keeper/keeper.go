@@ -253,7 +253,7 @@ func (k *Keeper) ForwardTransferPacket(
 		msgTransfer.Memo = string(memoBz)
 	}
 
-	k.Logger(ctx).Debug("packetForwardMiddleware ForwardTransferPacket",
+	k.Logger(ctx).Info("packetForwardMiddleware ForwardTransferPacket",
 		"port", metadata.Port, "channel", metadata.Channel,
 		"sender", receiver, "receiver", metadata.Receiver,
 		"amount", packetCoin.Amount.String(), "denom", packetCoin.Denom,
@@ -339,6 +339,10 @@ func (k *Keeper) TimeoutShouldRetry(
 	var inFlightPacket types.InFlightPacket
 	k.cdc.MustUnmarshal(bz, &inFlightPacket)
 
+	k.Logger(ctx).Info("packetForwardMiddleware TimeoutShouldRetry",
+		"inFlightPacket.", inFlightPacket,
+	)
+
 	if inFlightPacket.RetriesRemaining <= 0 {
 		k.Logger(ctx).Error("packetForwardMiddleware reached max retries for packet",
 			"key", string(key),
@@ -365,6 +369,10 @@ func (k *Keeper) RetryTimeout(
 		Channel:  channel,
 		Port:     port,
 	}
+
+	k.Logger(ctx).Info("packetForwardMiddleware RetryTimeout",
+		"memo.", data.Memo,
+	)
 
 	if data.Memo != "" {
 		metadata.Next = &types.JSONObject{}
