@@ -209,12 +209,13 @@ func (k *Keeper) ForwardTransferPacket(
 	labels []metrics.Label,
 	nonrefundable bool,
 ) error {
+	k.Logger(ctx).Info("forwarding packet", "packet", inFlightPacket, "metadata", metadata, "max_retries", maxRetries, "timeout", timeout)
 	var err error
 	feeAmount := sdk.NewDecFromInt(token.Amount).Mul(k.GetFeePercentage(ctx)).RoundInt()
 	packetAmount := token.Amount.Sub(feeAmount)
 	feeCoins := sdk.Coins{sdk.NewCoin(token.Denom, feeAmount)}
 	packetCoin := sdk.NewCoin(token.Denom, packetAmount)
-
+	k.Logger(ctx).Info("1")
 	// pay fees
 	if feeAmount.IsPositive() {
 		hostAccAddr, err := sdk.AccAddressFromBech32(receiver)
@@ -229,6 +230,7 @@ func (k *Keeper) ForwardTransferPacket(
 			return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 		}
 	}
+	k.Logger(ctx).Info("2")
 
 	msgTransfer := transfertypes.NewMsgTransfer(
 		metadata.Port,
@@ -239,6 +241,7 @@ func (k *Keeper) ForwardTransferPacket(
 		DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(timeout.Nanoseconds()),
 	)
+	k.Logger(ctx).Info("3")
 
 	// set memo for next transfer with next from this transfer.
 	if metadata.Next != nil {
@@ -251,6 +254,7 @@ func (k *Keeper) ForwardTransferPacket(
 		}
 		msgTransfer.Memo = string(memoBz)
 	}
+	k.Logger(ctx).Info("4")
 
 	k.Logger(ctx).Info("packetForwardMiddleware ForwardTransferPacket",
 		"port", metadata.Port, "channel", metadata.Channel,
@@ -272,6 +276,7 @@ func (k *Keeper) ForwardTransferPacket(
 		)
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
+	k.Logger(ctx).Info("5")
 
 	// Store the following information in keeper:
 	// key - information about forwarded packet: src_channel (parsedReceiver.Channel), src_port (parsedReceiver.Port), sequence
@@ -297,11 +302,13 @@ func (k *Keeper) ForwardTransferPacket(
 	} else {
 		inFlightPacket.RetriesRemaining--
 	}
+	k.Logger(ctx).Info("6")
 
 	key := types.RefundPacketKey(metadata.Channel, metadata.Port, res.Sequence)
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(inFlightPacket)
 	store.Set(key, bz)
+	k.Logger(ctx).Info("7")
 
 	defer func() {
 		if token.Amount.IsInt64() {
@@ -380,6 +387,7 @@ func (k *Keeper) RetryTimeout(
 		}
 		metadata.Next = &parsedMetadata
 	}
+	k.Logger(ctx).Info("retry after memo")
 
 	amount, ok := sdk.NewIntFromString(data.Amount)
 	if !ok {
@@ -396,6 +404,7 @@ func (k *Keeper) RetryTimeout(
 	denom := transfertypes.ParseDenomTrace(data.Denom).IBCDenom()
 
 	token := sdk.NewCoin(denom, amount)
+	k.Logger(ctx).Info("retry before transfer")
 
 	// srcPacket and srcPacketSender are empty because inFlightPacket is non-nil.
 	return k.ForwardTransferPacket(
