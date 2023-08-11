@@ -348,7 +348,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		im.keeper.Logger(ctx).Error("packetForwardMiddleware error parsing packet data from timeout packet",
+		im.keeper.Logger(ctx).Info("packetForwardMiddleware error parsing packet data from timeout packet",
 			"sequence", packet.Sequence,
 			"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 			"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
@@ -357,7 +357,7 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 		return im.app.OnTimeoutPacket(ctx, packet, relayer)
 	}
 
-	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnAcknowledgementPacket",
+	im.keeper.Logger(ctx).Info("packetForwardMiddleware OnAcknowledgementPacket FROM RETRY",
 		"sequence", packet.Sequence,
 		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,

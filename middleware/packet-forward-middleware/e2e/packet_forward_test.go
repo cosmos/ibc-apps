@@ -45,14 +45,20 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 	chainIdA, chainIdB, chainIdC, chainIdD := "chain-a", "chain-b", "chain-c", "chain-d"
 
+	image := ibc.DockerImage{
+		Repository: "osmosis",
+		Version:    "debug",
+		UidGid:     "1025:1025",
+	}
+
 	fullNodes := 1
 	vals := 1
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdA, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdB, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdC, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdD, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "osmosis", Version: "local", ChainConfig: ibc.ChainConfig{ChainID: chainIdA, GasPrices: "0.01uosmo", Images: []ibc.DockerImage{image}}, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "osmosis", Version: "local", ChainConfig: ibc.ChainConfig{ChainID: chainIdB, GasPrices: "0.01uosmo", Images: []ibc.DockerImage{image}}, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "osmosis", Version: "local", ChainConfig: ibc.ChainConfig{ChainID: chainIdC, GasPrices: "0.01uosmo", Images: []ibc.DockerImage{image}}, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "osmosis", Version: "local", ChainConfig: ibc.ChainConfig{ChainID: chainIdD, GasPrices: "0.01uosmo", Images: []ibc.DockerImage{image}}, NumFullNodes: &fullNodes, NumValidators: &vals},
 	})
 
 	chains, err := cf.Chains(t.Name())
@@ -316,12 +322,14 @@ func TestPacketForwardMiddleware(t *testing.T) {
 			Denom:   chainA.Config().Denom,
 			Amount:  transferAmount,
 		}
-
+		retries := uint8(2)
 		metadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
 				Receiver: "xyz1t8eh66t2w5k67kwurmn5gqhtq6d2ja0vp7jmmq", // malformed receiver address on Chain C
 				Channel:  bcChan.ChannelID,
 				Port:     bcChan.PortID,
+				Retries:  &retries,
+				Timeout:  1 * time.Second,
 			},
 		}
 

@@ -277,6 +277,11 @@ func (k *Keeper) ForwardTransferPacket(
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
 	k.Logger(ctx).Info("5")
+	if inFlightPacket == nil {
+		k.Logger(ctx).Info("5.1", "inflihtPacket", inFlightPacket)
+	} else {
+		k.Logger(ctx).Info("5.1", "inflihtPacket.retries_remaining", inFlightPacket.RetriesRemaining)
+	}
 
 	// Store the following information in keeper:
 	// key - information about forwarded packet: src_channel (parsedReceiver.Channel), src_port (parsedReceiver.Port), sequence
@@ -303,12 +308,13 @@ func (k *Keeper) ForwardTransferPacket(
 		inFlightPacket.RetriesRemaining--
 	}
 	k.Logger(ctx).Info("6")
+	k.Logger(ctx).Info("6.1", "inflihtPacket.retries_remaining", inFlightPacket.RetriesRemaining)
 
 	key := types.RefundPacketKey(metadata.Channel, metadata.Port, res.Sequence)
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(inFlightPacket)
 	store.Set(key, bz)
-	k.Logger(ctx).Info("7")
+	k.Logger(ctx).Info("7 saved", "key", key, "value", inFlightPacket)
 
 	defer func() {
 		if token.Amount.IsInt64() {
