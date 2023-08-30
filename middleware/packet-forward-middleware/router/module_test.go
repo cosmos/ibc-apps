@@ -8,9 +8,9 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test"
-	"github.com/golang/mock/gomock"
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -256,7 +256,7 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 		Channel:  channel,
 	}}
 	packetOrig := transferPacket(t, senderAddr, hostAddr, metadata)
-	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, metadata)
+	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, nil)
 	packetFwd := transferPacket(t, intermediateAddr, destAddr, nil)
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
@@ -317,7 +317,7 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 	}}
 
 	packetOrig := transferPacket256(t, senderAddr, hostAddr, metadata)
-	packetModifiedSender := transferPacket256(t, senderAddr, intermediateAddr, metadata)
+	packetModifiedSender := transferPacket256(t, senderAddr, intermediateAddr, nil)
 	packetFwd := transferPacket256(t, intermediateAddr, destAddr, nil)
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
@@ -378,7 +378,7 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 		Channel:  channel,
 	}}
 	packetOrig := transferPacket(t, senderAddr, hostAddr, metadata)
-	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, metadata)
+	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, nil)
 	packetFwd := transferPacket(t, intermediateAddr, destAddr, nil)
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
 	successAck := cdc.MustMarshalJSON(&acknowledgement)
@@ -454,9 +454,9 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 	}
 
 	packetOrig := transferPacket(t, senderAddr, hostAddr, metadata)
-	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, metadata)
+	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, nil)
 	packet2 := transferPacket(t, intermediateAddr, hostAddr2, nextMetadata)
-	packet2ModifiedSender := transferPacket(t, intermediateAddr, intermediateAddr2, nextMetadata)
+	packet2ModifiedSender := transferPacket(t, intermediateAddr, intermediateAddr2, nil)
 	packetFwd := transferPacket(t, intermediateAddr2, destAddr, nil)
 
 	memo1, err := json.Marshal(nextMetadata)
@@ -566,9 +566,9 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 		},
 	}
 	packetOrig := transferPacket(t, senderAddr, hostAddr, metadata)
-	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, metadata)
+	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, nil)
 	packet2 := transferPacket(t, intermediateAddr, hostAddr2, nextMetadata)
-	packet2ModifiedSender := transferPacket(t, intermediateAddr, intermediateAddr2, nextMetadata)
+	packet2ModifiedSender := transferPacket(t, intermediateAddr, intermediateAddr2, nil)
 	packetFwd := transferPacket(t, intermediateAddr2, destAddr, nil)
 
 	memo1, err := json.Marshal(nextMetadata)
