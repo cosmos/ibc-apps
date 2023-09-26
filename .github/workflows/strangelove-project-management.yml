@@ -6,9 +6,16 @@ on:
       - opened
       - transferred
       - reopened
+  label:
+    types:
+      - created
+      - deleted
+      - edited
+
 
 jobs:
   add-to-project:
+    if: ${{ github.event.label.name == 'packet-forward-middleware' }} || ${{ github.event.label.name == 'async-icq' }}
     name: Add issue to project
     runs-on: ubuntu-latest
     steps:
