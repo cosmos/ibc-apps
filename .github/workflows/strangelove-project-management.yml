@@ -3,14 +3,7 @@ name: Add IBC-apps GH issues to Strangelove Motherboard github project.
 on:
   issues:
     types:
-      - opened
-      - transferred
-      - reopened
-  label:
-    types:
-      - created
-      - deleted
-      - edited
+      - labeled
 
 
 jobs:
