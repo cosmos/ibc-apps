@@ -122,13 +122,19 @@ func TestOnRecvPacket_EmptyPacket(t *testing.T) {
 	senderAccAddr := test.AccAddress()
 	packet := emptyPacket()
 
+	// Expected mocks
+	gomock.InOrder(
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet, senderAccAddr).
+			Return(channeltypes.NewResultAcknowledgement([]byte(""))),
+	)
+
 	ack := forwardMiddleware.OnRecvPacket(ctx, packet, senderAccAddr)
-	require.False(t, ack.Success())
+	require.True(t, ack.Success())
 
 	expectedAck := &channeltypes.Acknowledgement{}
 	err := cdc.UnmarshalJSON(ack.Acknowledgement(), expectedAck)
 	require.NoError(t, err)
-	require.Equal(t, "packet-forward-middleware error: failed to unmarshal packet data as FungibleTokenPacketData: EOF", expectedAck.GetError())
+	require.Equal(t, "", expectedAck.GetError())
 }
 
 func TestOnRecvPacket_InvalidReceiver(t *testing.T) {
