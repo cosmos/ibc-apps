@@ -9,8 +9,13 @@ import (
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
+<<<<<<< HEAD
 	types0 "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
 	gomock "github.com/golang/mock/gomock"
+=======
+	types0 "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	gomock "go.uber.org/mock/gomock"
+>>>>>>> b1b6db8 (test: use non-deprecated gomock package & fix unit tests (#88))
 )
 
 // MockTransferKeeper is a mock of TransferKeeper interface.

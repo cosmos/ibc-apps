@@ -5,20 +5,36 @@ module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5
 require (
 	cosmossdk.io/errors v1.0.0-beta.7
 	github.com/armon/go-metrics v0.4.1
+<<<<<<< HEAD
 	github.com/cosmos/cosmos-sdk v0.46.15
 	github.com/cosmos/ibc-go/v5 v5.1.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/mock v1.6.0
+=======
+	github.com/cometbft/cometbft v0.37.2
+	github.com/cometbft/cometbft-db v0.8.0
+	github.com/cosmos/cosmos-sdk v0.47.5
+	github.com/cosmos/gogoproto v1.4.10
+	github.com/cosmos/ibc-go/v7 v7.3.0
+>>>>>>> b1b6db8 (test: use non-deprecated gomock package & fix unit tests (#88))
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/iancoleman/orderedmap v0.2.0
+<<<<<<< HEAD
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.2
 	github.com/tendermint/tendermint v0.34.29
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4
 	google.golang.org/grpc v1.54.0
+=======
+	github.com/spf13/cobra v1.7.0
+	github.com/stretchr/testify v1.8.4
+	go.uber.org/mock v0.2.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
+	google.golang.org/grpc v1.56.2
+>>>>>>> b1b6db8 (test: use non-deprecated gomock package & fix unit tests (#88))
 )
 
 require (
