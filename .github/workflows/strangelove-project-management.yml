@@ -3,12 +3,12 @@ name: Add IBC-apps GH issues to Strangelove Motherboard github project.
 on:
   issues:
     types:
-      - opened
-      - transferred
-      - reopened
+      - labeled
+
 
 jobs:
   add-to-project:
+    if: ${{ github.event.label.name == 'packet-forward-middleware' }} || ${{ github.event.label.name == 'async-icq' }}
     name: Add issue to project
     runs-on: ubuntu-latest
     steps:
