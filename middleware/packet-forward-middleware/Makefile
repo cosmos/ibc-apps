@@ -142,6 +142,7 @@ cosmovisor:
 .PHONY: build build-linux build-simd-all build-simd-linux cosmovisor
 
 mocks: $(MOCKS_DIR)
+	go install go.uber.org/mock/mockgen@v0.2.0
 	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/router/types TransferKeeper
 	mockgen -package=mock -destination=./test/mock/distribution_keeper.go $(GOMOD)/router/types DistributionKeeper
 	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/router/types BankKeeper
