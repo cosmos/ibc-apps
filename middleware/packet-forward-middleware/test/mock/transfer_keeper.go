@@ -10,7 +10,7 @@ import (
 
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTransferKeeper is a mock of TransferKeeper interface.

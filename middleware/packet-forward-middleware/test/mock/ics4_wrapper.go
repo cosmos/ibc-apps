@@ -11,7 +11,7 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/x/capability/types"
 	types1 "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	exported "github.com/cosmos/ibc-go/v6/modules/core/exported"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockICS4Wrapper is a mock of ICS4Wrapper interface.
