@@ -5,16 +5,9 @@ import (
 	"errors"
 	"testing"
 
-<<<<<<< HEAD
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/test"
-	"github.com/golang/mock/gomock"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test"
->>>>>>> b1b6db8 (test: use non-deprecated gomock package & fix unit tests (#88))
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"

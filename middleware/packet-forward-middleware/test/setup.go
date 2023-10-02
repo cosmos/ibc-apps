@@ -4,24 +4,15 @@ import (
 	"testing"
 	"time"
 
-<<<<<<< HEAD
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/test/mock"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test/mock"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
->>>>>>> b1b6db8 (test: use non-deprecated gomock package & fix unit tests (#88))
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
