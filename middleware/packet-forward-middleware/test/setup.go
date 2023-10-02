@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/test/mock"
-
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
