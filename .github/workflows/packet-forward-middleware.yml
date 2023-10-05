@@ -74,6 +74,9 @@ jobs:
   e2e-tests:
     needs: build-docker
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
     strategy:
       matrix:          
         test:
