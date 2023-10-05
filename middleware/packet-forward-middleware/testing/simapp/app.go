@@ -7,17 +7,15 @@ import (
 	"os"
 	"path/filepath"
 
+	pfm "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
+	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
 
-	pfm "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-	pfmkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
-	pfmtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
-
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik" // this is used for serving docs
-	"github.com/cosmos/cosmos-sdk/std"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -118,7 +116,6 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	ibcmock "github.com/cosmos/ibc-go/v7/testing/mock"
 	"github.com/cosmos/ibc-go/v7/testing/simapp"
-	simappparams "github.com/cosmos/ibc-go/v7/testing/simapp/params"
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
 )
 
@@ -871,15 +868,4 @@ func GetSimApp(chain *ibctesting.TestChain) *SimApp {
 	require.True(chain.T, ok)
 
 	return app
-}
-
-func MakeEncodingConfig() simappparams.EncodingConfig {
-	cfg := simappparams.MakeTestEncodingConfig()
-
-	std.RegisterLegacyAminoCodec(cfg.Amino)
-	std.RegisterInterfaces(cfg.InterfaceRegistry)
-	ModuleBasics.RegisterLegacyAminoCodec(cfg.Amino)
-	ModuleBasics.RegisterInterfaces(cfg.InterfaceRegistry)
-
-	return cfg
 }

@@ -4,21 +4,13 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path/filepath"
-	"time"
 
+	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp"
+	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/params"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	simappparams "github.com/cosmos/ibc-go/v7/testing/simapp/params"
-
-	dbm "github.com/cometbft/cometbft-db"
-	tmcfg "github.com/cometbft/cometbft/config"
-	tmcli "github.com/cometbft/cometbft/libs/cli"
-	"github.com/cometbft/cometbft/libs/log"
-
 	rosettaCmd "cosmossdk.io/tools/rosetta/cmd"
-	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -27,6 +19,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -35,12 +28,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp"
+	dbm "github.com/cometbft/cometbft-db"
+	tmcfg "github.com/cometbft/cometbft/config"
+	tmcli "github.com/cometbft/cometbft/libs/cli"
+	"github.com/cometbft/cometbft/libs/log"
 )
 
-// NewRootCmd creates a new root command for junod. It is called once in the
+// NewRootCmd creates a new root command for simd. It is called once in the
 // main function.
-func NewRootCmd() (*cobra.Command, simappparams.EncodingConfig) {
+func NewRootCmd() (*cobra.Command, appparams.EncodingConfig) {
 	encodingConfig := app.MakeEncodingConfig()
 
 	cfg := sdk.GetConfig()
@@ -57,13 +53,9 @@ func NewRootCmd() (*cobra.Command, simappparams.EncodingConfig) {
 		WithHomeDir(app.DefaultNodeHome).
 		WithViper("")
 
-	// Allows you to add extra params to your client.toml
-	// gas, gas-price, gas-adjustment, fees, note, etc.
-	SetCustomEnvVariablesFromClientToml(initClientCtx)
-
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: "Juno Smart Contract Zone",
+		Short: "PFM",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -83,13 +75,7 @@ func NewRootCmd() (*cobra.Command, simappparams.EncodingConfig) {
 				return err
 			}
 
-			// 2 seconds + 1 second tendermint = 3 second blocks
-			timeoutCommit := 2 * time.Second
-
-			customTMConfig := initTendermintConfig(timeoutCommit)
-
-			// Force faster block times
-			os.Setenv("JUNOD_CONSENSUS_TIMEOUT_COMMIT", cast.ToString(timeoutCommit))
+			customTMConfig := initTendermintConfig()
 
 			return server.InterceptConfigsPreRunHandler(cmd, "", serverconfig.DefaultConfig(), customTMConfig)
 		},
@@ -102,61 +88,17 @@ func NewRootCmd() (*cobra.Command, simappparams.EncodingConfig) {
 
 // initTendermintConfig helps to override default Tendermint Config values.
 // return tmcfg.DefaultConfig if no custom configuration is required for the application.
-func initTendermintConfig(timeoutCommit time.Duration) *tmcfg.Config {
+func initTendermintConfig() *tmcfg.Config {
 	cfg := tmcfg.DefaultConfig()
 
 	// these values put a higher strain on node memory
 	// cfg.P2P.MaxNumInboundPeers = 100
 	// cfg.P2P.MaxNumOutboundPeers = 40
 
-	// While this is set, it only applies to new configs.
-	cfg.Consensus.TimeoutCommit = timeoutCommit
-
 	return cfg
 }
 
-// Reads the custom extra values in the config.toml file if set.
-// If they are, then use them.
-func SetCustomEnvVariablesFromClientToml(ctx client.Context) {
-	configFilePath := filepath.Join(ctx.HomeDir, "config", "client.toml")
-
-	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		return
-	}
-
-	viper := ctx.Viper
-	viper.SetConfigFile(configFilePath)
-
-	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
-	}
-
-	setEnvFromConfig := func(key string, envVar string) {
-		// if the user sets the env key manually, then we don't want to override it
-		if os.Getenv(envVar) != "" {
-			return
-		}
-
-		// reads from the config file
-		val := viper.GetString(key)
-		if val != "" {
-			// Sets the env for this instance of the app only.
-			os.Setenv(envVar, val)
-		}
-	}
-
-	// gas
-	setEnvFromConfig("gas", "JUNOD_GAS")
-	setEnvFromConfig("gas-prices", "JUNOD_GAS_PRICES")
-	setEnvFromConfig("gas-adjustment", "JUNOD_GAS_ADJUSTMENT")
-	// fees
-	setEnvFromConfig("fees", "JUNOD_FEES")
-	setEnvFromConfig("fee-account", "JUNOD_FEE_ACCOUNT")
-	// memo
-	setEnvFromConfig("note", "JUNOD_NOTE")
-}
-
-func initRootCmd(rootCmd *cobra.Command, encodingConfig simappparams.EncodingConfig) {
+func initRootCmd(rootCmd *cobra.Command, encodingConfig appparams.EncodingConfig) {
 	ac := appCreator{
 		encCfg: encodingConfig,
 	}
@@ -186,7 +128,7 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 }
 
 // genesisCommand builds genesis-related `simd genesis` command. Users may provide application specific commands as a parameter
-func genesisCommand(encodingConfig simappparams.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
+func genesisCommand(encodingConfig appparams.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
 	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, app.ModuleBasics, app.DefaultNodeHome)
 
 	for _, subCmd := range cmds {
@@ -248,7 +190,7 @@ func txCommand() *cobra.Command {
 }
 
 type appCreator struct {
-	encCfg simappparams.EncodingConfig
+	encCfg appparams.EncodingConfig
 }
 
 func (ac appCreator) newApp(

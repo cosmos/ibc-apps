@@ -3,12 +3,12 @@ package main
 import (
 	"os"
 
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/simd/cmd"
+
 	"cosmossdk.io/log"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/simd/cmd"
 )
 
 func main() {
