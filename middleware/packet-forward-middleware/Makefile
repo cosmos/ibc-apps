@@ -215,11 +215,14 @@ endif
 ###                             e2e interchain test                         ###
 ###############################################################################
 
+local-image:
+	docker build . -t pfm:local
+
 ictest-forward:
-	cd middleware/packet-forward-middleware/e2e && go test -race -v -run TestPacketForwardMiddleware .
+	cd e2e && go test -race -v -run TestPacketForwardMiddleware .
 
 ictest-timeout:
-	cd middleware/packet-forward-middleware/e2e && go test -race -v -run TestTimeoutOnForward .
+	cd e2e && go test -race -v -run TestTimeoutOnForward .
 
 ###############################################################################
 ###                                Linting                                  ###
