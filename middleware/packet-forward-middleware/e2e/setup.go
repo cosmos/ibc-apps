@@ -10,6 +10,7 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	connectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	ibclocalhost "github.com/cosmos/ibc-go/v7/modules/light-clients/09-localhost"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -49,6 +50,7 @@ func encoding() *testutil.TestEncodingConfig {
 	// Error: error creating clients: failed to create client on src chain{chain-c}: failed to find a matching client for the new client state: no concrete type registered for type URL /ibc.lightclients.localhost.v2.ClientState against interface *exported.ClientState
 
 	// register custom types
+	ibctm.RegisterInterfaces(cfg.InterfaceRegistry)
 	ibclocalhost.RegisterInterfaces(cfg.InterfaceRegistry)
 	transfertypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	clienttypes.RegisterInterfaces(cfg.InterfaceRegistry)
