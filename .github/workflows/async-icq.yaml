@@ -1,9 +1,9 @@
 name: async-icq
 on: 
   pull_request:
-    # paths:  # TODO: Enable
-    #   - 'modules/async-icq/**'
-    #   - '.github/workflows/**'
+    paths:
+      - 'modules/async-icq/**'
+      - '.github/workflows/**'
 
 env:
   LINT_VERSION: v1.52

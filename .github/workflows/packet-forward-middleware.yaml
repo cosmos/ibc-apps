@@ -1,9 +1,9 @@
 name: packet-forward-middleware
 on: 
   pull_request:
-    # paths:  # TODO: Enable
-    #   - 'middleware/packet-forward-middleware/**'
-    #   - '.github/workflows/**'
+    paths:
+      - 'middleware/packet-forward-middleware/**'
+      - '.github/workflows/**'
 
 env:
     LINT_VERSION: v1.52

@@ -1,9 +1,9 @@
 name: ibc-hooks
 on: 
   pull_request:
-    # paths:  # TODO: Enable
-    #   - 'modules/ibc-hooks/**'
-    #   - '.github/workflows/**'
+    paths:
+      - 'modules/ibc-hooks/**'
+      - '.github/workflows/**'
 
 env:
   LINT_VERSION: v1.52
