@@ -45,14 +45,28 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 	chainIdA, chainIdB, chainIdC, chainIdD := "chain-a", "chain-b", "chain-c", "chain-d"
 
-	fullNodes := 1
 	vals := 1
+	fullNodes := 0
+
+	baseCfg := DefaultConfig
+
+	baseCfg.ChainID = chainIdA
+	configA := baseCfg
+
+	baseCfg.ChainID = chainIdB
+	configB := baseCfg
+
+	baseCfg.ChainID = chainIdC
+	configC := baseCfg
+
+	baseCfg.ChainID = chainIdD
+	configD := baseCfg
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdA, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdB, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdC, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdD, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configA, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configB, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configC, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configD, NumFullNodes: &fullNodes, NumValidators: &vals},
 	})
 
 	chains, err := cf.Chains(t.Name())

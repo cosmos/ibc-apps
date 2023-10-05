@@ -15,6 +15,7 @@ import (
 func GetQueryCmd() *cobra.Command {
 	queryCmd := &cobra.Command{
 		Use:                        "ibc-router",
+		Short:                      "Querying commands for the ibc-router module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 	}
