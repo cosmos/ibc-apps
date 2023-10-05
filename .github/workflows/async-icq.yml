@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - 'modules/async-icq/**'
-      - '.github/workflows/**'
+      - '.github/workflows/async-icq.yml'
 
 env:
   LINT_VERSION: v1.52

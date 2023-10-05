@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - 'middleware/packet-forward-middleware/**'
-      - '.github/workflows/**'
+      - '.github/workflows/packet-forward-middleware.yml'
 
 env:
     LINT_VERSION: v1.52

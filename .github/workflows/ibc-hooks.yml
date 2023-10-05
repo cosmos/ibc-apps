@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - 'modules/ibc-hooks/**'
-      - '.github/workflows/**'
+      - '.github/workflows/ibc-hooks.yml'
 
 env:
   LINT_VERSION: v1.52
