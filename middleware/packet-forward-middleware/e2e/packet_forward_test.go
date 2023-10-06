@@ -11,6 +11,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v7/relayer"
 	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
@@ -36,14 +37,13 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 
-	client, network := interchaintest.DockerSetup(t)
-
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
-
-	ctx := context.Background()
-
-	chainIdA, chainIdB, chainIdC, chainIdD := "chain-a", "chain-b", "chain-c", "chain-d"
+	var (
+		ctx                                    = context.Background()
+		client, network                        = interchaintest.DockerSetup(t)
+		rep                                    = testreporter.NewNopReporter()
+		eRep                                   = rep.RelayerExecReporter(t)
+		chainIdA, chainIdB, chainIdC, chainIdD = "chain-a", "chain-b", "chain-c", "chain-d"
+	)
 
 	vals := 1
 	fullNodes := 0
@@ -77,6 +77,8 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
+		relayer.DockerImage(&DefaultRelayer),
+		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
 	const pathAB = "ab"

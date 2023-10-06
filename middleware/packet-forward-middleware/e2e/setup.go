@@ -41,13 +41,16 @@ var (
 		ConfigFileOverrides: nil,
 		EncodingConfig:      encoding(),
 	}
+
+	DefaultRelayer = ibc.DockerImage{
+		Repository: "ghcr.io/cosmos/relayer",
+		Version:    "v2.4.2",
+		UidGid:     "1025:1025",
+	}
 )
 
 func encoding() *testutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
-
-	// TODO: Getting this error
-	// Error: error creating clients: failed to create client on src chain{chain-c}: failed to find a matching client for the new client state: no concrete type registered for type URL /ibc.lightclients.localhost.v2.ClientState against interface *exported.ClientState
 
 	// register custom types
 	ibctm.RegisterInterfaces(cfg.InterfaceRegistry)

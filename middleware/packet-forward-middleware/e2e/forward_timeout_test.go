@@ -23,14 +23,13 @@ func TestTimeoutOnForward(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 
-	client, network := interchaintest.DockerSetup(t)
-
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
-
-	ctx := context.Background()
-
-	chainIdA, chainIdB, chainIdC, chainIdD := "chain-a", "chain-b", "chain-c", "chain-d"
+	var (
+		ctx                                    = context.Background()
+		client, network                        = interchaintest.DockerSetup(t)
+		rep                                    = testreporter.NewNopReporter()
+		eRep                                   = rep.RelayerExecReporter(t)
+		chainIdA, chainIdB, chainIdC, chainIdD = "chain-a", "chain-b", "chain-c", "chain-d"
+	)
 
 	vals := 1
 	fullNodes := 0

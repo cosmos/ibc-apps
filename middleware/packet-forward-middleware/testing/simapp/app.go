@@ -113,6 +113,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	ibcmock "github.com/cosmos/ibc-go/v7/testing/mock"
 	"github.com/cosmos/ibc-go/v7/testing/simapp"
@@ -153,6 +154,9 @@ var (
 		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
+		ibc.AppModuleBasic{},
+		ibctm.AppModuleBasic{},
+		transfer.AppModuleBasic{},
 		ibcmock.AppModuleBasic{},
 		pfm.AppModuleBasic{},
 		authzmodule.AppModuleBasic{},
@@ -280,7 +284,7 @@ func NewSimApp(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, crisistypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, group.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
-		evidencetypes.StoreKey, pfmtypes.StoreKey, capabilitytypes.StoreKey, authzkeeper.StoreKey,
+		evidencetypes.StoreKey, pfmtypes.StoreKey, capabilitytypes.StoreKey, authzkeeper.StoreKey, ibctransfertypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	// NOTE: The testingkey is just mounted for testing purposes. Actual applications should
@@ -527,12 +531,13 @@ func NewSimApp(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
-		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 
 		// IBC modules
+		ibc.NewAppModule(app.IBCKeeper),
+		transfer.NewAppModule(app.TransferKeeper),
 		pfm.NewAppModule(app.PFMKeeper),
 		mockModule,
 	)
@@ -544,14 +549,16 @@ func NewSimApp(
 	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
-		evidencetypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, authtypes.ModuleName,
+		evidencetypes.ModuleName, stakingtypes.ModuleName, authtypes.ModuleName,
 		banktypes.ModuleName, govtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, authz.ModuleName, feegrant.ModuleName,
+		ibctransfertypes.StoreKey, ibcexported.ModuleName,
 		paramstypes.ModuleName, vestingtypes.ModuleName, pfmtypes.ModuleName, ibcmock.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
-		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName,
+		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName,
 		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
 		minttypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName, feegrant.ModuleName, paramstypes.ModuleName,
+		ibctransfertypes.StoreKey, ibcexported.ModuleName,
 		upgradetypes.ModuleName, vestingtypes.ModuleName, pfmtypes.ModuleName, ibcmock.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	)
 
@@ -564,7 +571,8 @@ func NewSimApp(
 	genesisModuleOrder := []string{
 		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName, distrtypes.ModuleName, stakingtypes.ModuleName,
 		slashingtypes.ModuleName, govtypes.ModuleName, minttypes.ModuleName, crisistypes.ModuleName,
-		ibcexported.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
+		genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
+		ibcexported.ModuleName, ibctransfertypes.StoreKey,
 		pfmtypes.ModuleName, ibcmock.ModuleName, feegrant.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName,
 		vestingtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	}
