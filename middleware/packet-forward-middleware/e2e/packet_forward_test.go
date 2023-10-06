@@ -43,6 +43,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		rep                                    = testreporter.NewNopReporter()
 		eRep                                   = rep.RelayerExecReporter(t)
 		chainIdA, chainIdB, chainIdC, chainIdD = "chain-a", "chain-b", "chain-c", "chain-d"
+		waitBlocks                             = 3
 	)
 
 	vals := 1
@@ -214,7 +215,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
@@ -288,7 +289,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -351,7 +352,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -408,7 +409,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -477,7 +478,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -543,7 +544,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainB, chainBHeight, chainBHeight+10, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainB)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainB)
 		require.NoError(t, err)
 
 		// assert balance for user controlled wallet
@@ -597,7 +598,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -665,7 +666,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)

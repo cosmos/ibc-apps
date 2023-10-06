@@ -453,8 +453,7 @@ func NewSimApp(
 
 	// Transfer Keeper
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
-		appCodec,
-		app.keys[ibctransfertypes.StoreKey],
+		appCodec, app.keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
 		// The ICS4Wrapper is replaced by the PacketForwardKeeper instead of the channel so that sending can be overridden by the middleware
 		app.PFMKeeper,
@@ -478,12 +477,6 @@ func NewSimApp(
 		pfmkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
-	// Create IBC Router
-	ibcRouter := porttypes.NewRouter().
-		AddRoute(ibctransfertypes.ModuleName, transferStack)
-
-	// Mock Module Stack
-
 	// Mock Module setup for testing IBC and also acts as the interchain accounts authentication module
 	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
 	// not replicate if you do not need to test core IBC or light clients.
@@ -491,7 +484,11 @@ func NewSimApp(
 
 	// The mock module is used for testing IBC
 	mockIBCModule := ibcmock.NewIBCModule(&mockModule, ibcmock.NewIBCApp(ibcmock.ModuleName, scopedIBCMockKeeper))
-	ibcRouter.AddRoute(ibcmock.ModuleName, mockIBCModule)
+
+	// Create IBC Router
+	ibcRouter := porttypes.NewRouter().
+		AddRoute(ibctransfertypes.ModuleName, transferStack).
+		AddRoute(ibcmock.ModuleName, mockIBCModule)
 
 	// Seal the IBC Router
 	app.IBCKeeper.SetRouter(ibcRouter)
