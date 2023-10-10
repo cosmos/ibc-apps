@@ -9,8 +9,8 @@ const (
 	// StoreKey is the store key string for IBC transfer
 	StoreKey = ModuleName
 
-	// RouterKey is the message route for IBC transfer
-	RouterKey = ModuleName
+	// packetforwardKey is the message route for IBC transfer
+	packetforwardKey = ModuleName
 
 	// QuerierRoute is the querier route for IBC transfer
 	QuerierRoute = ModuleName
