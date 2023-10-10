@@ -26,20 +26,19 @@ var (
 
 	Denom         = "token"
 	DefaultConfig = ibc.ChainConfig{
-		Type:                "cosmos",
-		Name:                "pfm",
-		ChainID:             "pfm-1",
-		Images:              []ibc.DockerImage{PFMImage},
-		Bin:                 "simd",
-		Bech32Prefix:        "cosmos",
-		Denom:               Denom,
-		CoinType:            "118",
-		GasPrices:           fmt.Sprintf("0%s", Denom),
-		GasAdjustment:       2.0,
-		TrustingPeriod:      "112h",
-		NoHostMount:         false,
-		ConfigFileOverrides: nil,
-		EncodingConfig:      encoding(),
+		Type:           "cosmos",
+		Name:           "pfm",
+		ChainID:        "pfm-1",
+		Images:         []ibc.DockerImage{PFMImage},
+		Bin:            "simd",
+		Bech32Prefix:   "cosmos",
+		Denom:          Denom,
+		CoinType:       "118",
+		GasPrices:      fmt.Sprintf("0.0%s", Denom),
+		GasAdjustment:  2.0,
+		TrustingPeriod: "112h",
+		NoHostMount:    false,
+		EncodingConfig: encoding(),
 	}
 
 	DefaultRelayer = ibc.DockerImage{

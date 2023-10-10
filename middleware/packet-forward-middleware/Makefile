@@ -219,10 +219,10 @@ local-image:
 	docker build . -t pfm:local
 
 ictest-forward:
-	cd e2e && go test -race -v -run TestPacketForwardMiddleware .
+	cd e2e && go test -race -v -timeout 15m -run TestPacketForwardMiddleware .
 
 ictest-timeout:
-	cd e2e && go test -race -v -run TestTimeoutOnForward .
+	cd e2e && go test -race -v -timeout 15m -run TestTimeoutOnForward .
 
 ###############################################################################
 ###                                Linting                                  ###
