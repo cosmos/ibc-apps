@@ -178,155 +178,153 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	zeroBal := math.ZeroInt()
 	transferAmount := math.NewInt(100_000)
 
-	/*
-		t.Run("multi-hop a->b->c->d", func(t *testing.T) {
-			// Send packet from Chain A->Chain B->Chain C->Chain D
-			transfer := ibc.WalletAmount{
-				Address: userB.FormattedAddress(),
-				Denom:   chainA.Config().Denom,
-				Amount:  transferAmount,
-			}
+	t.Run("multi-hop a->b->c->d", func(t *testing.T) {
+		// Send packet from Chain A->Chain B->Chain C->Chain D
+		transfer := ibc.WalletAmount{
+			Address: userB.FormattedAddress(),
+			Denom:   chainA.Config().Denom,
+			Amount:  transferAmount,
+		}
 
-			secondHopMetadata := &PacketMetadata{
-				Forward: &ForwardMetadata{
-					Receiver: userD.FormattedAddress(),
-					Channel:  cdChan.ChannelID,
-					Port:     cdChan.PortID,
-				},
-			}
-			nextBz, err := json.Marshal(secondHopMetadata)
-			require.NoError(t, err)
-			next := string(nextBz)
+		secondHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userD.FormattedAddress(),
+				Channel:  cdChan.ChannelID,
+				Port:     cdChan.PortID,
+			},
+		}
+		nextBz, err := json.Marshal(secondHopMetadata)
+		require.NoError(t, err)
+		next := string(nextBz)
 
-			firstHopMetadata := &PacketMetadata{
-				Forward: &ForwardMetadata{
-					Receiver: userC.FormattedAddress(),
-					Channel:  bcChan.ChannelID,
-					Port:     bcChan.PortID,
-					Next:     &next,
-				},
-			}
+		firstHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userC.FormattedAddress(),
+				Channel:  bcChan.ChannelID,
+				Port:     bcChan.PortID,
+				Next:     &next,
+			},
+		}
 
-			memo, err := json.Marshal(firstHopMetadata)
-			require.NoError(t, err)
+		memo, err := json.Marshal(firstHopMetadata)
+		require.NoError(t, err)
 
-			chainAHeight, err := chainA.Height(ctx)
-			require.NoError(t, err)
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
 
-			transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-			require.NoError(t, err)
-			_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
-			require.NoError(t, err)
-			err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-			require.NoError(t, err)
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
 
-			chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-			require.NoError(t, err)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
 
-			chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
-			require.NoError(t, err)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
 
-			chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
-			require.NoError(t, err)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
 
-			chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
-			require.NoError(t, err)
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
+		require.NoError(t, err)
 
-			require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
-			require.True(t, chainBBalance.Equal(zeroBal))
-			require.True(t, chainCBalance.Equal(zeroBal))
-			require.True(t, chainDBalance.Equal(transferAmount))
+		require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
+		require.True(t, chainBBalance.Equal(zeroBal))
+		require.True(t, chainCBalance.Equal(zeroBal))
+		require.True(t, chainDBalance.Equal(transferAmount))
 
-			firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
-			require.NoError(t, err)
+		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
 
-			secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
-			require.NoError(t, err)
+		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
 
-			thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
-			require.NoError(t, err)
+		thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
+		require.NoError(t, err)
 
-			require.Equal(t, transferAmount, firstHopEscrowBalance)
-			require.Equal(t, transferAmount, secondHopEscrowBalance)
-			require.Equal(t, transferAmount, thirdHopEscrowBalance)
-		})
+		require.Equal(t, transferAmount, firstHopEscrowBalance)
+		require.Equal(t, transferAmount, secondHopEscrowBalance)
+		require.Equal(t, transferAmount, thirdHopEscrowBalance)
+	})
 
-		t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
-			// Send packet back from Chain D->Chain C->Chain B->Chain A
-			transfer := ibc.WalletAmount{
-				Address: userC.FormattedAddress(),
-				Denom:   thirdHopIBCDenom,
-				Amount:  transferAmount,
-			}
+	t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
+		// Send packet back from Chain D->Chain C->Chain B->Chain A
+		transfer := ibc.WalletAmount{
+			Address: userC.FormattedAddress(),
+			Denom:   thirdHopIBCDenom,
+			Amount:  transferAmount,
+		}
 
-			secondHopMetadata := &PacketMetadata{
-				Forward: &ForwardMetadata{
-					Receiver: userA.FormattedAddress(),
-					Channel:  baChan.ChannelID,
-					Port:     baChan.PortID,
-				},
-			}
+		secondHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userA.FormattedAddress(),
+				Channel:  baChan.ChannelID,
+				Port:     baChan.PortID,
+			},
+		}
 
-			nextBz, err := json.Marshal(secondHopMetadata)
-			require.NoError(t, err)
+		nextBz, err := json.Marshal(secondHopMetadata)
+		require.NoError(t, err)
 
-			next := string(nextBz)
+		next := string(nextBz)
 
-			firstHopMetadata := &PacketMetadata{
-				Forward: &ForwardMetadata{
-					Receiver: userB.FormattedAddress(),
-					Channel:  cbChan.ChannelID,
-					Port:     cbChan.PortID,
-					Next:     &next,
-				},
-			}
+		firstHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userB.FormattedAddress(),
+				Channel:  cbChan.ChannelID,
+				Port:     cbChan.PortID,
+				Next:     &next,
+			},
+		}
 
-			memo, err := json.Marshal(firstHopMetadata)
-			require.NoError(t, err)
+		memo, err := json.Marshal(firstHopMetadata)
+		require.NoError(t, err)
 
-			chainDHeight, err := chainD.Height(ctx)
-			require.NoError(t, err)
+		chainDHeight, err := chainD.Height(ctx)
+		require.NoError(t, err)
 
-			transferTx, err := chainD.SendIBCTransfer(ctx, dcChan.ChannelID, userD.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-			require.NoError(t, err)
-			_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+30, transferTx.Packet)
-			require.NoError(t, err)
-			err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-			require.NoError(t, err)
+		transferTx, err := chainD.SendIBCTransfer(ctx, dcChan.ChannelID, userD.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+30, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
 
-			// assert balances for user controlled wallets
-			chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
-			require.NoError(t, err)
+		// assert balances for user controlled wallets
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
+		require.NoError(t, err)
 
-			chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
-			require.NoError(t, err)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
 
-			chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
-			require.NoError(t, err)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
 
-			chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-			require.NoError(t, err)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
 
-			require.True(t, chainDBalance.Equal(zeroBal))
-			require.True(t, chainCBalance.Equal(zeroBal))
-			require.True(t, chainBBalance.Equal(zeroBal))
-			require.True(t, chainABalance.Equal(initBal))
+		require.True(t, chainDBalance.Equal(zeroBal))
+		require.True(t, chainCBalance.Equal(zeroBal))
+		require.True(t, chainBBalance.Equal(zeroBal))
+		require.True(t, chainABalance.Equal(initBal))
 
-			// assert balances for IBC escrow accounts
-			firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
-			require.NoError(t, err)
+		// assert balances for IBC escrow accounts
+		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
 
-			secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
-			require.NoError(t, err)
+		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
 
-			thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
-			require.NoError(t, err)
+		thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
+		require.NoError(t, err)
 
-			require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-			require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-			require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
-		})
-	*/
+		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
+		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+		require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
+	})
 
 	t.Run("forward ack error refund", func(t *testing.T) {
 		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
