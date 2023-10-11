@@ -6,15 +6,9 @@ import (
 	"fmt"
 	"math/rand"
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/module.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/client/cli"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/client/cli"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/module.go
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/client/cli"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -54,13 +48,8 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/module.go
-// ValidateGenesis performs genesis state validation for the router module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
-=======
 // ValidateGenesis performs genesis state validation for the packetforward module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/module.go
 	var gs types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &gs); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
@@ -157,13 +146,8 @@ func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.V
 
 // AppModuleSimulation functions
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/module.go
-// GenerateGenesisState creates a randomized GenState of the router module.
-func (AppModule) GenerateGenesisState(simState *module.SimulationState) {}
-=======
 // GenerateGenesisState creates a randomized GenState of the packetforward module.
 func (AppModule) GenerateGenesisState(_ *module.SimulationState) {}
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/module.go
 
 // ProposalContents doesn't return any content functions for governance proposals.
 func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalContent {
@@ -175,13 +159,8 @@ func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return nil
 }
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/module.go
-// RegisterStoreDecoder registers a decoder for router module's types
-func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {}
-=======
 // RegisterStoreDecoder registers a decoder for packetforward module's types
 func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/module.go
 
 // WeightedOperations returns the all the packetforward module operations with their respective weights.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {

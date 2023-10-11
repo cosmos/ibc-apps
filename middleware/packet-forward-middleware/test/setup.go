@@ -4,17 +4,10 @@ import (
 	"testing"
 	"time"
 
-<<<<<<< HEAD
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/test/mock"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test/mock"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118))
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -45,12 +38,8 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *TestSetup {
 	ics4WrapperMock := mock.NewMockICS4Wrapper(ctl)
 
 	paramsKeeper := initializer.paramsKeeper()
-<<<<<<< HEAD
-	routerKeeper := initializer.routerKeeper(paramsKeeper, transferKeeperMock, channelKeeperMock, distributionKeeperMock, bankKeeperMock, ics4WrapperMock)
-=======
 	packetforwardKeeper := initializer.packetforwardKeeper(paramsKeeper, transferKeeperMock, channelKeeperMock, distributionKeeperMock, bankKeeperMock, ics4WrapperMock)
 
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118))
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
 
 	packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams())

@@ -3,11 +3,7 @@ package cli
 import (
 	"fmt"
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/client/cli/cli.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/client/cli/cli.go
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

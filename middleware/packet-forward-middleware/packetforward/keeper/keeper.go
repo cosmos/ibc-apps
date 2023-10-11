@@ -7,12 +7,8 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/keeper/keeper.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
 	"github.com/tendermint/tendermint/libs/log"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/keeper/keeper.go
 
 	errorsmod "cosmossdk.io/errors"
 

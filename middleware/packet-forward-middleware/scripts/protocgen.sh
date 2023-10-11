@@ -26,11 +26,7 @@ Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:. \
 done
 
 # move proto files to the right places
-<<<<<<< HEAD
-cp -r github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/* router/
-=======
 #
 # Note: Proto files are suffixed with the current binary version.
 cp -r github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v*/packetforward/* packetforward/
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118))
 rm -rf github.com
