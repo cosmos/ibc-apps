@@ -7,8 +7,14 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
+<<<<<<< HEAD:middleware/packet-forward-middleware/router/keeper/keeper.go
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/router/types"
 	"github.com/tendermint/tendermint/libs/log"
+=======
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+
+	errorsmod "cosmossdk.io/errors"
+>>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/keeper/keeper.go
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -37,7 +43,7 @@ var (
 	// DefaultForwardTransferPacketTimeoutTimestamp is the timeout timestamp following IBC defaults
 	DefaultForwardTransferPacketTimeoutTimestamp = time.Duration(transfertypes.DefaultRelativePacketTimeoutTimestamp) * time.Nanosecond
 
-	// DefaultRefundTransferPacketTimeoutTimestamp is a 28-day timeout for refund packets since funds are stuck in router module otherwise.
+	// DefaultRefundTransferPacketTimeoutTimestamp is a 28-day timeout for refund packets since funds are stuck in packetforward module otherwise.
 	DefaultRefundTransferPacketTimeoutTimestamp = 28 * 24 * time.Hour
 )
 
@@ -374,14 +380,14 @@ func (k *Keeper) RetryTimeout(
 
 	amount, ok := sdk.NewIntFromString(data.Amount)
 	if !ok {
-		k.Logger(ctx).Error("packetForwardMiddleware error parsing amount from string for router retry on timeout",
+		k.Logger(ctx).Error("packetForwardMiddleware error parsing amount from string for packetforward retry on timeout",
 			"original-sender-address", inFlightPacket.OriginalSenderAddress,
 			"refund-channel-id", inFlightPacket.RefundChannelId,
 			"refund-port-id", inFlightPacket.RefundPortId,
 			"retries-remaining", inFlightPacket.RetriesRemaining,
 			"amount", data.Amount,
 		)
-		return fmt.Errorf("error parsing amount from string for router retry: %s", data.Amount)
+		return fmt.Errorf("error parsing amount from string for packetforward retry: %s", data.Amount)
 	}
 
 	denom := transfertypes.ParseDenomTrace(data.Denom).IBCDenom()
