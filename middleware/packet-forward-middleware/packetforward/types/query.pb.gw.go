@@ -140,11 +140,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/types/query.pb.gw.go
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"ibc", "apps", "router", "v1", "params"}, "", runtime.AssumeColonVerbOpt(true)))
-=======
-	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"ibc", "apps", "packetforward", "v1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/types/query.pb.gw.go
+	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"ibc", "apps", "packetforward", "v1", "params"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

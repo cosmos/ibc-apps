@@ -1,11 +1,7 @@
 package keeper
 
 import (
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/keeper/params.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/router/types"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/keeper/params.go
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/packetforward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

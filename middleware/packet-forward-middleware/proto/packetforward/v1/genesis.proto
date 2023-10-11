@@ -1,18 +1,8 @@
 syntax = "proto3";
-<<<<<<< HEAD:middleware/packet-forward-middleware/proto/router/v1/genesis.proto
-
-package router.v1;
-=======
 package packetforward.v1;
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/proto/packetforward/v1/genesis.proto
 
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/router/types";
-
-<<<<<<< HEAD:middleware/packet-forward-middleware/proto/router/v1/genesis.proto
 import "gogoproto/gogo.proto";
-=======
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types";
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/proto/packetforward/v1/genesis.proto
+option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/packetforward/types";
 
 // GenesisState defines the packetforward genesis state
 message GenesisState {

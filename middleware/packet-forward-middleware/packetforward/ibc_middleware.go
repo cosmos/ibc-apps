@@ -7,15 +7,8 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/ibc_middleware.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/router/types"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
-
-	errorsmod "cosmossdk.io/errors"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/ibc_middleware.go
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/packetforward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
