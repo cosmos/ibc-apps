@@ -1,7 +1,11 @@
 package keeper
 
 import (
+<<<<<<< HEAD:middleware/packet-forward-middleware/router/keeper/genesis.go
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
+=======
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+>>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/keeper/genesis.go
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

@@ -4,10 +4,17 @@ import (
 	"testing"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/test/mock"
+=======
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test/mock"
+>>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118))
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -38,17 +45,22 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *TestSetup {
 	ics4WrapperMock := mock.NewMockICS4Wrapper(ctl)
 
 	paramsKeeper := initializer.paramsKeeper()
+<<<<<<< HEAD
 	routerKeeper := initializer.routerKeeper(paramsKeeper, transferKeeperMock, channelKeeperMock, distributionKeeperMock, bankKeeperMock, ics4WrapperMock)
+=======
+	packetforwardKeeper := initializer.packetforwardKeeper(paramsKeeper, transferKeeperMock, channelKeeperMock, distributionKeeperMock, bankKeeperMock, ics4WrapperMock)
+
+>>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118))
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
 
-	routerKeeper.SetParams(initializer.Ctx, types.DefaultParams())
+	packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams())
 
 	return &TestSetup{
 		Initializer: initializer,
 
 		Keepers: &testKeepers{
-			ParamsKeeper: &paramsKeeper,
-			RouterKeeper: routerKeeper,
+			ParamsKeeper:        &paramsKeeper,
+			PacketForwardKeeper: packetforwardKeeper,
 		},
 
 		Mocks: &testMocks{
@@ -58,7 +70,7 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *TestSetup {
 			ICS4WrapperMock:        ics4WrapperMock,
 		},
 
-		ForwardMiddleware: initializer.forwardMiddleware(ibcModuleMock, routerKeeper, 0, keeper.DefaultForwardTransferPacketTimeoutTimestamp, keeper.DefaultRefundTransferPacketTimeoutTimestamp),
+		ForwardMiddleware: initializer.forwardMiddleware(ibcModuleMock, packetforwardKeeper, 0, keeper.DefaultForwardTransferPacketTimeoutTimestamp, keeper.DefaultRefundTransferPacketTimeoutTimestamp),
 	}
 }
 
@@ -68,12 +80,12 @@ type TestSetup struct {
 	Keepers *testKeepers
 	Mocks   *testMocks
 
-	ForwardMiddleware router.IBCMiddleware
+	ForwardMiddleware packetforward.IBCMiddleware
 }
 
 type testKeepers struct {
-	ParamsKeeper *paramskeeper.Keeper
-	RouterKeeper *keeper.Keeper
+	ParamsKeeper        *paramskeeper.Keeper
+	PacketForwardKeeper *keeper.Keeper
 }
 
 type testMocks struct {
@@ -124,7 +136,7 @@ func (i initializer) paramsKeeper() paramskeeper.Keeper {
 	return paramsKeeper
 }
 
-func (i initializer) routerKeeper(
+func (i initializer) packetforwardKeeper(
 	paramsKeeper paramskeeper.Keeper,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
@@ -136,7 +148,7 @@ func (i initializer) routerKeeper(
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 
 	subspace := paramsKeeper.Subspace(types.ModuleName)
-	routerKeeper := keeper.NewKeeper(
+	packetforwardKeeper := keeper.NewKeeper(
 		i.Marshaler,
 		storeKey,
 		subspace,
@@ -147,9 +159,9 @@ func (i initializer) routerKeeper(
 		ics4Wrapper,
 	)
 
-	return routerKeeper
+	return packetforwardKeeper
 }
 
-func (i initializer) forwardMiddleware(app porttypes.IBCModule, k *keeper.Keeper, retriesOnTimeout uint8, forwardTimeout time.Duration, refundTimeout time.Duration) router.IBCMiddleware {
-	return router.NewIBCMiddleware(app, k, retriesOnTimeout, forwardTimeout, refundTimeout)
+func (i initializer) forwardMiddleware(app porttypes.IBCModule, k *keeper.Keeper, retriesOnTimeout uint8, forwardTimeout time.Duration, refundTimeout time.Duration) packetforward.IBCMiddleware {
+	return packetforward.NewIBCMiddleware(app, k, retriesOnTimeout, forwardTimeout, refundTimeout)
 }
