@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v4/packetforward/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -11,10 +11,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 )
 
-// GetQueryCmd returns the query commands for router
+// GetQueryCmd returns the query commands for packetforward
 func GetQueryCmd() *cobra.Command {
 	queryCmd := &cobra.Command{
-		Use:                        "ibc-router",
+		Use:                        "packetforward",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 	}
@@ -26,14 +26,14 @@ func GetQueryCmd() *cobra.Command {
 	return queryCmd
 }
 
-// GetCmdParams returns the command handler for ibc-router parameter querying.
+// GetCmdParams returns the command handler for packetforward parameter querying.
 func GetCmdParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "params",
-		Short:   "Query the current ibc-router parameters",
-		Long:    "Query the current ibc-router parameters",
+		Short:   "Query the current packetforward parameters",
+		Long:    "Query the current packetforward parameters",
 		Args:    cobra.NoArgs,
-		Example: fmt.Sprintf("%s query ibc-router params", version.AppName),
+		Example: fmt.Sprintf("%s query packetforward params", version.AppName),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -54,7 +54,7 @@ func GetCmdParams() *cobra.Command {
 	return cmd
 }
 
-// NewTxCmd returns the transaction commands for router
+// NewTxCmd returns the transaction commands for packetforward
 func NewTxCmd() *cobra.Command {
 	return nil
 }

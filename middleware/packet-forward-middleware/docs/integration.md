@@ -17,9 +17,9 @@ Integration of the PFM should take approximately 20 minutes.
 
 // Import the packet forward middleware
 import (
-    packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
-    packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
-    packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+    "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
+    packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
+    packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 )
 
 ...
