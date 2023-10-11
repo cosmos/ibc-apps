@@ -160,8 +160,8 @@ var (
 		ibc.AppModuleBasic{},
 		ibctm.AppModuleBasic{},
 		solomachine.AppModuleBasic{},
-		transfer.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
+		transfer.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -516,8 +516,8 @@ func NewSimApp(
 
 		// IBC modules
 		ibc.NewAppModule(app.IBCKeeper),
-		transfer.NewAppModule(app.TransferKeeper),
 		packetforward.NewAppModule(app.PacketForwardKeeper),
+		transfer.NewAppModule(app.TransferKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -527,15 +527,15 @@ func NewSimApp(
 	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
-		evidencetypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.StoreKey, authtypes.ModuleName,
+		evidencetypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, packetforwardtypes.ModuleName, ibctransfertypes.StoreKey, authtypes.ModuleName,
 		banktypes.ModuleName, govtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, authz.ModuleName, feegrant.ModuleName,
-		paramstypes.ModuleName, vestingtypes.ModuleName, packetforwardtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
+		paramstypes.ModuleName, vestingtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
-		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.StoreKey,
+		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, packetforwardtypes.ModuleName, ibctransfertypes.StoreKey,
 		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
 		minttypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName, feegrant.ModuleName, paramstypes.ModuleName,
-		upgradetypes.ModuleName, vestingtypes.ModuleName, packetforwardtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
+		upgradetypes.ModuleName, vestingtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -548,7 +548,7 @@ func NewSimApp(
 		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName, distrtypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName,
 		slashingtypes.ModuleName, govtypes.ModuleName, minttypes.ModuleName, crisistypes.ModuleName,
 		genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
-		ibctransfertypes.StoreKey, packetforwardtypes.ModuleName, feegrant.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName,
+		packetforwardtypes.ModuleName, ibctransfertypes.StoreKey, feegrant.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName,
 		vestingtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	}
 
