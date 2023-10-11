@@ -6,15 +6,9 @@ import (
 	"fmt"
 	"math/rand"
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/module.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/client/cli"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/client/cli"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/module.go
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/client/cli"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"

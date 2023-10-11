@@ -3,11 +3,7 @@ package keeper
 import (
 	"context"
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/keeper/grpc_query.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/keeper/grpc_query.go
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

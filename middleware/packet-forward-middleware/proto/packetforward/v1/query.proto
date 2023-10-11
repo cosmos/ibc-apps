@@ -1,21 +1,11 @@
 syntax = "proto3";
-<<<<<<< HEAD:middleware/packet-forward-middleware/proto/router/v1/query.proto
-
-package router.v1;
-
-import "gogoproto/gogo.proto";
-import "router/v1/genesis.proto";
-import "google/api/annotations.proto";
-
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types";
-=======
 package packetforward.v1;
 
+import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "packetforward/v1/genesis.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types";
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/proto/packetforward/v1/query.proto
+option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/types";
 
 // Query provides defines the gRPC querier service.
 service Query {

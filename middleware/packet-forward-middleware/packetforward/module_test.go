@@ -5,15 +5,9 @@ import (
 	"errors"
 	"testing"
 
-<<<<<<< HEAD:middleware/packet-forward-middleware/router/module_test.go
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/test"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test"
->>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/module_test.go
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
