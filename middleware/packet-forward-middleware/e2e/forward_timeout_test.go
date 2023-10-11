@@ -224,7 +224,7 @@ func TestTimeoutOnForward(t *testing.T) {
 	require.NoError(t, err)
 
 	// Poll for the MsgTimeout on chainB and the MsgAck on chainA
-	_, err = cosmos.PollForMessage[*chantypes.MsgTimeout](ctx, chainB, cosmos.DefaultEncoding().InterfaceRegistry, chainBHeight, chainBHeight+20, nil)
+	_, err = cosmos.PollForMessage[*chantypes.MsgTimeout](ctx, chainB, chainB.Config().EncodingConfig.InterfaceRegistry, chainBHeight, chainBHeight+20, nil)
 	require.NoError(t, err)
 
 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)

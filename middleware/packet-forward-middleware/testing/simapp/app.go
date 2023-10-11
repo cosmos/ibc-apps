@@ -113,6 +113,7 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	solomachine "github.com/cosmos/ibc-go/v7/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
@@ -158,6 +159,7 @@ var (
 		// non standard
 		ibc.AppModuleBasic{},
 		ibctm.AppModuleBasic{},
+		solomachine.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
 	)
@@ -277,7 +279,7 @@ func NewSimApp(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, crisistypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, group.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
-		evidencetypes.StoreKey, packetforwardtypes.StoreKey, capabilitytypes.StoreKey, authzkeeper.StoreKey, ibctransfertypes.StoreKey,
+		evidencetypes.StoreKey, packetforwardtypes.StoreKey, ibctransfertypes.StoreKey, authzkeeper.StoreKey, capabilitytypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	// NOTE: The testingkey is just mounted for testing purposes. Actual applications should
@@ -390,7 +392,11 @@ func NewSimApp(
 
 	// IBC Keepers
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibcexported.StoreKey], app.GetSubspace(ibcexported.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+		appCodec, keys[ibcexported.StoreKey],
+		app.GetSubspace(ibcexported.ModuleName),
+		app.StakingKeeper,
+		app.UpgradeKeeper,
+		scopedIBCKeeper,
 	)
 
 	// Register the proposal types
@@ -404,10 +410,8 @@ func NewSimApp(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	govConfig := govtypes.DefaultConfig()
-	/*
-		Example of setting gov params:
-		govConfig.MaxMetadataLen = 10000
-	*/
+	govConfig.MaxMetadataLen = 10_000
+
 	govKeeper := govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.AccountKeeper, app.BankKeeper,
 		app.StakingKeeper, app.MsgServiceRouter(), govConfig, authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -423,27 +427,26 @@ func NewSimApp(
 	)
 
 	groupConfig := group.DefaultConfig()
-	/*
-		Example of setting group params:
-		groupConfig.MaxMetadataLen = 1000
-	*/
+	groupConfig.MaxMetadataLen = 1000
 	app.GroupKeeper = groupkeeper.NewKeeper(keys[group.StoreKey], appCodec, app.MsgServiceRouter(), app.AccountKeeper, groupConfig)
 
 	// Packet Forward Middleware Keeper
 	app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
 		appCodec, app.keys[packetforwardtypes.StoreKey],
 		app.GetSubspace(packetforwardtypes.ModuleName),
-		app.TransferKeeper, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
+		nil, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
 		app.IBCKeeper.ChannelKeeper,
 		app.DistrKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 	)
 
+	// create the IBC Router
+	ibcRouter := ibcporttypes.NewRouter()
+
 	// Transfer Keeper
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
-		appCodec,
-		keys[ibctransfertypes.StoreKey],
+		appCodec, keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
 		app.PacketForwardKeeper,
 		app.IBCKeeper.ChannelKeeper,
@@ -466,9 +469,8 @@ func NewSimApp(
 		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,  // refund timeout
 	)
 
-	// Create IBC Router
-	ibcRouter := ibcporttypes.NewRouter().
-		AddRoute(ibctransfertypes.ModuleName, transferStack)
+	// Add IBC Router
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
 
 	// Seal the IBC Router
 	app.IBCKeeper.SetRouter(ibcRouter)
@@ -525,15 +527,15 @@ func NewSimApp(
 	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
-		evidencetypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, authtypes.ModuleName,
+		evidencetypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.StoreKey, authtypes.ModuleName,
 		banktypes.ModuleName, govtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, authz.ModuleName, feegrant.ModuleName,
-		paramstypes.ModuleName, vestingtypes.ModuleName, ibctransfertypes.StoreKey, packetforwardtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
+		paramstypes.ModuleName, vestingtypes.ModuleName, packetforwardtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
-		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName,
+		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.StoreKey,
 		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
 		minttypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName, feegrant.ModuleName, paramstypes.ModuleName,
-		upgradetypes.ModuleName, vestingtypes.ModuleName, ibctransfertypes.StoreKey, packetforwardtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
+		upgradetypes.ModuleName, vestingtypes.ModuleName, packetforwardtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are

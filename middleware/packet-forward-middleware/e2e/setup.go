@@ -6,12 +6,6 @@ import (
 	"strings"
 
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	connectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	ibclocalhost "github.com/cosmos/ibc-go/v7/modules/light-clients/09-localhost"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 )
@@ -24,7 +18,7 @@ var (
 		UidGid:     "1025:1025",
 	}
 
-	Denom         = "token"
+	Denom         = "utoken"
 	DefaultConfig = ibc.ChainConfig{
 		Type:           "cosmos",
 		Name:           "pfm",
@@ -36,7 +30,7 @@ var (
 		CoinType:       "118",
 		GasPrices:      fmt.Sprintf("0.0%s", Denom),
 		GasAdjustment:  2.0,
-		TrustingPeriod: "112h",
+		TrustingPeriod: "336h",
 		NoHostMount:    false,
 		EncodingConfig: encoding(),
 	}
@@ -51,14 +45,6 @@ var (
 func encoding() *testutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
 
-	// register custom types
-	ibctm.RegisterInterfaces(cfg.InterfaceRegistry)
-	ibclocalhost.RegisterInterfaces(cfg.InterfaceRegistry)
-	transfertypes.RegisterInterfaces(cfg.InterfaceRegistry)
-	clienttypes.RegisterInterfaces(cfg.InterfaceRegistry)
-	connectiontypes.RegisterInterfaces(cfg.InterfaceRegistry)
-	channeltypes.RegisterInterfaces(cfg.InterfaceRegistry)
-
 	return &cfg
 }
 
@@ -67,7 +53,7 @@ func encoding() *testutil.TestEncodingConfig {
 // If testing locally, user should run `make local-image` and interchaintest will use the local image.
 func GetDockerImageInfo() (repo, version string) {
 	branchVersion, found := os.LookupEnv("BRANCH_CI")
-	repo = "strangelove-ventures/pfm"
+	repo = "strangelove-ventures/packetforward"
 
 	// github action
 	if !found {
