@@ -1,13 +1,19 @@
-package router_test
+package packetforward_test
 
 import (
 	"encoding/json"
 	"errors"
 	"testing"
 
+<<<<<<< HEAD:middleware/packet-forward-middleware/router/module_test.go
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/test"
+=======
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test"
+>>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/module_test.go
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -291,7 +297,7 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 			Return(nil),
 	)
 
-	// chain B with router module receives packet and forwards. ack should be nil so that it is not written yet.
+	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
 	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
@@ -351,7 +357,7 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 			Return(nil),
 	)
 
-	// chain B with router module receives packet and forwards. ack should be nil so that it is not written yet.
+	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
 	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
@@ -370,7 +376,7 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	forwardMiddleware := setup.ForwardMiddleware
 
 	// Set fee param to 10%
-	setup.Keepers.RouterKeeper.SetParams(ctx, types.NewParams(sdk.NewDecWithPrec(10, 2)))
+	setup.Keepers.PacketForwardKeeper.SetParams(ctx, types.NewParams(sdk.NewDecWithPrec(10, 2)))
 
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress(t)
@@ -416,7 +422,7 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 			Return(nil),
 	)
 
-	// chain B with router module receives packet and forwards. ack should be nil so that it is not written yet.
+	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
 	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
@@ -516,11 +522,11 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 			Return(nil),
 	)
 
-	// chain B with router module receives packet and forwards. ack should be nil so that it is not written yet.
+	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
 	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
-	// chain C with router module receives packet and forwards. ack should be nil so that it is not written yet.
+	// chain C with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
 	ack = forwardMiddleware.OnRecvPacket(ctx, packet2, senderAccAddr2)
 	require.Nil(t, ack)
 
@@ -626,11 +632,11 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 			Return(nil),
 	)
 
-	// chain B with router module receives packet and forwards. ack should be nil so that it is not written yet.
+	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
 	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
-	// chain C with router module receives packet and forwards. ack should be nil so that it is not written yet.
+	// chain C with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
 	ack = forwardMiddleware.OnRecvPacket(ctx, packet2, senderAccAddr2)
 	require.Nil(t, ack)
 

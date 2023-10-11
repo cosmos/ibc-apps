@@ -1,4 +1,5 @@
 syntax = "proto3";
+<<<<<<< HEAD:middleware/packet-forward-middleware/proto/router/v1/query.proto
 
 package router.v1;
 
@@ -7,12 +8,20 @@ import "router/v1/genesis.proto";
 import "google/api/annotations.proto";
 
 option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types";
+=======
+package packetforward.v1;
+
+import "google/api/annotations.proto";
+import "packetforward/v1/genesis.proto";
+
+option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types";
+>>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/proto/packetforward/v1/query.proto
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // Params queries all parameters of the router module.
+  // Params queries all parameters of the packetforward module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/ibc/apps/router/v1/params";
+    option (google.api.http).get = "/ibc/apps/packetforward/v1/params";
   }
 }
 

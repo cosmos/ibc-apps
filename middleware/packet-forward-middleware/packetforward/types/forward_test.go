@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"testing"
 
+<<<<<<< HEAD:middleware/packet-forward-middleware/router/types/forward_test.go
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
+=======
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+>>>>>>> 47f2ae0 (rename: `router` -> `packetforward` (#118)):middleware/packet-forward-middleware/packetforward/types/forward_test.go
 	"github.com/stretchr/testify/require"
 )
 
