@@ -1,4 +1,4 @@
-package router
+package packetforward
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/client/cli"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/client/cli"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -28,7 +28,7 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// AppModuleBasic is the router AppModuleBasic
+// AppModuleBasic is the packetforward AppModuleBasic
 type AppModuleBasic struct{}
 
 // Name implements AppModuleBasic interface
@@ -43,13 +43,13 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
 func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {}
 
 // DefaultGenesis returns default genesis state as raw bytes for the ibc
-// router module.
+// packetforward module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
-// ValidateGenesis performs genesis state validation for the router module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+// ValidateGenesis performs genesis state validation for the packetforward module.
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var gs types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &gs); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
@@ -61,7 +61,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 // RegisterRESTRoutes implements AppModuleBasic interface
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {}
 
-// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the ibc-router module.
+// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the packetforward module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
 	_ = types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
 }
@@ -82,7 +82,7 @@ type AppModule struct {
 	keeper *keeper.Keeper
 }
 
-// NewAppModule creates a new router module
+// NewAppModule creates a new packetforward module
 func NewAppModule(k *keeper.Keeper) AppModule {
 	return AppModule{
 		keeper: k,
@@ -112,7 +112,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
-// InitGenesis performs genesis initialization for the ibc-router module. It returns
+// InitGenesis performs genesis initialization for the packetforward module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	err := am.ValidateGenesis(cdc, nil, data)
@@ -126,7 +126,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	return []abci.ValidatorUpdate{}
 }
 
-// ExportGenesis returns the exported genesis state as raw bytes for the ibc-router
+// ExportGenesis returns the exported genesis state as raw bytes for the packetforward
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	gs := am.keeper.ExportGenesis(ctx)
@@ -146,8 +146,8 @@ func (am AppModule) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) []abci.V
 
 // AppModuleSimulation functions
 
-// GenerateGenesisState creates a randomized GenState of the router module.
-func (AppModule) GenerateGenesisState(simState *module.SimulationState) {}
+// GenerateGenesisState creates a randomized GenState of the packetforward module.
+func (AppModule) GenerateGenesisState(_ *module.SimulationState) {}
 
 // ProposalContents doesn't return any content functions for governance proposals.
 func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedProposalContent {
@@ -159,10 +159,10 @@ func (AppModule) RandomizedParams(r *rand.Rand) []simtypes.ParamChange {
 	return nil
 }
 
-// RegisterStoreDecoder registers a decoder for router module's types
-func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {}
+// RegisterStoreDecoder registers a decoder for packetforward module's types
+func (am AppModule) RegisterStoreDecoder(_ sdk.StoreDecoderRegistry) {}
 
-// WeightedOperations returns the all the router module operations with their respective weights.
+// WeightedOperations returns the all the packetforward module operations with their respective weights.
 func (am AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
 	return nil
 }

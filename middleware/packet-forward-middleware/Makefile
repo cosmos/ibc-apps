@@ -143,10 +143,10 @@ cosmovisor:
 
 mocks: $(MOCKS_DIR)
 	go install go.uber.org/mock/mockgen@v0.2.0
-	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/router/types TransferKeeper
-	mockgen -package=mock -destination=./test/mock/distribution_keeper.go $(GOMOD)/router/types DistributionKeeper
-	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/router/types BankKeeper
-	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/router/types ChannelKeeper
+	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/packetforward/types TransferKeeper
+	mockgen -package=mock -destination=./test/mock/distribution_keeper.go $(GOMOD)/packetforward/types DistributionKeeper
+	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/packetforward/types BankKeeper
+	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/packetforward/types ChannelKeeper
 	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v6/modules/core/05-port/types ICS4Wrapper
 	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v6/modules/core/05-port/types IBCModule
 
