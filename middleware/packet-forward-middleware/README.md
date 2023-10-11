@@ -133,7 +133,7 @@ The examples above show the intended usage of the `receiver` field for one or mu
 
 ## Implementation details
 
-Flow sequence mainly encoded in [middleware](router/ibc_middleware.go) and in [keeper](router/keeper/keeper.go). 
+Flow sequence mainly encoded in [middleware](packetforward/ibc_middleware.go) and in [keeper](packetforward/keeper/keeper.go). 
 
 Describes `A` sending to `C` via `B` in several scenarios with operational opened channels, enabled denom composition, fees and available to refund, but no retries.
 

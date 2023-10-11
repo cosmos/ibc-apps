@@ -1,12 +1,10 @@
 syntax = "proto3";
-
-package router.v1;
-
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types";
+package packetforward.v1;
 
 import "gogoproto/gogo.proto";
+option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/types";
 
-// GenesisState defines the router genesis state
+// GenesisState defines the packetforward genesis state
 message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
 
@@ -20,7 +18,7 @@ message GenesisState {
   ];
 }
 
-// Params defines the set of IBC router parameters.
+// Params defines the set of packetforward parameters.
 message Params {
   string fee_percentage = 1 [
     (gogoproto.moretags) = "yaml:\"fee_percentage\"",

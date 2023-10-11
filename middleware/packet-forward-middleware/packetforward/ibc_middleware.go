@@ -1,4 +1,4 @@
-package router
+package packetforward
 
 import (
 	"encoding/json"
@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/router/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v5/packetforward/types"
 
 	errorsmod "cosmossdk.io/errors"
 
