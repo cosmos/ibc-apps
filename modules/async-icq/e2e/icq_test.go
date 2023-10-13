@@ -3,11 +3,9 @@ package e2e
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/icza/dyno"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -40,8 +38,8 @@ func TestInterchainQueries(t *testing.T) {
 	numNodes := 0
 
 	dockerImage := ibc.DockerImage{
-		Repository: "ghcr.io/strangelove-ventures/heighliner/icqd",
-		Version:    "latest",
+		Repository: "icqd",
+		Version:    "local",
 		UidGid:     "1025:1025",
 	}
 
@@ -77,7 +75,13 @@ func TestInterchainQueries(t *testing.T) {
 				GasPrices:      "0.00atom",
 				TrustingPeriod: "300h",
 				GasAdjustment:  1.1,
-				ModifyGenesis:  modifyGenesisAllowICQQueries([]string{"/cosmos.bank.v1beta1.Query/AllBalances"}), // Add the whitelisted queries to the host chain
+				// Add the whitelisted queries to the host chain
+				ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
+					{
+						Key:   "app_state.gov.interchainquery.params.0.allow_queries",
+						Value: []string{"/cosmos.bank.v1beta1.Query/AllBalances"},
+					},
+				}),
 			}},
 	})
 
@@ -220,21 +224,4 @@ type icqResults struct {
 			Total   string      `json:"total"`
 		} `json:"pagination"`
 	} `json:"response"`
-}
-
-func modifyGenesisAllowICQQueries(allowQueries []string) func(ibc.ChainConfig, []byte) ([]byte, error) {
-	return func(chainConfig ibc.ChainConfig, genbz []byte) ([]byte, error) {
-		g := make(map[string]interface{})
-		if err := json.Unmarshal(genbz, &g); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
-		}
-		if err := dyno.Set(g, allowQueries, "app_state", "interchainquery", "params", "allow_queries"); err != nil {
-			return nil, fmt.Errorf("failed to set allowed interchain queries in genesis json: %w", err)
-		}
-		out, err := json.Marshal(g)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
-		}
-		return out, nil
-	}
 }

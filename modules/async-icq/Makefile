@@ -212,6 +212,17 @@ endif
 
 .PHONY: run-tests test test-all $(TEST_TARGETS)
 
+###############################################################################
+###                             e2e interchain test                         ###
+###############################################################################
+
+local-image:
+	cd ./testing/icqd-simapp
+	docker build . -t icqd:local
+
+ictest-icq:
+	cd e2e && go test -race -v -timeout 15m -run TestInterchainQueries .
+
 test-sim-nondeterminism:
 	@echo "Running non-determinism test..."
 	@go test -mod=readonly $(SIMAPP) -run TestAppStateDeterminism -Enabled=true \
