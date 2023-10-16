@@ -103,8 +103,6 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	tmos "github.com/cometbft/cometbft/libs/os"
 
-	simappparams "github.com/cosmos/ibc-go/v7/testing/simapp/params"
-
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
 	ibcclientclient "github.com/cosmos/ibc-go/v7/modules/core/02-client/client"
@@ -115,6 +113,7 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	ibcmock "github.com/cosmos/ibc-go/v7/testing/mock"
 	"github.com/cosmos/ibc-go/v7/testing/simapp"
+	simappparams "github.com/cosmos/ibc-go/v7/testing/simapp/params"
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
 )
 

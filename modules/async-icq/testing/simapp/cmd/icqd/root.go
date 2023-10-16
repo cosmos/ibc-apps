@@ -7,7 +7,6 @@ import (
 
 	app "github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
 	appparams "github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/params"
-	"github.com/cosmos/ibc-go/v7/testing/simapp"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
@@ -33,6 +32,8 @@ import (
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cometbft/cometbft/libs/log"
+
+	"github.com/cosmos/ibc-go/v7/testing/simapp"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the
