@@ -66,7 +66,7 @@ jobs:
         with:          
           context: ${{ env.WORKING_DIRECTORY }}
           tags: ${{ env.HOST_DOCKER_TAG }}
-          file: Dockerfile.icq
+          file: ${{ env.WORKING_DIRECTORY }}/Dockerfile.icq
           outputs: type=docker,dest=${{ env.HOST_TAR_PATH }}
 
       - name: Build and export Controller
@@ -74,7 +74,7 @@ jobs:
         with:          
           context: ${{ env.WORKING_DIRECTORY }}
           tags: ${{ env.CONTROLLER_DOCKER_TAG }}
-          file: Dockerfile.icq-demo
+          file: ${{ env.WORKING_DIRECTORY }}/Dockerfile.icq-demo
           outputs: type=docker,dest=${{ env.CONTROLLER_TAR_PATH }}
 
       - name: Upload host artifact

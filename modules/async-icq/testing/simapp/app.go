@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/docs"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/openapiconsole"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
-
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
 
