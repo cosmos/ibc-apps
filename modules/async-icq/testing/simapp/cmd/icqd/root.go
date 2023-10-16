@@ -7,6 +7,7 @@ import (
 
 	app "github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
 	appparams "github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/params"
+	"github.com/cosmos/ibc-go/v7/testing/simapp"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
@@ -215,6 +216,7 @@ func (ac appCreator) newApp(
 		skipUpgradeHeights,
 		app.DefaultNodeHome,
 		uint(1),
+		simapp.MakeTestEncodingConfig(),
 		appOpts,
 		baseappOptions...,
 	)
@@ -250,6 +252,7 @@ func (ac appCreator) appExport(
 		skipUpgradeHeights,
 		homePath,
 		uint(1),
+		simapp.MakeTestEncodingConfig(),
 		appOpts,
 		nil,
 	)
