@@ -1,3 +1,4 @@
+# host
 # make local-image-icq
 # docker run --rm -it icq-host:local q
 

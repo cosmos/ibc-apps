@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -14,7 +15,19 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+
+	ibccore "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 )
+
+func hostEncoding() *moduletestutil.TestEncodingConfig {
+	cfg := cosmos.DefaultEncoding()
+
+	ibccore.RegisterInterfaces(cfg.InterfaceRegistry)
+	ibctm.RegisterInterfaces(cfg.InterfaceRegistry)
+
+	return &cfg
+}
 
 // TestInterchainQueries spins up a controller and host chain, using a demo controller implementation,
 // and asserts that a bank query can successfully be executed on the host chain and the results can be
@@ -57,7 +70,7 @@ func TestInterchainQueries(t *testing.T) {
 			ChainConfig: ibc.ChainConfig{
 				Type:           "cosmos",
 				Name:           "controller",
-				ChainID:        "controller",
+				ChainID:        "controller-1",
 				Images:         []ibc.DockerImage{controllerImage},
 				Bin:            "icq-demo",
 				Bech32Prefix:   "cosmos",
@@ -73,7 +86,7 @@ func TestInterchainQueries(t *testing.T) {
 			ChainConfig: ibc.ChainConfig{
 				Type:           "cosmos",
 				Name:           "host",
-				ChainID:        "host",
+				ChainID:        "host-1",
 				Images:         []ibc.DockerImage{hostImage},
 				Bin:            "simd",
 				Bech32Prefix:   "cosmos",
@@ -81,13 +94,13 @@ func TestInterchainQueries(t *testing.T) {
 				GasPrices:      "0.00atom",
 				TrustingPeriod: "300h",
 				GasAdjustment:  1.1,
-				// Add the whitelisted queries to the host chain
 				ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
 					{
 						Key:   "app_state.interchainquery.params.allow_queries",
 						Value: []string{"/cosmos.bank.v1beta1.Query/AllBalances"},
 					},
 				}),
+				EncodingConfig: hostEncoding(),
 			}},
 	})
 
@@ -99,7 +112,7 @@ func TestInterchainQueries(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
-		relayer.StartupFlags("-b", "100"),
+		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
 	const pathName = "host-controller"

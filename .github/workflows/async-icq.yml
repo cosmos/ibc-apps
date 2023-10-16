@@ -9,9 +9,14 @@ env:
   LINT_VERSION: v1.52
   GO_VERSION: 1.21.0
   WORKING_DIRECTORY: modules/async-icq/
-  DOCKER_TAG: icqd:local
-  TAR_PATH: /tmp/icqd-docker-image.tar
-  IMAGE_NAME: icqd-docker-image
+
+  HOST_TAR_PATH: /tmp/icq-host.tar
+  HOST_IMAGE_NAME: icq-host
+  HOST_DOCKER_TAG: icq-host:local
+  
+  CONTROLLER_TAR_PATH: /tmp/icq-demo.tar
+  CONTROLLER_IMAGE_NAME: icq-demo
+  CONTROLLER_DOCKER_TAG: icq-demo:local
 
 jobs:
   golangci:
@@ -41,7 +46,7 @@ jobs:
       - name: Test
         run: go test ./...
         working-directory: ${{ env.WORKING_DIRECTORY }}
-        
+  
   build-docker:
     runs-on: ubuntu-latest
     steps:
@@ -54,20 +59,35 @@ jobs:
           go-version: ${{ env.GO_VERSION }}          
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3        
-
-      - name: Build and export
+        uses: docker/setup-buildx-action@v3
+                     
+      - name: Build and export Host
         uses: docker/build-push-action@v5
         with:          
           context: ${{ env.WORKING_DIRECTORY }}
-          tags: ${{ env.DOCKER_TAG }}
-          outputs: type=docker,dest=${{ env.TAR_PATH }}
+          tags: ${{ env.HOST_DOCKER_TAG }}
+          file: Dockerfile.icq
+          outputs: type=docker,dest=${{ env.HOST_TAR_PATH }}
 
-      - name: Upload artifact
+      - name: Build and export Controller
+        uses: docker/build-push-action@v5
+        with:          
+          context: ${{ env.WORKING_DIRECTORY }}
+          tags: ${{ env.CONTROLLER_DOCKER_TAG }}
+          file: Dockerfile.icq-demo
+          outputs: type=docker,dest=${{ env.CONTROLLER_TAR_PATH }}
+
+      - name: Upload host artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.IMAGE_NAME }}
-          path: ${{ env.TAR_PATH }}
+          name: ${{ env.HOST_IMAGE_NAME }}
+          path: ${{ env.HOST_TAR_PATH }}
+
+      - name: Upload controller artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.CONTROLLER_IMAGE_NAME }}
+          path: ${{ env.CONTROLLER_TAR_PATH }}
 
   e2e-tests:
     needs: build-docker
@@ -90,15 +110,23 @@ jobs:
       - name: checkout chain
         uses: actions/checkout@v4
 
-      - name: Download Tarball Artifact
+      - name: Download Host Artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ env.IMAGE_NAME }}
+          name: ${{ env.HOST_IMAGE_NAME }}
+          path: /tmp
+
+      - name: Download Controller Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTROLLER_IMAGE_NAME }}
           path: /tmp
 
       - name: Load Docker Image
         run: |
-          docker image load -i ${{ env.TAR_PATH }}
+          docker image load -i ${{ env.HOST_TAR_PATH }}
+          docker image load -i ${{ env.CONTROLLER_TAR_PATH }}
           docker image ls -a
+
       - name: Run Test
         run: make ${{ matrix.test }}
