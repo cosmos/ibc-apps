@@ -1,0 +1,24 @@
+# make local-image-icq-demo
+# docker run --rm -it icq-demo:local q interquery
+
+FROM golang:1.21-alpine3.18 as builder
+
+RUN set -eux; apk add --no-cache git libusb-dev linux-headers gcc musl-dev make go;
+
+ENV GOPATH=""
+
+COPY go.mod .
+COPY go.sum .
+COPY Makefile .
+
+RUN go mod download
+
+COPY ./testing/demo-simapp .
+
+RUN make build
+
+FROM alpine:3.18
+
+COPY --from=builder /go/build/* /bin/icq-demo
+
+ENTRYPOINT ["/bin/icq-demo"]

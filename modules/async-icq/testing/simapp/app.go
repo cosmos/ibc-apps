@@ -9,9 +9,10 @@ import (
 
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/docs"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/openapiconsole"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
-	"github.com/gorilla/mux"
-	"github.com/rakyll/statik/fs"
+
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
 
@@ -113,7 +114,6 @@ import (
 	ibctesting "github.com/cosmos/ibc-go/v7/testing"
 	ibcmock "github.com/cosmos/ibc-go/v7/testing/mock"
 	"github.com/cosmos/ibc-go/v7/testing/simapp"
-	simappparams "github.com/cosmos/ibc-go/v7/testing/simapp/params"
 	ibctestingtypes "github.com/cosmos/ibc-go/v7/testing/types"
 )
 
@@ -168,6 +168,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		icqtypes.ModuleName:            nil,
 		ibcmock.ModuleName:             nil,
+		// TODO: transfer module?
 	}
 )
 
@@ -213,8 +214,9 @@ type SimApp struct {
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
 	// make scoped keepers public for test purposes
-	ScopedIBCKeeper capabilitykeeper.ScopedKeeper
-	ScopedICQKeeper capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper        capabilitykeeper.ScopedKeeper
+	ScopedICQKeeper        capabilitykeeper.ScopedKeeper
+	ScopedInterqueryKeeper capabilitykeeper.ScopedKeeper
 
 	// make IBC modules public for test purposes
 	// these modules are never directly routed to by the IBC Router
@@ -242,9 +244,11 @@ func init() {
 // NewSimApp returns a reference to an initialized SimApp.
 func NewSimApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
-	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
+	homePath string, invCheckPeriod uint,
 	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
 ) *SimApp {
+	encodingConfig := MakeEncodingConfig()
+
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -765,7 +769,8 @@ func (app *SimApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 
 	// register swagger API from root so that other applications can override easily
 	if apiConfig.Swagger {
-		RegisterSwaggerAPI(clientCtx, apiSvr.Router)
+		apiSvr.Router.Handle("/static/openapi.yml", http.FileServer(http.FS(docs.Docs)))
+		apiSvr.Router.HandleFunc("/", openapiconsole.Handler("interchain-query-demo", "/static/openapi.yml"))
 	}
 }
 
@@ -782,17 +787,6 @@ func (app *SimApp) RegisterTendermintService(clientCtx client.Context) {
 		app.interfaceRegistry,
 		app.Query,
 	)
-}
-
-// RegisterSwaggerAPI registers swagger route with API Server
-func RegisterSwaggerAPI(_ client.Context, rtr *mux.Router) {
-	statikFS, err := fs.New()
-	if err != nil {
-		panic(err)
-	}
-
-	staticServer := http.FileServer(statikFS)
-	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
 
 func (app *SimApp) RegisterNodeService(context client.Context) {
@@ -828,9 +822,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
-	encCdc := simapp.MakeTestEncodingConfig()
-	app := NewSimApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 5, encCdc, EmptyAppOptions{})
-	return app, NewDefaultGenesisState(encCdc.Marshaler)
+	app := NewSimApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 5, EmptyAppOptions{})
+	return app, NewDefaultGenesisState(MakeEncodingConfig().Marshaler)
 }
 
 // EmptyAppOptions is a stub implementing AppOptions
