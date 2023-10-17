@@ -10,7 +10,6 @@ replace (
 	github.com/vedhavyas/go-subkey => github.com/strangelove-ventures/go-subkey v1.0.7
 )
 
-
 require (
 	cosmossdk.io/math v1.1.2
 	github.com/CosmWasm/wasmd v0.41.0
@@ -243,4 +242,3 @@ require (
 	pgregory.net/rapid v1.0.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
