@@ -2,7 +2,6 @@ package app
 
 import (
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 
@@ -92,9 +91,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
-	"github.com/tendermint/starport/starport/pkg/openapiconsole"
 
-	"github.com/quasar-finance/interchain-query-demo/docs"
 	interquerymodule "github.com/quasar-finance/interchain-query-demo/x/interquery"
 	interquerymodulekeeper "github.com/quasar-finance/interchain-query-demo/x/interquery/keeper"
 	interquerymoduletypes "github.com/quasar-finance/interchain-query-demo/x/interquery/types"
@@ -674,10 +671,6 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
-
-	// register app's OpenAPI routes.
-	apiSvr.Router.Handle("/static/openapi.yml", http.FileServer(http.FS(docs.Docs)))
-	apiSvr.Router.HandleFunc("/", openapiconsole.Handler(Name, "/static/openapi.yml"))
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.

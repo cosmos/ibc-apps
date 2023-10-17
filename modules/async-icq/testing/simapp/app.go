@@ -3,14 +3,11 @@ package simapp
 import (
 	"encoding/json"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/docs"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp/openapiconsole"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
@@ -764,12 +761,6 @@ func (app *SimApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
-
-	// register swagger API from root so that other applications can override easily
-	if apiConfig.Swagger {
-		apiSvr.Router.Handle("/static/openapi.yml", http.FileServer(http.FS(docs.Docs)))
-		apiSvr.Router.HandleFunc("/", openapiconsole.Handler("interchain-query-demo", "/static/openapi.yml"))
-	}
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
