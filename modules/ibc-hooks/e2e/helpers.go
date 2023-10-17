@@ -7,6 +7,9 @@ import (
 
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/stretchr/testify/require"
+
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
 type WasmCoin struct {
@@ -34,10 +37,15 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 	return codeId, contractAddr
 }
 
+func WasmEncodingConfig() *moduletestutil.TestEncodingConfig {
+	cfg := cosmos.DefaultEncoding()
+	wasmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	return &cfg
+}
+
 func GetIBCHooksUserAddress(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, channel, uaddr string) string {
-	// junod q ibchooks wasm-sender channel-0 "juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl" --node http://localhost:26657
 	cmd := []string{
-		"junod", "query", "ibchooks", "wasm-sender", channel, uaddr,
+		chain.Config().Bin, "query", "ibchooks", "wasm-sender", channel, uaddr,
 		"--node", chain.GetRPCAddress(),
 		"--chain-id", chain.Config().ChainID,
 		"--output", "json",
@@ -53,7 +61,7 @@ func GetIBCHooksUserAddress(t *testing.T, ctx context.Context, chain *cosmos.Cos
 
 // GetIBCHookTotalFunds
 type GetTotalFundsQuery struct {
-	// {"get_total_funds":{"addr":"juno1..."}}
+	// {"get_total_funds":{"addr":"osmo1..."}}
 	Addr string `json:"addr"`
 }
 type GetTotalFundsResponse struct {
@@ -73,7 +81,7 @@ func GetIBCHookTotalFunds(t *testing.T, ctx context.Context, chain *cosmos.Cosmo
 
 // GetIBCHookCount
 type GetCountQuery struct {
-	// {"get_total_funds":{"addr":"juno1..."}}
+	// {"get_total_funds":{"addr":"osmo1..."}}
 	Addr string `json:"addr"`
 }
 type GetCountResponse struct {

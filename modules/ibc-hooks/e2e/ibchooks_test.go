@@ -1,7 +1,6 @@
 package e2e
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -10,11 +9,8 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v7/relayer"
-	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
 )
 
 // TestIBCHooks ensures the ibc-hooks middleware from osmosis works as expected.
@@ -43,89 +39,63 @@ func TestIBCHooks(t *testing.T) {
 				UidGid:     "1025:1025",
 			},
 		},
-		Bech32Prefix: "cosmos",
-		Denom:        "uosmo",
-		CoinType:     "118",
+		Bech32Prefix:   "cosmos",
+		Denom:          "uosmo",
+		CoinType:       "118",
+		GasPrices:      "0uosmo",
+		GasAdjustment:  1.5,
+		TrustingPeriod: "330h",
+		EncodingConfig: WasmEncodingConfig(),
 	}
 
 	cfg2 := cfg.Clone()
 	cfg2.Name = "osmosis-counterparty"
 	cfg2.ChainID = "counterparty-2"
 
-	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
+	chains := interchaintest.CreateChainsWithChainSpecs(t, []*interchaintest.ChainSpec{
 		{
 			Name:          "osmosis",
+			ChainName:     "osmosis",
 			ChainConfig:   cfg,
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},
 		{
-			Name:          "osmosis",
+			Name:          "counterparty",
+			ChainName:     "counterparty",
 			ChainConfig:   cfg2,
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},
 	})
 
-	const (
-		path = "ibc-path"
-	)
-
-	// Get chains from the chain factory
-	chains, err := cf.Chains(t.Name())
-	require.NoError(t, err)
-
-	client, network := interchaintest.DockerSetup(t)
-
 	osmosis, osmosis2 := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain)
 
-	relayerType, relayerName := ibc.CosmosRly, "relay"
-
-	// Get a relayer instance
-	rf := interchaintest.NewBuiltinRelayerFactory(
-		relayerType,
-		zaptest.NewLogger(t),
-		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "100"),
+	const path = "ibc-path"
+	enableBlockDB := false
+	skipPathCreations := false
+	ctx, _, r, _, eRep, _, _ := interchaintest.BuildInitialChainWithRelayer(
+		t,
+		chains,
+		enableBlockDB,
+		ibc.CosmosRly,
+		[]string{"--processor", "events", "--block-history", "100"},
+		[]interchaintest.InterchainLink{
+			{
+				Chain1: osmosis,
+				Chain2: osmosis2,
+				Path:   path,
+			},
+		},
+		skipPathCreations,
 	)
 
-	r := rf.Build(t, client, network)
-
-	ic := interchaintest.NewInterchain().
-		AddChain(osmosis).
-		AddChain(osmosis2).
-		AddRelayer(r, relayerName).
-		AddLink(interchaintest.InterchainLink{
-			Chain1:  osmosis,
-			Chain2:  osmosis2,
-			Relayer: r,
-			Path:    path,
-		})
-
-	ctx := context.Background()
-
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
-
-	require.NoError(t, ic.Build(ctx, eRep, interchaintest.InterchainBuildOptions{
-		TestName:          t.Name(),
-		Client:            client,
-		NetworkID:         network,
-		BlockDatabaseFile: interchaintest.DefaultBlockDatabaseFilepath(),
-		SkipPathCreation:  false,
-	}))
-	t.Cleanup(func() {
-		_ = ic.Close()
-	})
+	if err := r.StartRelayer(ctx, eRep, path); err != nil {
+		t.Fatal(err)
+	}
 
 	// Create some user accounts on both chains
 	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), genesisWalletAmount, osmosis, osmosis2)
-
-	err = r.StartRelayer(ctx, eRep, path)
-	require.NoError(t, err)
-
-	// Wait a few blocks for relayer to start and for user accounts to be created
-	err = testutil.WaitForBlocks(ctx, 5, osmosis, osmosis2)
-	require.NoError(t, err)
 
 	// Get our Bech32 encoded user addresses
 	osmosisUser, osmosis2User := users[0], users[1]
@@ -135,15 +105,6 @@ func TestIBCHooks(t *testing.T) {
 
 	channel, err := ibc.GetTransferChannel(ctx, r, eRep, osmosis.Config().ChainID, osmosis2.Config().ChainID)
 	require.NoError(t, err)
-
-	t.Cleanup(
-		func() {
-			err := r.StopRelayer(ctx, eRep)
-			if err != nil {
-				t.Logf("an error occurred while stopping the relayer: %s", err)
-			}
-		},
-	)
 
 	_, contractAddr := SetupContract(t, ctx, osmosis2, osmosis2User.KeyName(), "contracts/ibchooks_counter.wasm", `{"count":0}`)
 
