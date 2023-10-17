@@ -610,9 +610,9 @@ func NewSimApp(
 	wasmStack = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
 	wasmStack = ibcfee.NewIBCMiddleware(wasmStack, app.IBCFeeKeeper)
 
-	app.IBCKeeper.SetRouter(ibcporttypes.NewRouter().
+	ibcRouter := ibcporttypes.NewRouter().
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(wasm.ModuleName, wasmStack))
+		AddRoute(wasm.ModuleName, wasmStack)
 
 	// 'ibc-hooks' module - depends on
 	// 1. 'auth'
@@ -647,8 +647,10 @@ func NewSimApp(
 		app.BankKeeper,
 		app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName),
 	)
+	app.AuthKeeper.GetModulePermissions()[ibctransfertypes.ModuleName] = authtypes.NewPermissionsForAddress(ibctransfertypes.ModuleName, []string{authtypes.Minter, authtypes.Burner})
 	modules = append(modules, ibctransfer.NewAppModule(app.TransferKeeper))
 	simModules = append(simModules, ibctransfer.NewAppModule(app.TransferKeeper))
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, ibctransfer.NewIBCModule(app.TransferKeeper))
 
 	// 'ica'
 	app.AuthKeeper.GetModulePermissions()[icatypes.ModuleName] = authtypes.NewPermissionsForAddress(icatypes.ModuleName, nil)
@@ -729,6 +731,8 @@ func NewSimApp(
 	modules = append(modules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
 	simModules = append(simModules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(&app.WasmKeeper)
+
+	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
 
