@@ -48,8 +48,10 @@ func TestIBCHooks(t *testing.T) {
 		EncodingConfig: WasmEncodingConfig(),
 	}
 
+	cosmos.SetSDKConfig(cfg.Bech32Prefix)
+
 	cfg2 := cfg.Clone()
-	cfg2.Name = "osmosis-counterparty"
+	cfg2.Name = "counterparty"
 	cfg2.ChainID = "counterparty-2"
 
 	chains := interchaintest.CreateChainsWithChainSpecs(t, []*interchaintest.ChainSpec{
@@ -122,6 +124,7 @@ func TestIBCHooks(t *testing.T) {
 	// Initial transfer. Account is created by the wasm execute is not so we must do this twice to properly set up
 	transferTx, err := osmosis.SendIBCTransfer(ctx, channel.ChannelID, osmosisUser.KeyName(), transfer, memo)
 	require.NoError(t, err)
+
 	osmosisHeight, err := osmosis.Height(ctx)
 	require.NoError(t, err)
 
@@ -140,6 +143,14 @@ func TestIBCHooks(t *testing.T) {
 	// Get the address on the other chain's side
 	addr := GetIBCHooksUserAddress(t, ctx, osmosis, channel.ChannelID, osmosisUserAddr)
 	require.NotEmpty(t, addr)
+
+	fmt.Println(transferTx)
+	fmt.Println("Waiting for blocks...", osmosis.GetNode().Chain.GetHostRPCAddress(), osmosis2.GetNode().Chain.GetHostRPCAddress())
+	fmt.Println("userAddr", osmosisUserAddr, "uAddr", addr)
+	fmt.Println("contractAddr", contractAddr)
+	// simd query ibchooks wasm-sender channel-0 cosmos1d6689gwhh52ld4aysh2qw7ms7j6umw6gpynnv2 --node=http://127.0.0.1:40027
+	// simd q wasm contract-state smart cosmos14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s4hmalr '{"get_total_funds":{"addr":"cosmos12ufqv9hkh07kznkzal4l0mg86zjzduk0ddxkx68fkkszz9djglnsa0a2vc"}}' --node=http://127.0.0.1:41655
+	// TODO: testutil.WaitForBlocks(ctx, 50000, osmosis)
 
 	// Get funds on the receiving chain
 	funds := GetIBCHookTotalFunds(t, ctx, osmosis2, contractAddr, addr)
