@@ -15,6 +15,7 @@ import (
 func GetQueryCmd() *cobra.Command {
 	queryCmd := &cobra.Command{
 		Use:                        "packetforward",
+		Short:                      "Querying commands for the packetforward module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 	}

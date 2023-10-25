@@ -105,7 +105,7 @@ BUILD_TARGETS := build install
 
 build: BUILD_ARGS=-o $(BUILDDIR)/
 build-linux:
-	GOOS=linux GOARCH=amd64 LEDGER_ENABLED=false $(MAKE) build
+	GOOS=linux GOARCH=amd64 LEDGER_ENABLED=false $(MAKE) build -o bin/simd ./cmd/simd
 
 $(BUILD_TARGETS): go.sum $(BUILDDIR)/
 	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) ./...
@@ -210,6 +210,19 @@ else
 endif
 
 .PHONY: run-tests test test-all $(TEST_TARGETS)
+
+###############################################################################
+###                             e2e interchain test                         ###
+###############################################################################
+
+local-image:
+	docker build . -t pfm:local
+
+ictest-forward:
+	cd e2e && go test -race -v -timeout 15m -run TestPacketForwardMiddleware .
+
+ictest-timeout:
+	cd e2e && go test -race -v -timeout 15m -run TestTimeoutOnForward .
 
 ###############################################################################
 ###                                Linting                                  ###

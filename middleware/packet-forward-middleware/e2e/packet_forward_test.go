@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v7/relayer"
 	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
@@ -36,23 +38,37 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 
-	client, network := interchaintest.DockerSetup(t)
+	var (
+		ctx                                    = context.Background()
+		client, network                        = interchaintest.DockerSetup(t)
+		rep                                    = testreporter.NewNopReporter()
+		eRep                                   = rep.RelayerExecReporter(t)
+		chainIdA, chainIdB, chainIdC, chainIdD = "chain-1", "chain-2", "chain-3", "chain-4"
+		waitBlocks                             = 3
+	)
 
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
-
-	ctx := context.Background()
-
-	chainIdA, chainIdB, chainIdC, chainIdD := "chain-a", "chain-b", "chain-c", "chain-d"
-
-	fullNodes := 1
 	vals := 1
+	fullNodes := 0
+
+	baseCfg := DefaultConfig
+
+	baseCfg.ChainID = chainIdA
+	configA := baseCfg
+
+	baseCfg.ChainID = chainIdB
+	configB := baseCfg
+
+	baseCfg.ChainID = chainIdC
+	configC := baseCfg
+
+	baseCfg.ChainID = chainIdD
+	configD := baseCfg
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdA, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdB, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdC, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
-		{Name: "gaia", Version: "v9.0.1", ChainConfig: ibc.ChainConfig{ChainID: chainIdD, GasPrices: "0.0uatom"}, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configA, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configB, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configC, NumFullNodes: &fullNodes, NumValidators: &vals},
+		{Name: "pfm", ChainConfig: configD, NumFullNodes: &fullNodes, NumValidators: &vals},
 	})
 
 	chains, err := cf.Chains(t.Name())
@@ -63,6 +79,8 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
+		relayer.DockerImage(&DefaultRelayer),
+		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
 	const pathAB = "ab"
@@ -153,9 +171,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
 	thirdHopIBCDenom := thirdHopDenomTrace.IBCDenom()
 
-	firstHopEscrowAccount := transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID).String()
-	secondHopEscrowAccount := transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID).String()
-	thirdHopEscrowAccount := transfertypes.GetEscrowAddress(cdChan.PortID, abChan.ChannelID).String()
+	firstHopEscrowAccount := sdk.MustBech32ifyAddressBytes(chainA.Config().Bech32Prefix, transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID))
+	secondHopEscrowAccount := sdk.MustBech32ifyAddressBytes(chainB.Config().Bech32Prefix, transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID))
+	thirdHopEscrowAccount := sdk.MustBech32ifyAddressBytes(chainC.Config().Bech32Prefix, transfertypes.GetEscrowAddress(cdChan.PortID, abChan.ChannelID))
 
 	zeroBal := math.ZeroInt()
 	transferAmount := math.NewInt(100_000)
@@ -198,7 +216,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
@@ -227,9 +245,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
 		require.NoError(t, err)
 
-		require.True(t, firstHopEscrowBalance.Equal(transferAmount))
-		require.True(t, secondHopEscrowBalance.Equal(transferAmount))
-		require.True(t, thirdHopEscrowBalance.Equal(transferAmount))
+		require.Equal(t, transferAmount, firstHopEscrowBalance)
+		require.Equal(t, transferAmount, secondHopEscrowBalance)
+		require.Equal(t, transferAmount, thirdHopEscrowBalance)
 	})
 
 	t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
@@ -272,7 +290,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -333,9 +351,10 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
+
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -362,7 +381,6 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
 	})
-
 	t.Run("forward timeout refund", func(t *testing.T) {
 		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
 		transfer := ibc.WalletAmount{
@@ -392,7 +410,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -461,7 +479,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -527,7 +545,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainB, chainBHeight, chainBHeight+10, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainB)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainB)
 		require.NoError(t, err)
 
 		// assert balance for user controlled wallet
@@ -581,7 +599,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -649,7 +667,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, 1, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
