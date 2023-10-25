@@ -14,6 +14,8 @@ import (
 type TransferKeeper interface {
 	Transfer(ctx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error)
 	DenomPathFromHash(ctx sdk.Context, denom string) (string, error)
+	GetTotalEscrowForDenom(ctx sdk.Context, denom string) sdk.Coin
+	SetTotalEscrowForDenom(ctx sdk.Context, coin sdk.Coin)
 }
 
 // ChannelKeeper defines the expected IBC channel keeper
