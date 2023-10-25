@@ -182,6 +182,10 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 					panic(fmt.Sprintf("cannot burn coins after a successful send from escrow account to module account: %v", err))
 				}
 			}
+
+			// We move funds from the escrowAddress in both cases,
+			// update the total escrow amount for the denom.
+			k.unescrowToken(ctx, token)
 		}
 	}
 
@@ -195,6 +199,14 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 		TimeoutHeight:      clienttypes.MustParseHeight(inFlightPacket.PacketTimeoutHeight),
 		TimeoutTimestamp:   inFlightPacket.PacketTimeoutTimestamp,
 	}, ack)
+}
+
+// unescrowToken will update the total escrow by deducting the unescrowed token
+// from the current total escrow.
+func (k *Keeper) unescrowToken(ctx sdk.Context, token sdk.Coin) {
+	currentTotalEscrow := k.transferKeeper.GetTotalEscrowForDenom(ctx, token.GetDenom())
+	newTotalEscrow := currentTotalEscrow.Sub(token)
+	k.transferKeeper.SetTotalEscrowForDenom(ctx, newTotalEscrow)
 }
 
 func (k *Keeper) ForwardTransferPacket(
