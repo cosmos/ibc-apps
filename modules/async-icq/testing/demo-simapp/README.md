@@ -3,7 +3,7 @@
 
 ## Disclaimer
 
-The following repository and [`x/interquery`](./x/interquery/) module serves as an example and is used to exercise the functionality of Interchain Accounts end-to-end for development purposes only.
+The following repository and [`x/interquery`](./x/interquery/) module serves as an example and is used to exercise the functionality of async-icq end-to-end for development purposes only.
 This module **SHOULD NOT** be used in production systems
 
 ## Overview 
@@ -14,7 +14,7 @@ The following repository contains a basic example of an Interchain Queries modul
 
 Interchain Queries developer docs can be found here
 
-https://github.com/strangelove-ventures/ibc-go/blob/feature/icq_implementation/modules/apps/icq/README.md
+<https://github.com/cosmos/ibc-apps/blob/main/modules/async-icq/README.md>
 
 ## Demo
 
