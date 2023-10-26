@@ -9,8 +9,7 @@ LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
 SIMAPP = ./testing/simapp
-MOCKS_DIR = $(CURDIR)/test/mock
-HTTPS_GIT := https://github.com/cosmos/ibc-go.git
+HTTPS_GIT := https://github.com/cosmos/ibc-apps.git
 DOCKER := $(shell which docker)
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
