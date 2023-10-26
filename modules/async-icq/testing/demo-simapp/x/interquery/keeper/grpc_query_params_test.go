@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	testkeeper "github.com/quasar-finance/interchain-query-demo/testutil/keeper"
-	"github.com/quasar-finance/interchain-query-demo/x/interquery/types"
+	testkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/testutil/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types"
 	"github.com/stretchr/testify/require"
 )
 

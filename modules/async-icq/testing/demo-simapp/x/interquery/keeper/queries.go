@@ -4,8 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types"
 	gogotypes "github.com/gogo/protobuf/types"
-	"github.com/quasar-finance/interchain-query-demo/x/interquery/types"
 )
 
 // SetQueryRequest saves the query request

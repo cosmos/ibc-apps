@@ -1,10 +1,10 @@
 syntax = "proto3";
-package quasarfinance.interchainquerydemo.interquery;
+package ibcapps.interchainquerydemo.interquery;
 
 import "cosmos/base/query/v1beta1/pagination.proto";
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/quasar-finance/interchain-query-demo/x/interquery/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types";
 
 // Msg defines the Msg service.
 service Msg {

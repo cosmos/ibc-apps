@@ -1,5 +1,5 @@
 syntax = "proto3";
-package quasarfinance.interchainquerydemo.interquery;
+package ibcapps.interchainquerydemo.interquery;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -8,17 +8,17 @@ import "interquery/params.proto";
 import "google/protobuf/any.proto";
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/quasar-finance/interchain-query-demo/x/interquery/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/quasarfinance/interchainquerydemo/interquery/params";
+    option (google.api.http).get = "/ibc-apps/interchainquerydemo/interquery/params";
   }
   // Queries a list of QueryState items.
 	rpc QueryState(QueryQueryStateRequest) returns (QueryQueryStateResponse) {
-		option (google.api.http).get = "/quasar-finance/interchainquerydemo/interquery/query_state";
+		option (google.api.http).get = "/ibc-apps/interchainquerydemo/interquery/query_state";
 	}
 
 // this line is used by starport scaffolding # 2

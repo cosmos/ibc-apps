@@ -18,7 +18,7 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/quasar-finance/interchain-query-demo/app"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/app"
 )
 
 type (

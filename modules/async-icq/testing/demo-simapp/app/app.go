@@ -92,9 +92,9 @@ import (
 
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
 
-	interquerymodule "github.com/quasar-finance/interchain-query-demo/x/interquery"
-	interquerymodulekeeper "github.com/quasar-finance/interchain-query-demo/x/interquery/keeper"
-	interquerymoduletypes "github.com/quasar-finance/interchain-query-demo/x/interquery/types"
+	interquerymodule "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery"
+	interquerymodulekeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/keeper"
+	interquerymoduletypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 

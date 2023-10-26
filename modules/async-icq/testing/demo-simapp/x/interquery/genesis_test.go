@@ -3,10 +3,10 @@ package interquery_test
 import (
 	"testing"
 
-	keepertest "github.com/quasar-finance/interchain-query-demo/testutil/keeper"
-	"github.com/quasar-finance/interchain-query-demo/testutil/nullify"
-	"github.com/quasar-finance/interchain-query-demo/x/interquery"
-	"github.com/quasar-finance/interchain-query-demo/x/interquery/types"
+	keepertest "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/testutil/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/testutil/nullify"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types"
 	"github.com/stretchr/testify/require"
 )
 

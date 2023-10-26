@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/quasar-finance/interchain-query-demo/testutil/sample"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/testutil/sample"
 	"github.com/stretchr/testify/require"
 )
 
