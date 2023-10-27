@@ -10,6 +10,7 @@ import (
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	upgrades "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/upgrades"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
@@ -269,6 +270,8 @@ func NewSimApp(
 	// Further down we'd set the options in the AppBuilder like below.
 	// baseAppOptions = append(baseAppOptions, mempoolOpt, prepareOpt, processOpt)
 
+	authority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+
 	bApp := baseapp.NewBaseApp(appName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
@@ -306,7 +309,7 @@ func NewSimApp(
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[upgradetypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[upgradetypes.StoreKey], authority)
 	bApp.SetParamStore(&app.ConsensusParamsKeeper)
 
 	// add capability keeper and ScopeToModule for ibc module
@@ -325,21 +328,21 @@ func NewSimApp(
 		authtypes.ProtoBaseAccount,
 		maccPerms,
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authority,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.ModuleAccountAddrs(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authority,
 	)
 	app.StakingKeeper = stakingkeeper.NewKeeper(
 		appCodec,
 		keys[stakingtypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authority,
 	)
 	app.MintKeeper = mintkeeper.NewKeeper(
 		appCodec,
@@ -348,7 +351,7 @@ func NewSimApp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authority,
 	)
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec,
@@ -357,11 +360,11 @@ func NewSimApp(
 		app.BankKeeper,
 		app.StakingKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authority,
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
-		appCodec, app.legacyAmino, keys[slashingtypes.StoreKey], app.StakingKeeper, authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		appCodec, app.legacyAmino, keys[slashingtypes.StoreKey], app.StakingKeeper, authority,
 	)
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		appCodec,
@@ -369,7 +372,7 @@ func NewSimApp(
 		invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authority,
 	)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
@@ -379,7 +382,7 @@ func NewSimApp(
 		appCodec,
 		homePath,
 		app.BaseApp,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authority,
 	)
 
 	// register the staking hooks
@@ -414,7 +417,7 @@ func NewSimApp(
 
 	govKeeper := govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.AccountKeeper, app.BankKeeper,
-		app.StakingKeeper, app.MsgServiceRouter(), govConfig, authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.StakingKeeper, app.MsgServiceRouter(), govConfig, authority,
 	)
 
 	// Set legacy router for backwards compatibility with gov v1beta1
@@ -432,13 +435,14 @@ func NewSimApp(
 
 	// Packet Forward Middleware Keeper
 	app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
-		appCodec, app.keys[packetforwardtypes.StoreKey],
-		app.GetSubspace(packetforwardtypes.ModuleName),
+		appCodec,
+		app.keys[packetforwardtypes.StoreKey],
 		nil, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
 		app.IBCKeeper.ChannelKeeper,
 		app.DistrKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
+		authority,
 	)
 
 	// create the IBC Router
@@ -516,7 +520,7 @@ func NewSimApp(
 
 		// IBC modules
 		ibc.NewAppModule(app.IBCKeeper),
-		packetforward.NewAppModule(app.PacketForwardKeeper),
+		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		transfer.NewAppModule(app.TransferKeeper),
 	)
 
@@ -583,6 +587,10 @@ func NewSimApp(
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
 	app.MountMemoryStores(memKeys)
+
+	// register upgrade
+	app.setupUpgradeHandlers()
+	app.setupUpgradeStoreLoaders()
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
@@ -743,6 +751,34 @@ func (app *SimApp) GetTxConfig() client.TxConfig {
 // SimulationManager implements the SimulationApp interface
 func (app *SimApp) SimulationManager() *module.SimulationManager {
 	return app.sm
+}
+
+func (app *SimApp) setupUpgradeHandlers() {
+	app.UpgradeKeeper.SetUpgradeHandler(
+		upgrades.V2,
+		upgrades.CreateV2UpgradeHandler(app.mm, app.configurator, app.ParamsKeeper, app.ConsensusParamsKeeper, app.PacketForwardKeeper),
+	)
+}
+
+// setupUpgradeStoreLoaders sets all necessary store loaders required by upgrades.
+func (app *SimApp) setupUpgradeStoreLoaders() {
+	// upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	// if err != nil {
+	// 	tmos.Exit(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	// }
+
+	// // Future: if we want to fix the module name, we can do it here.
+	// if upgradeInfo.Name == upgrades.V2 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	// 	storeUpgrades := storetypes.StoreUpgrades{
+	// 		Renamed: []storetypes.StoreRename{{
+	// 			OldKey: "packetfoward", // previous misspelling
+	// 			NewKey: packetforwardtypes.ModuleName,
+	// 		}},
+	// 	}
+
+	// 	// configure store loader that checks if version == upgradeHeight and applies store upgrades
+	// 	app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	// }
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided

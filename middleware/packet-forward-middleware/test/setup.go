@@ -136,16 +136,17 @@ func (i initializer) packetforwardKeeper(
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 
-	subspace := paramsKeeper.Subspace(types.ModuleName)
+	govModuleAddress := "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn"
+
 	packetforwardKeeper := keeper.NewKeeper(
 		i.Marshaler,
 		storeKey,
-		subspace,
 		transferKeeper,
 		channelKeeper,
 		distributionKeeper,
 		bankKeeper,
 		ics4Wrapper,
+		govModuleAddress,
 	)
 
 	return packetforwardKeeper

@@ -3,7 +3,7 @@ package types
 import fmt "fmt"
 
 const (
-	// ModuleName defines the 29-fee name
+	// ModuleName defines the module name
 	ModuleName = "packetfowardmiddleware"
 
 	// StoreKey is the store key string for IBC transfer
@@ -14,6 +14,10 @@ const (
 
 	// QuerierRoute is the querier route for IBC transfer
 	QuerierRoute = ModuleName
+)
+
+var (
+	ParamsKey = []byte{0x00}
 )
 
 type (
