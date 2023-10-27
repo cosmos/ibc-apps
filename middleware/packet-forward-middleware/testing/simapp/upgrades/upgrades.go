@@ -38,12 +38,20 @@ func CreateV2UpgradeHandler(
 ) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		// NOTE: If you already migrated the previous module, you ONLY need to migrate packetforward case now.
-		p, ok := paramskeeper.GetSubspace(packetforwardtypes.ModuleName)
-		if !ok {
-			panic("paramskeeper does not have packetforward subspace")
-		}
+		for _, subspace := range paramskeeper.GetSubspaces() {
+			subspace := subspace
 
-		p.WithKeyTable(packetforwardtypes.ParamKeyTable())
+			var keyTable paramstypes.KeyTable
+			if subspace.Name() == packetforwardtypes.ModuleName {
+				keyTable = packetforwardtypes.ParamKeyTable()
+			} else {
+				continue
+			}
+
+			if !subspace.HasKeyTable() {
+				subspace.WithKeyTable(keyTable)
+			}
+		}
 
 		// Migrate Tendermint consensus parameters from x/params module to a deprecated x/consensus module.
 		// The old params module is required to still be imported in your app.go in order to handle this migration.
