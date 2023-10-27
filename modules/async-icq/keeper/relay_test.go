@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"fmt"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 
@@ -229,13 +230,13 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 	)
 
 	ctx := suite.chainB.GetContext()
-	ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeter(2000))
 	// enough gas for this small query, but not for the larger one. This one should work
 	_, err = simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
 	suite.Require().NoError(err)
 
 	// fund account with 10_000 denoms
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 	for i := 0; i < 10_000; i++ {
 		denom := fmt.Sprintf("denom%d", i)
 		err = simapp.GetSimApp(suite.chainB).BankKeeper.MintCoins(ctx, minttypes.ModuleName, sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
@@ -265,7 +266,7 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 
 	// and this one should panic
 	suite.Assert().Panics(func() {
-		ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
+		ctx = ctx.WithGasMeter(storetypes.NewGasMeter(2000))
 		_, _ = simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
 	}, "out of gas")
 }
