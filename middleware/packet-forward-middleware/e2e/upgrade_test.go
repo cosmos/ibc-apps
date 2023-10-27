@@ -103,7 +103,7 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 
 	// Validate the PFM subspace -> keeper migration was successful.
 	cmd := []string{
-		chain.Config().Bin, "q", "packet-forward", "params", "--output=json", "--node", chain.GetRPCAddress(),
+		chain.Config().Bin, "q", "packetforward", "params", "--output=json", "--node", chain.GetRPCAddress(),
 	}
 	stdout, _, err := chain.Exec(ctx, cmd, nil)
 	fmt.Println("stdout", string(stdout))
