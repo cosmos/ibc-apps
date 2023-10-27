@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	"github.com/stretchr/testify/suite"
 
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 )
 
 type TypesTestSuite struct {

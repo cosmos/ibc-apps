@@ -19,7 +19,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 )
 
 var (
@@ -110,15 +110,13 @@ func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
 // RegisterInvariants implements the AppModule interface
 func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// NewHandler implements the AppModule interface
-func (AppModule) NewHandler() sdk.Handler {
-	return nil
-}
-
 // QuerierRoute implements the AppModule interface
 func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
 }
+
+func (AppModule) IsAppModule()        {}
+func (AppModule) IsOnePerModuleType() {}
 
 // RegisterServices registers module services
 func (am AppModule) RegisterServices(cfg module.Configurator) {
@@ -145,10 +143,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock implements the AppModule interface
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(_ sdk.Context) {
 }
 
 // EndBlock implements the AppModule interface
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(_ sdk.Context) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }

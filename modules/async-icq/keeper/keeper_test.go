@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	"github.com/stretchr/testify/suite"
 
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 )
 
 var TestPort = "icq-test"
