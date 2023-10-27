@@ -2,10 +2,12 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	cosmosproto "github.com/cosmos/gogoproto/proto"
 	"github.com/docker/docker/client"
@@ -14,6 +16,8 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
+
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 )
 
 const (
@@ -97,7 +101,20 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	ValidatorVoting(t, ctx, chain, proposalID, height, haltHeight)
 	UpgradeNodes(t, ctx, chain, client, haltHeight, upgradeRepo, upgradeDockerTag)
 
-	// TODO: Validate upgraded chain state worked with querying the pfm params
+	// Validate the PFM subspace -> keeper migration was successful.
+	cmd := []string{
+		chain.Config().Bin, "q", "packet-forward", "params", "--output=json", "--node", chain.GetRPCAddress(),
+	}
+	stdout, _, err := chain.Exec(ctx, cmd, nil)
+	fmt.Println("stdout", string(stdout))
+	require.NoError(t, err, "error fetching pfm params")
+
+	var params packetforwardtypes.Params
+	err = json.Unmarshal(stdout, &params)
+	require.NoError(t, err, "error unmarshalling pfm params")
+	t.Logf("params: %+v", params)
+	require.Equal(t, sdk.NewDec(0), params.FeePercentage, "fee percentage not equal to expected value")
+
 }
 
 func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, upgradeName string, haltHeight uint64) string {
