@@ -37,12 +37,12 @@ func TestMigrate(t *testing.T) {
 	store := ctx.KVStore(storeKey)
 
 	legacySubspace := newMockSubspace(types.Params{
-		FeePercentage: sdk.NewDec(0),
+		FeePercentage: sdk.NewDec(1),
 	})
 	require.NoError(t, v2.Migrate(ctx, store, legacySubspace, cdc))
 
 	var res types.Params
-	bz := store.Get(v2.ParamsKey)
+	bz := store.Get(types.ParamsKey)
 	require.NoError(t, cdc.Unmarshal(bz, &res))
 	require.Equal(t, legacySubspace.ps, res)
 }

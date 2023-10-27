@@ -8,8 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var ParamsKey = []byte{0x00}
-
 // Migrate migrates the x/packetforward module state from the consensus version 1 to
 // version 2. Specifically, it takes the parameters that are currently stored
 // and managed by the x/params modules and stores them directly into the x/packetforward
@@ -28,6 +26,6 @@ func Migrate(
 	}
 
 	bz := cdc.MustMarshal(&currParams)
-	store.Set(ParamsKey, bz)
+	store.Set(types.ParamsKey, bz)
 	return nil
 }
