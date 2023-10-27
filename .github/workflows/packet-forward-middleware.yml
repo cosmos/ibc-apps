@@ -81,6 +81,7 @@ jobs:
         test:
           - "ictest-forward"
           - "ictest-timeout"
+          - "ictest-upgrade"
       fail-fast: false
 
     steps:
@@ -101,6 +102,7 @@ jobs:
       - name: Load Docker Image
         run: |
           docker image load -i ${{ env.TAR_PATH }}
+          docker image load -i ${{ env.WORKING_DIRECTORY }}/testing/previous_images/pfm_7_0_1.tar
           docker image ls -a
 
       - name: Run Test
