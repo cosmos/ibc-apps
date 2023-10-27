@@ -371,7 +371,9 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	forwardMiddleware := setup.ForwardMiddleware
 
 	// Set fee param to 10%
-	setup.Keepers.PacketForwardKeeper.SetParams(ctx, types.NewParams(sdk.NewDecWithPrec(10, 2)))
+	if err := setup.Keepers.PacketForwardKeeper.SetParams(ctx, types.NewParams(sdk.NewDecWithPrec(10, 2))); err != nil {
+		t.Fatal(err)
+	}
 
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()

@@ -9,10 +9,8 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-var (
-	// KeyFeePercentage is store's key for FeePercentage Params
-	KeyFeePercentage = []byte("FeePercentage")
-)
+// KeyFeePercentage is store's key for FeePercentage Params
+var KeyFeePercentage = []byte("FeePercentage")
 
 // ParamKeyTable type declaration for parameters.
 func ParamKeyTable() paramtypes.KeyTable {

@@ -69,7 +69,6 @@ func NewKeeper(
 	ics4Wrapper porttypes.ICS4Wrapper,
 	authority string,
 ) *Keeper {
-
 	return &Keeper{
 		cdc:            cdc,
 		storeKey:       key,

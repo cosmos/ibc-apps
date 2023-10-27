@@ -6,10 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	// DefaultFeePercentage is the default value used to extract a fee from all forwarded packets.
-	DefaultFeePercentage = sdk.NewDec(0)
-)
+// DefaultFeePercentage is the default value used to extract a fee from all forwarded packets.
+var DefaultFeePercentage = sdk.NewDec(0)
 
 // NewParams creates a new parameter configuration for the pfm module.
 func NewParams(feePercentage sdk.Dec) Params {

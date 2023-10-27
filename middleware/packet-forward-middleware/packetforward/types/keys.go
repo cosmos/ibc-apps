@@ -16,9 +16,7 @@ const (
 	QuerierRoute = ModuleName
 )
 
-var (
-	ParamsKey = []byte{0x00}
-)
+var ParamsKey = []byte{0x00}
 
 type (
 	NonrefundableKey           struct{}

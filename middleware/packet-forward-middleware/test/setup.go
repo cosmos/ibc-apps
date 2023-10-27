@@ -42,7 +42,9 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
 
-	packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams())
+	if err := packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams()); err != nil {
+		t.Fatal(err)
+	}
 
 	return &Setup{
 		Initializer: initializer,
