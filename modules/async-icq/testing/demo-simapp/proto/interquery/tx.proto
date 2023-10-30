@@ -1,0 +1,26 @@
+syntax = "proto3";
+package ibcapps.interchainquerydemo.interquery;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types";
+
+// Msg defines the Msg service.
+service Msg {
+      rpc SendQueryAllBalances(MsgSendQueryAllBalances) returns (MsgSendQueryAllBalancesResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgSendQueryAllBalances {
+  string creator = 1;
+  string channel_id = 2;
+  string address = 3;
+  cosmos.base.query.v1beta1.PageRequest pagination = 4;
+}
+
+message MsgSendQueryAllBalancesResponse {
+  uint64 sequence = 1;
+}
+
+// this line is used by starport scaffolding # proto/tx/message
