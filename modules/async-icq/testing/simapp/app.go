@@ -3,15 +3,12 @@ package simapp
 import (
 	"encoding/json"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 
 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
 	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
-	"github.com/gorilla/mux"
-	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
 
@@ -168,6 +165,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		icqtypes.ModuleName:            nil,
 		ibcmock.ModuleName:             nil,
+		// TODO: transfer module?
 	}
 )
 
@@ -213,8 +211,9 @@ type SimApp struct {
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
 	// make scoped keepers public for test purposes
-	ScopedIBCKeeper capabilitykeeper.ScopedKeeper
-	ScopedICQKeeper capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper        capabilitykeeper.ScopedKeeper
+	ScopedICQKeeper        capabilitykeeper.ScopedKeeper
+	ScopedInterqueryKeeper capabilitykeeper.ScopedKeeper
 
 	// make IBC modules public for test purposes
 	// these modules are never directly routed to by the IBC Router
@@ -762,11 +761,6 @@ func (app *SimApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
-
-	// register swagger API from root so that other applications can override easily
-	if apiConfig.Swagger {
-		RegisterSwaggerAPI(clientCtx, apiSvr.Router)
-	}
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -782,17 +776,6 @@ func (app *SimApp) RegisterTendermintService(clientCtx client.Context) {
 		app.interfaceRegistry,
 		app.Query,
 	)
-}
-
-// RegisterSwaggerAPI registers swagger route with API Server
-func RegisterSwaggerAPI(_ client.Context, rtr *mux.Router) {
-	statikFS, err := fs.New()
-	if err != nil {
-		panic(err)
-	}
-
-	staticServer := http.FileServer(statikFS)
-	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
 
 func (app *SimApp) RegisterNodeService(context client.Context) {
@@ -830,7 +813,7 @@ func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 	encCdc := simapp.MakeTestEncodingConfig()
 	app := NewSimApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 5, encCdc, EmptyAppOptions{})
-	return app, NewDefaultGenesisState(encCdc.Marshaler)
+	return app, NewDefaultGenesisState(MakeEncodingConfig().Marshaler)
 }
 
 // EmptyAppOptions is a stub implementing AppOptions
