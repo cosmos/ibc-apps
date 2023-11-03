@@ -1,6 +1,8 @@
 package v2
 
 import (
+	"fmt"
+
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/exported"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 
@@ -27,5 +29,24 @@ func Migrate(
 
 	bz := cdc.MustMarshal(&currParams)
 	store.Set(types.ParamsKey, bz)
+
+	return validate(store, cdc, currParams)
+}
+
+func validate(store sdk.KVStore, cdc codec.BinaryCodec, currParams types.Params) error {
+	var res types.Params
+	bz := store.Get(types.ParamsKey)
+	if bz == nil {
+		return fmt.Errorf("expected params at key %s but not found", types.ParamsKey)
+	}
+
+	if err := cdc.Unmarshal(bz, &res); err != nil {
+		return err
+	}
+
+	if !currParams.FeePercentage.Equal(res.FeePercentage) {
+		return fmt.Errorf("expected %s but got %s", currParams, res)
+	}
+
 	return nil
 }

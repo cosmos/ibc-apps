@@ -5,6 +5,8 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
+// NOTE: this can be removed in SDK v51
+
 type (
 	ParamSet = paramtypes.ParamSet
 

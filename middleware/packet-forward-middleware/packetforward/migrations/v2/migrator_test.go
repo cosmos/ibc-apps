@@ -14,6 +14,9 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
+// 0.02
+var migrateExpected = sdk.NewDecWithPrec(2, 2)
+
 type mockSubspace struct {
 	ps types.Params
 }
@@ -37,7 +40,7 @@ func TestMigrate(t *testing.T) {
 	store := ctx.KVStore(storeKey)
 
 	legacySubspace := newMockSubspace(types.Params{
-		FeePercentage: sdk.NewDec(1),
+		FeePercentage: migrateExpected,
 	})
 	require.NoError(t, v2.Migrate(ctx, store, legacySubspace, cdc))
 
