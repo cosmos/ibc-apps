@@ -135,11 +135,11 @@ func getBoolFromAny(value any) bool {
 	return boolVal
 }
 
-// getReceiver returns the receiver address for a given channel and original sender.
+// GetReceiver returns the receiver address for a given channel and original sender.
 // it overrides the receiver address to be a hash of the channel/origSender so that
 // the receiver address is deterministic and can be used to identify the sender on the
 // initial chain.
-func getReceiver(channel string, originalSender string) (string, error) {
+func GetReceiver(channel string, originalSender string) (string, error) {
 	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
 	senderHash32 := address.Hash(types.ModuleName, []byte(senderStr))
 	sender := sdk.AccAddress(senderHash32[:20])
@@ -207,7 +207,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	// override the receiver so that senders cannot move funds through arbitrary addresses.
-	overrideReceiver, err := getReceiver(packet.DestinationChannel, data.Sender)
+	overrideReceiver, err := GetReceiver(packet.DestinationChannel, data.Sender)
 	if err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket failed to construct override receiver", "error", err)
 		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %w", err))
