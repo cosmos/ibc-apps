@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/exported"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
 	"github.com/gorilla/mux"
@@ -38,10 +39,14 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterLegacyAminoCodec implements AppModuleBasic.
-func (AppModuleBasic) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {}
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	types.RegisterLegacyAminoCodec(cdc)
+}
 
 // RegisterInterfaces registers module concrete types into protobuf Any
-func (AppModuleBasic) RegisterInterfaces(_ codectypes.InterfaceRegistry) {}
+func (AppModuleBasic) RegisterInterfaces(r codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(r)
+}
 
 // DefaultGenesis returns default genesis state as raw bytes for the IBC
 // interchain query module
@@ -85,19 +90,25 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 	keeper keeper.Keeper
+
+	// legacySubspace is used solely for migration of x/params managed parameters
+	legacySubspace exported.Subspace
 }
 
 // NewAppModule creates a new IBC interchain query module
-func NewAppModule(keeper keeper.Keeper) AppModule {
+func NewAppModule(keeper keeper.Keeper, ss exported.Subspace) AppModule {
 	return AppModule{
-		keeper: keeper,
+		keeper:         keeper,
+		legacySubspace: ss,
 	}
 }
 
 // InitModule will initialize the interchain query moudule. It should only be
 // called once and as an alternative to InitGenesis.
 func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
-	am.keeper.SetParams(ctx, params)
+	if err := am.keeper.SetParams(ctx, params); err != nil {
+		panic(fmt.Sprintf("could not set params: %v", err))
+	}
 
 	if am.keeper.IsHostEnabled(ctx) {
 		err := am.keeper.BindPort(ctx, types.PortID)
@@ -123,6 +134,12 @@ func (AppModule) QuerierRoute() string {
 // RegisterServices registers module services
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+
+	m := keeper.NewMigrator(&am.keeper, am.legacySubspace)
+	if err := cfg.RegisterMigration(types.ModuleName, 2, m.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
+	}
 }
 
 // InitGenesis performs genesis initialization for the icq module. It returns
@@ -142,7 +159,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
-func (AppModule) ConsensusVersion() uint64 { return 1 }
+func (AppModule) ConsensusVersion() uint64 { return 2 }
 
 // BeginBlock implements the AppModule interface
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {

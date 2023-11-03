@@ -212,6 +212,9 @@ local-image-icq-demo:
 ictest-icq:
 	cd e2e && go test -race -v -timeout 15m -run TestInterchainQueries .
 
+ictest-upgrade:
+	cd e2e && go test -race -v -timeout 15m -run TestICQUpgrade .
+
 ###############################################################################
 ###                                Linting                                  ###
 ###############################################################################

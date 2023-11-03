@@ -1,5 +1,5 @@
 name: async-icq
-on: 
+on:
   pull_request:
     paths:
       - 'modules/async-icq/**'
@@ -8,20 +8,20 @@ on:
 env:
   LINT_VERSION: v1.52
   GO_VERSION: 1.21.0
-  WORKING_DIRECTORY: modules/async-icq/
+  WORKING_DIRECTORY: modules/async-icq
 
   HOST_TAR_PATH: /tmp/icq-host.tar
   HOST_IMAGE_NAME: icq-host
   HOST_DOCKER_TAG: icq-host:local
-  
+
   CONTROLLER_TAR_PATH: /tmp/icq-demo.tar
   CONTROLLER_IMAGE_NAME: icq-demo
   CONTROLLER_DOCKER_TAG: icq-demo:local
 
 jobs:
   golangci:
-    name: Linter    
-    runs-on: ubuntu-latest    
+    name: Linter
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -46,7 +46,7 @@ jobs:
       - name: Test
         run: go test ./...
         working-directory: ${{ env.WORKING_DIRECTORY }}
-  
+
   build-docker:
     runs-on: ubuntu-latest
     steps:
@@ -56,14 +56,14 @@ jobs:
       - name: Setup Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.GO_VERSION }}          
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-                     
+
       - name: Build and export Host
         uses: docker/build-push-action@v5
-        with:          
+        with:
           context: ${{ env.WORKING_DIRECTORY }}
           tags: ${{ env.HOST_DOCKER_TAG }}
           file: ${{ env.WORKING_DIRECTORY }}/Dockerfile.icq
@@ -71,7 +71,7 @@ jobs:
 
       - name: Build and export Controller
         uses: docker/build-push-action@v5
-        with:          
+        with:
           context: ${{ env.WORKING_DIRECTORY }}
           tags: ${{ env.CONTROLLER_DOCKER_TAG }}
           file: ${{ env.WORKING_DIRECTORY }}/Dockerfile.icq-demo
@@ -96,16 +96,17 @@ jobs:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     strategy:
-      matrix:          
+      matrix:
         test:
-          - "ictest-icq"          
+          - "ictest-icq"
+          - "ictest-upgrade"
       fail-fast: false
 
     steps:
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.GO_VERSION }}          
+          go-version: ${{ env.GO_VERSION }}
 
       - name: checkout chain
         uses: actions/checkout@v4
@@ -126,6 +127,7 @@ jobs:
         run: |
           docker image load -i ${{ env.HOST_TAR_PATH }}
           docker image load -i ${{ env.CONTROLLER_TAR_PATH }}
+          docker image load -i testing/previous_images/icq_host_7_0_0.tar
           docker image ls -a
 
       - name: Run Test

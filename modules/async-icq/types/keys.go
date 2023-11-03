@@ -20,8 +20,12 @@ const (
 	QuerierRoute = ModuleName
 )
 
-// PortKey defines the key to store the port ID in store
-var PortKey = []byte{0x01}
+var (
+	// ParamsKey defines the key to store the params in store
+	ParamsKey = []byte{0x00}
+	// PortKey defines the key to store the port ID in store
+	PortKey = []byte{0x01}
+)
 
 // ContainsQueryPath returns true if the path is present in allowQueries, otherwise false
 func ContainsQueryPath(allowQueries []string, path string) bool {

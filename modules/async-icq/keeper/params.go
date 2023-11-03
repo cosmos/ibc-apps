@@ -21,12 +21,26 @@ func (k Keeper) GetAllowQueries(ctx sdk.Context) []string {
 	return res
 }
 
-// GetParams returns the total set of the parameters.
-func (k Keeper) GetParams(ctx sdk.Context) types.Params {
-	return types.NewParams(k.IsHostEnabled(ctx), k.GetAllowQueries(ctx))
+// SetParams sets the module parameters.
+func (k Keeper) SetParams(ctx sdk.Context, p types.Params) error {
+	if err := p.Validate(); err != nil {
+		return err
+	}
+
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&p)
+	store.Set(types.ParamsKey, bz)
+	return nil
 }
 
-// SetParams sets the total set of the parameters.
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	k.paramSpace.SetParamSet(ctx, &params)
+// GetParams returns the current module parameters.
+func (k Keeper) GetParams(ctx sdk.Context) (p types.Params) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.ParamsKey)
+	if bz == nil {
+		return p
+	}
+
+	k.cdc.MustUnmarshal(bz, &p)
+	return p
 }

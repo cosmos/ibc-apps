@@ -13,7 +13,9 @@ func (suite *KeeperTestSuite) TestParams() {
 
 	expParams.HostEnabled = false
 	expParams.AllowQueries = []string{"/cosmos.staking.v1beta1.MsgDelegate"}
-	simapp.GetSimApp(suite.chainA).ICQKeeper.SetParams(suite.chainA.GetContext(), expParams)
+	if err := simapp.GetSimApp(suite.chainA).ICQKeeper.SetParams(suite.chainA.GetContext(), expParams); err != nil {
+		panic(err)
+	}
 	params = simapp.GetSimApp(suite.chainA).ICQKeeper.GetParams(suite.chainA.GetContext())
 	suite.Require().Equal(expParams, params)
 }
