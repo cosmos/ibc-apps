@@ -1,10 +1,9 @@
-package utils
+package keeper
 
 // This file was copied from here: https://github.com/osmosis-labs/osmosis/blob/62757d309957fa9e02e6fb0b5dc8caf1ca68e696/osmoutils/cache_ctx.go
 
 import (
 	"errors"
-	"fmt"
 	"runtime"
 	"runtime/debug"
 
@@ -19,15 +18,15 @@ import (
 //
 // If its an out of gas panic, this function will also panic like in normal tx execution flow.
 // This is still safe for beginblock / endblock code though, as they do not have out of gas panics.
-func ApplyFuncIfNoError(ctx sdk.Context, f func(ctx sdk.Context) error) (err error) {
+func applyFuncIfNoError(ctx sdk.Context, f func(ctx sdk.Context) error) (err error) {
 	// Add a panic safeguard
 	defer func() {
 		if recoveryError := recover(); recoveryError != nil {
-			if isErr, _ := IsOutOfGasError(recoveryError); isErr {
+			if isErr, _ := isOutOfGasError(recoveryError); isErr {
 				// We panic with the same error, to replicate the normal tx execution flow.
 				panic(recoveryError)
 			} else {
-				PrintPanicRecoveryError(ctx, recoveryError)
+				printPanicRecoveryError(ctx, recoveryError)
 				err = errors.New("panic occurred during execution")
 			}
 		}
@@ -47,7 +46,7 @@ func ApplyFuncIfNoError(ctx sdk.Context, f func(ctx sdk.Context) error) (err err
 
 // Frustratingly, this has to return the error descriptor, not an actual error itself
 // because the SDK errors here are not actually errors. (They don't implement error interface)
-func IsOutOfGasError(err any) (bool, string) {
+func isOutOfGasError(err any) (bool, string) {
 	switch e := err.(type) {
 	case types.ErrorOutOfGas:
 		return true, e.Descriptor
@@ -60,7 +59,7 @@ func IsOutOfGasError(err any) (bool, string) {
 
 // PrintPanicRecoveryError error logs the recoveryError, along with the stacktrace, if it can be parsed.
 // If not emits them to stdout.
-func PrintPanicRecoveryError(ctx sdk.Context, recoveryError interface{}) {
+func printPanicRecoveryError(ctx sdk.Context, recoveryError interface{}) {
 	errStackTrace := string(debug.Stack())
 	switch e := recoveryError.(type) {
 	case types.ErrorOutOfGas:
@@ -74,7 +73,6 @@ func PrintPanicRecoveryError(ctx sdk.Context, recoveryError interface{}) {
 		ctx.Logger().Error("recovered (error) panic: " + e.Error())
 	default:
 		ctx.Logger().Error("recovered (default) panic. Could not capture logs in ctx, see stdout")
-		fmt.Println("Recovering from panic ", recoveryError)
 		debug.PrintStack()
 		return
 	}

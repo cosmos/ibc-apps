@@ -188,7 +188,7 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet) ([]byt
 
 	// If we panic when executing a query it should be returned as an error.
 	var response []byte
-	err = utils.ApplyFuncIfNoError(ctx, func(ctx sdk.Context) error {
+	err = applyFuncIfNoError(ctx, func(ctx sdk.Context) error {
 		response, err = k.executeQuery(ctx, reqs)
 		return err
 	})
