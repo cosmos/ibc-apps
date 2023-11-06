@@ -18,10 +18,10 @@ import (
 // The actual codec used for serialization should be provided to interchain queries and
 // defined at the application level.
 var (
-	ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
+	// ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 
-	amino          = codec.NewLegacyAmino()
-	AminoModuleCdc = codec.NewAminoCodec(amino)
+	amino     = codec.NewLegacyAmino()
+	ModuleCdc = codec.NewAminoCodec(amino)
 )
 
 func SerializeCosmosQuery(reqs []abcitypes.RequestQuery) (bz []byte, err error) {

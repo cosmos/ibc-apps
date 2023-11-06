@@ -31,8 +31,6 @@ import (
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cometbft/cometbft/libs/log"
-
-	"github.com/cosmos/ibc-go/v7/testing/simapp"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the
@@ -216,7 +214,6 @@ func (ac appCreator) newApp(
 		skipUpgradeHeights,
 		app.DefaultNodeHome,
 		uint(1),
-		simapp.MakeTestEncodingConfig(),
 		appOpts,
 		baseappOptions...,
 	)
@@ -252,7 +249,6 @@ func (ac appCreator) appExport(
 		skipUpgradeHeights,
 		homePath,
 		uint(1),
-		simapp.MakeTestEncodingConfig(),
 		appOpts,
 		nil,
 	)

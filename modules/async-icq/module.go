@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cosmos/ibc-apps/modules/async-icq/v7/client/cli"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/exported"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
@@ -33,19 +34,19 @@ var (
 // AppModuleBasic is the IBC interchain query AppModuleBasic
 type AppModuleBasic struct{}
 
-// Name implements AppModuleBasic interface
-func (AppModuleBasic) Name() string {
-	return types.ModuleName
+// RegisterInterfaces implements module.AppModuleBasic.
+func (AppModuleBasic) RegisterInterfaces(r codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(r)
 }
 
-// RegisterLegacyAminoCodec implements AppModuleBasic.
+// RegisterLegacyAminoCodec implements module.AppModuleBasic.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 }
 
-// RegisterInterfaces registers module concrete types into protobuf Any
-func (AppModuleBasic) RegisterInterfaces(r codectypes.InterfaceRegistry) {
-	types.RegisterInterfaces(r)
+// Name implements AppModuleBasic interface
+func (AppModuleBasic) Name() string {
+	return types.ModuleName
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the IBC
@@ -78,12 +79,12 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 
 // GetTxCmd implements AppModuleBasic interface
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	return nil
+	return cli.NewTxCmd()
 }
 
 // GetQueryCmd implements AppModuleBasic interface
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return nil
+	return cli.GetQueryCmd()
 }
 
 // AppModule is the application module for the IBC interchain query module
@@ -162,10 +163,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 2 }
 
 // BeginBlock implements the AppModule interface
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
 }
 
 // EndBlock implements the AppModule interface
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }

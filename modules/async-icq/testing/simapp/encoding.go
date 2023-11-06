@@ -6,6 +6,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+
+	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 )
 
 // EncodingConfig specifies the concrete encoding types to use for a given app.
@@ -24,6 +27,11 @@ func MakeEncodingConfig() EncodingConfig {
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	ModuleBasics.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+
+	// register ibc interfaces
+	ibctm.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	ibcclienttypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+
 	return encodingConfig
 }
 

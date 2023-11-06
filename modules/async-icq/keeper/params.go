@@ -6,19 +6,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// IsHostEnabled retrieves the host enabled boolean from the paramstore.
+// IsHostEnabled retrieves the host enabled boolean from the params.
 // True is returned if the host is enabled.
 func (k Keeper) IsHostEnabled(ctx sdk.Context) bool {
-	var res bool
-	k.paramSpace.Get(ctx, types.KeyHostEnabled, &res)
-	return res
+	return k.GetParams(ctx).HostEnabled
 }
 
-// GetAllowQueries retrieves the host enabled query paths from the paramstore
+// GetAllowQueries retrieves the host enabled query paths from the params
 func (k Keeper) GetAllowQueries(ctx sdk.Context) []string {
-	var res []string
-	k.paramSpace.Get(ctx, types.KeyAllowQueries, &res)
-	return res
+	return k.GetParams(ctx).AllowQueries
 }
 
 // SetParams sets the module parameters.
