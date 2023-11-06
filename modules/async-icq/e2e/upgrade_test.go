@@ -45,7 +45,7 @@ var (
 	}
 )
 
-func TestPFMUpgrade(t *testing.T) {
+func TestICQUpgrade(t *testing.T) {
 	CosmosChainUpgradeTest(t, chainName, upgradeTo.Repository, upgradeTo.Version, upgradeName)
 }
 
@@ -108,17 +108,16 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	UpgradeNodes(t, ctx, chain, client, haltHeight, upgradeRepo, upgradeDockerTag)
 
 	// Validate the ICQ subspace -> keeper migration was successful.
-	// TODO: this fails now, no CLI.
 	cmd := []string{
-		chain.Config().Bin, "q", "async-icq", "params", "--output=json", "--node", chain.GetRPCAddress(),
+		chain.Config().Bin, "q", "interchainquery", "params", "--output=json", "--node", chain.GetRPCAddress(),
 	}
 	stdout, _, err := chain.Exec(ctx, cmd, nil)
 	fmt.Println("stdout", string(stdout))
-	require.NoError(t, err, "error fetching pfm params")
+	require.NoError(t, err, "error fetching icq params")
 
 	var params icqtypes.Params
 	err = json.Unmarshal(stdout, &params)
-	require.NoError(t, err, "error unmarshalling pfm params")
+	require.NoError(t, err, "error unmarshalling icq params")
 
 	t.Logf("params: %+v", params)
 	require.Equal(t, true, params.HostEnabled, "fee percentage not equal to expected value")

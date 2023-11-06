@@ -229,7 +229,7 @@ func (ac appCreator) appExport(
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	var pfmApp *app.SimApp
+	var icqApp *app.SimApp
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home is not set")
@@ -241,7 +241,7 @@ func (ac appCreator) appExport(
 	}
 
 	loadLatest := height == -1
-	pfmApp = app.NewSimApp(
+	icqApp = app.NewSimApp(
 		logger,
 		db,
 		traceStore,
@@ -254,10 +254,10 @@ func (ac appCreator) appExport(
 	)
 
 	if height != -1 {
-		if err := pfmApp.LoadHeight(height); err != nil {
+		if err := icqApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return pfmApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+	return icqApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }

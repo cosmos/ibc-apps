@@ -12,7 +12,7 @@ import (
 
 var (
 	icqRepo, icqVersion = GetDockerImageInfo()
-	PFMImage            = ibc.DockerImage{
+	ICQImage            = ibc.DockerImage{
 		Repository: icqRepo,
 		Version:    icqVersion,
 		UidGid:     "1025:1025",
@@ -23,7 +23,7 @@ var (
 		Type:           "cosmos",
 		Name:           "icq",
 		ChainID:        "icq-1",
-		Images:         []ibc.DockerImage{PFMImage},
+		Images:         []ibc.DockerImage{ICQImage},
 		Bin:            "simd",
 		Bech32Prefix:   "cosmos",
 		Denom:          Denom,
