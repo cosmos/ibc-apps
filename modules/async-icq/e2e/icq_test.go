@@ -3,11 +3,10 @@ package e2e
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/icza/dyno"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -16,12 +15,24 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+
+	ibccore "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 )
+
+func hostEncoding() *moduletestutil.TestEncodingConfig {
+	cfg := cosmos.DefaultEncoding()
+
+	ibccore.RegisterInterfaces(cfg.InterfaceRegistry)
+	ibctm.RegisterInterfaces(cfg.InterfaceRegistry)
+
+	return &cfg
+}
 
 // TestInterchainQueries spins up a controller and host chain, using a demo controller implementation,
 // and asserts that a bank query can successfully be executed on the host chain and the results can be
 // retrieved on the controller chain.
-// See: https://github.com/strangelove-ventures/interchain-query-demo
+// Previously from: https://github.com/strangelove-ventures/interchain-query-demo
 func TestInterchainQueries(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
@@ -39,9 +50,15 @@ func TestInterchainQueries(t *testing.T) {
 	numVals := 1
 	numNodes := 0
 
-	dockerImage := ibc.DockerImage{
-		Repository: "ghcr.io/strangelove-ventures/heighliner/icqd",
-		Version:    "latest",
+	controllerImage := ibc.DockerImage{
+		Repository: "icq-demo",
+		Version:    "local",
+		UidGid:     "1025:1025",
+	}
+
+	hostImage := ibc.DockerImage{
+		Repository: "icq-host",
+		Version:    "local",
 		UidGid:     "1025:1025",
 	}
 
@@ -53,9 +70,9 @@ func TestInterchainQueries(t *testing.T) {
 			ChainConfig: ibc.ChainConfig{
 				Type:           "cosmos",
 				Name:           "controller",
-				ChainID:        "controller",
-				Images:         []ibc.DockerImage{dockerImage},
-				Bin:            "icq",
+				ChainID:        "controller-1",
+				Images:         []ibc.DockerImage{controllerImage},
+				Bin:            "icq-demo",
 				Bech32Prefix:   "cosmos",
 				Denom:          "atom",
 				GasPrices:      "0.00atom",
@@ -69,15 +86,21 @@ func TestInterchainQueries(t *testing.T) {
 			ChainConfig: ibc.ChainConfig{
 				Type:           "cosmos",
 				Name:           "host",
-				ChainID:        "host",
-				Images:         []ibc.DockerImage{dockerImage},
-				Bin:            "icq",
+				ChainID:        "host-1",
+				Images:         []ibc.DockerImage{hostImage},
+				Bin:            "simd",
 				Bech32Prefix:   "cosmos",
 				Denom:          "atom",
 				GasPrices:      "0.00atom",
 				TrustingPeriod: "300h",
 				GasAdjustment:  1.1,
-				ModifyGenesis:  modifyGenesisAllowICQQueries([]string{"/cosmos.bank.v1beta1.Query/AllBalances"}), // Add the whitelisted queries to the host chain
+				ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
+					{
+						Key:   "app_state.interchainquery.params.allow_queries",
+						Value: []string{"/cosmos.bank.v1beta1.Query/AllBalances"},
+					},
+				}),
+				EncodingConfig: hostEncoding(),
 			}},
 	})
 
@@ -89,7 +112,7 @@ func TestInterchainQueries(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
-		relayer.StartupFlags("-b", "100"),
+		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
 	const pathName = "host-controller"
@@ -164,7 +187,7 @@ func TestInterchainQueries(t *testing.T) {
 	hostAddr := hostUser.(*cosmos.CosmosWallet).FormattedAddress()
 	require.NotEmpty(t, hostAddr)
 
-	cmd := []string{"icq", "tx", "interquery", "send-query-all-balances", chanID, hostAddr,
+	cmd := []string{controllerChain.Config().Bin, "tx", "interquery", "send-query-all-balances", chanID, hostAddr,
 		"--node", controllerChain.GetRPCAddress(),
 		"--home", controllerChain.HomeDir(),
 		"--chain-id", controllerChain.Config().ChainID,
@@ -181,7 +204,7 @@ func TestInterchainQueries(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check the results from the interchain query above.
-	cmd = []string{"icq", "query", "interquery", "query-state", "1",
+	cmd = []string{controllerChain.Config().Bin, "query", "interquery", "query-state", "1",
 		"--node", controllerChain.GetRPCAddress(),
 		"--home", controllerChain.HomeDir(),
 		"--chain-id", controllerChain.Config().ChainID,
@@ -220,21 +243,4 @@ type icqResults struct {
 			Total   string      `json:"total"`
 		} `json:"pagination"`
 	} `json:"response"`
-}
-
-func modifyGenesisAllowICQQueries(allowQueries []string) func(ibc.ChainConfig, []byte) ([]byte, error) {
-	return func(chainConfig ibc.ChainConfig, genbz []byte) ([]byte, error) {
-		g := make(map[string]interface{})
-		if err := json.Unmarshal(genbz, &g); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
-		}
-		if err := dyno.Set(g, allowQueries, "app_state", "interchainquery", "params", "allow_queries"); err != nil {
-			return nil, fmt.Errorf("failed to set allowed interchain queries in genesis json: %w", err)
-		}
-		out, err := json.Marshal(g)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
-		}
-		return out, nil
-	}
 }

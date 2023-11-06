@@ -105,7 +105,7 @@ BUILD_TARGETS := build install
 
 build: BUILD_ARGS=-o $(BUILDDIR)/
 build-linux:
-	GOOS=linux GOARCH=amd64 LEDGER_ENABLED=false $(MAKE) build
+	GOOS=linux GOARCH=amd64 LEDGER_ENABLED=false $(MAKE) build -o bin/simd ./cmd/simd
 
 $(BUILD_TARGETS): go.sum $(BUILDDIR)/
 	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) ./...
@@ -142,9 +142,11 @@ cosmovisor:
 .PHONY: build build-linux build-simd-all build-simd-linux cosmovisor
 
 mocks: $(MOCKS_DIR)
-	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/router/types TransferKeeper
-	mockgen -package=mock -destination=./test/mock/distribution_keeper.go $(GOMOD)/router/types DistributionKeeper
-	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/router/types BankKeeper
+	go install go.uber.org/mock/mockgen@v0.2.0
+	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/packetforward/types TransferKeeper
+	mockgen -package=mock -destination=./test/mock/distribution_keeper.go $(GOMOD)/packetforward/types DistributionKeeper
+	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/packetforward/types BankKeeper
+	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/packetforward/types ChannelKeeper
 	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v7/modules/core/05-port/types ICS4Wrapper
 	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v7/modules/core/05-port/types IBCModule
 
@@ -208,6 +210,19 @@ else
 endif
 
 .PHONY: run-tests test test-all $(TEST_TARGETS)
+
+###############################################################################
+###                             e2e interchain test                         ###
+###############################################################################
+
+local-image:
+	docker build . -t pfm:local
+
+ictest-forward:
+	cd e2e && go test -race -v -timeout 15m -run TestPacketForwardMiddleware .
+
+ictest-timeout:
+	cd e2e && go test -race -v -timeout 15m -run TestTimeoutOnForward .
 
 ###############################################################################
 ###                                Linting                                  ###

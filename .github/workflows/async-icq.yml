@@ -1,0 +1,132 @@
+name: async-icq
+on: 
+  pull_request:
+    paths:
+      - 'modules/async-icq/**'
+      - '.github/workflows/async-icq.yml'
+
+env:
+  LINT_VERSION: v1.52
+  GO_VERSION: 1.21.0
+  WORKING_DIRECTORY: modules/async-icq/
+
+  HOST_TAR_PATH: /tmp/icq-host.tar
+  HOST_IMAGE_NAME: icq-host
+  HOST_DOCKER_TAG: icq-host:local
+  
+  CONTROLLER_TAR_PATH: /tmp/icq-demo.tar
+  CONTROLLER_IMAGE_NAME: icq-demo
+  CONTROLLER_DOCKER_TAG: icq-demo:local
+
+jobs:
+  golangci:
+    name: Linter    
+    runs-on: ubuntu-latest    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: ${{ env.LINT_VERSION }}
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          args: --timeout=5m
+
+  test:
+      runs-on: ubuntu-latest
+      name: test
+      steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - uses: actions/checkout@v4
+
+      - name: Test
+        run: go test ./...
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+  
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}          
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+                     
+      - name: Build and export Host
+        uses: docker/build-push-action@v5
+        with:          
+          context: ${{ env.WORKING_DIRECTORY }}
+          tags: ${{ env.HOST_DOCKER_TAG }}
+          file: ${{ env.WORKING_DIRECTORY }}/Dockerfile.icq
+          outputs: type=docker,dest=${{ env.HOST_TAR_PATH }}
+
+      - name: Build and export Controller
+        uses: docker/build-push-action@v5
+        with:          
+          context: ${{ env.WORKING_DIRECTORY }}
+          tags: ${{ env.CONTROLLER_DOCKER_TAG }}
+          file: ${{ env.WORKING_DIRECTORY }}/Dockerfile.icq-demo
+          outputs: type=docker,dest=${{ env.CONTROLLER_TAR_PATH }}
+
+      - name: Upload host artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.HOST_IMAGE_NAME }}
+          path: ${{ env.HOST_TAR_PATH }}
+
+      - name: Upload controller artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.CONTROLLER_IMAGE_NAME }}
+          path: ${{ env.CONTROLLER_TAR_PATH }}
+
+  e2e-tests:
+    needs: build-docker
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    strategy:
+      matrix:          
+        test:
+          - "ictest-icq"          
+      fail-fast: false
+
+    steps:
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}          
+
+      - name: checkout chain
+        uses: actions/checkout@v4
+
+      - name: Download Host Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.HOST_IMAGE_NAME }}
+          path: /tmp
+
+      - name: Download Controller Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTROLLER_IMAGE_NAME }}
+          path: /tmp
+
+      - name: Load Docker Image
+        run: |
+          docker image load -i ${{ env.HOST_TAR_PATH }}
+          docker image load -i ${{ env.CONTROLLER_TAR_PATH }}
+          docker image ls -a
+
+      - name: Run Test
+        run: make ${{ matrix.test }}
