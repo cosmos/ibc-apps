@@ -120,8 +120,8 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	require.NoError(t, err, "error unmarshalling icq params")
 
 	t.Logf("params: %+v", params)
-	require.Equal(t, true, params.HostEnabled, "fee percentage not equal to expected value")
-	require.Equal(t, []string{"/cosmos.bank.v1beta1.Query/AllBalances"}, params.AllowQueries, "fee percentage not equal to expected value")
+	require.Equal(t, false, params.HostEnabled, "HostEnabled not equal to expected value")
+	require.Equal(t, []string{"/cosmos.bank.v1beta1.Query/AllBalances"}, params.AllowQueries, "AllowQueries not equal to expected value")
 
 }
 
