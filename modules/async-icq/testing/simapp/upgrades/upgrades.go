@@ -17,8 +17,7 @@ const (
 	V2 = "v2"
 )
 
-// CreateDefaultUpgradeHandler creates an upgrade handler which can be used for regular upgrade tests
-// that do not require special logic
+// CreateDefaultUpgradeHandler creates a base upgrade handler for the async-icq module.
 func CreateDefaultUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
@@ -28,7 +27,7 @@ func CreateDefaultUpgradeHandler(
 	}
 }
 
-// We will have to import every one here
+// CreateV2UpgradeHandler creates the v2 upgrade handler for the param migration.
 func CreateV2UpgradeHandler(
 	mm *module.Manager,
 	cfg module.Configurator,
