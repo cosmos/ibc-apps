@@ -54,7 +54,9 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 				packetData = icqPacketData.GetBytes()
 
 				params := types.NewParams(true, []string{"/cosmos.bank.v1beta1.Query/AllBalances"})
-				simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params)
+				if err := simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params); err != nil {
+					panic(err)
+				}
 			},
 			true,
 		},
@@ -118,7 +120,9 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 				packetData = icaPacketData.GetBytes()
 
 				params := types.NewParams(true, []string{"/cosmos.bank.v1beta1.Query/AllBalances"})
-				simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params)
+				if err := simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params); err != nil {
+					panic(err)
+				}
 			},
 			false,
 		},
@@ -142,7 +146,9 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 				packetData = icaPacketData.GetBytes()
 
 				params := types.NewParams(true, []string{"/cosmos.bank.v1beta1.Query/AllBalances"})
-				simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params)
+				if err := simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params); err != nil {
+					panic(err)
+				}
 			},
 			false,
 		},
@@ -215,7 +221,9 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 	packetData := icqPacketData.GetBytes()
 
 	params := types.NewParams(true, []string{"/cosmos.bank.v1beta1.Query/AllBalances"})
-	simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params)
+	if err := simapp.GetSimApp(suite.chainB).ICQKeeper.SetParams(suite.chainB.GetContext(), params); err != nil {
+		panic(err)
+	}
 
 	packet := channeltypes.NewPacket(
 		packetData,

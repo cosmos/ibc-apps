@@ -23,7 +23,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
 		}
 	}
 
-	k.SetParams(ctx, state.Params)
+	if err := k.SetParams(ctx, state.Params); err != nil {
+		panic(fmt.Sprintf("could not set params: %v", err))
+	}
 }
 
 // ExportGenesis exports icq module's portID and denom trace info into its genesis state.
