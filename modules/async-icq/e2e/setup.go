@@ -57,7 +57,7 @@ func GetDockerImageInfo() (repo, version string) {
 
 	// github action
 	if !found {
-		repo = "icq_host"
+		repo = "icq-host"
 		branchVersion = "local"
 	}
 
