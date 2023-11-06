@@ -57,7 +57,7 @@ func isOutOfGasError(err any) (bool, string) {
 	}
 }
 
-// PrintPanicRecoveryError error logs the recoveryError, along with the stacktrace, if it can be parsed.
+// printPanicRecoveryError error logs the recoveryError, along with the stacktrace, if it can be parsed.
 // If not emits them to stdout.
 func printPanicRecoveryError(ctx sdk.Context, recoveryError interface{}) {
 	errStackTrace := string(debug.Stack())
