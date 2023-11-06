@@ -243,7 +243,6 @@ func NewSimApp(
 	homePath string, invCheckPeriod uint,
 	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
 ) *SimApp {
-
 	encodingConfig := MakeEncodingConfig()
 
 	appCodec := encodingConfig.Marshaler
