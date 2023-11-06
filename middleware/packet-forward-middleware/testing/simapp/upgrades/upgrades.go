@@ -17,8 +17,7 @@ const (
 	V2 = "v2"
 )
 
-// CreateDefaultUpgradeHandler creates an upgrade handler which can be used for regular upgrade tests
-// that do not require special logic
+// CreateDefaultUpgradeHandler creates a simple migration upgrade handler.
 func CreateDefaultUpgradeHandler(
 	mm *module.Manager,
 	configurator module.Configurator,
