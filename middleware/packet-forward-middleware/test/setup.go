@@ -42,7 +42,9 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
 
-	packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams())
+	if err := packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams()); err != nil {
+		t.Fatal(err)
+	}
 
 	return &Setup{
 		Initializer: initializer,
@@ -136,16 +138,17 @@ func (i initializer) packetforwardKeeper(
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 
-	subspace := paramsKeeper.Subspace(types.ModuleName)
+	govModuleAddress := "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn"
+
 	packetforwardKeeper := keeper.NewKeeper(
 		i.Marshaler,
 		storeKey,
-		subspace,
 		transferKeeper,
 		channelKeeper,
 		distributionKeeper,
 		bankKeeper,
 		ics4Wrapper,
+		govModuleAddress,
 	)
 
 	return packetforwardKeeper

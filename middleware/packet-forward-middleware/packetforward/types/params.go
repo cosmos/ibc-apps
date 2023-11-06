@@ -4,21 +4,10 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-var (
-	// DefaultFeePercentage is the default value used to extract a fee from all forwarded packets.
-	DefaultFeePercentage = sdk.NewDec(0)
-
-	// KeyFeePercentage is store's key for FeePercentage Params
-	KeyFeePercentage = []byte("FeePercentage")
-)
-
-// ParamKeyTable type declaration for parameters.
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
+// DefaultFeePercentage is the default value used to extract a fee from all forwarded packets.
+var DefaultFeePercentage = sdk.NewDec(0)
 
 // NewParams creates a new parameter configuration for the pfm module.
 func NewParams(feePercentage sdk.Dec) Params {
@@ -35,13 +24,6 @@ func DefaultParams() Params {
 // Validate the pfm module parameters.
 func (p Params) Validate() error {
 	return validateFeePercentage(p.FeePercentage)
-}
-
-// ParamSetPairs implements params.ParamSet.
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyFeePercentage, p.FeePercentage, validateFeePercentage),
-	}
 }
 
 // validateFeePercentage asserts that the fee percentage param is a valid sdk.Dec type.

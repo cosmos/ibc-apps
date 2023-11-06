@@ -8,7 +8,7 @@ on:
 env:
   LINT_VERSION: v1.52
   GO_VERSION: 1.21.0
-  WORKING_DIRECTORY: modules/ibc-hooks/
+  WORKING_DIRECTORY: modules/ibc-hooks
 
 jobs:
   golangci:

@@ -224,6 +224,9 @@ ictest-forward:
 ictest-timeout:
 	cd e2e && go test -race -v -timeout 15m -run TestTimeoutOnForward .
 
+ictest-upgrade:
+	cd e2e && go test -race -v -timeout 15m -run TestPFMUpgrade .
+
 ###############################################################################
 ###                                Linting                                  ###
 ###############################################################################

@@ -8,7 +8,7 @@ on:
 env:
     LINT_VERSION: v1.52
     GO_VERSION: 1.21.0
-    WORKING_DIRECTORY: middleware/packet-forward-middleware/
+    WORKING_DIRECTORY: middleware/packet-forward-middleware
     
     DOCKER_TAG: pfm:local
     TAR_PATH: /tmp/pfm-docker-image.tar
@@ -46,8 +46,7 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
@@ -81,6 +80,7 @@ jobs:
         test:
           - "ictest-forward"
           - "ictest-timeout"
+          - "ictest-upgrade"
       fail-fast: false
 
     steps:
@@ -88,9 +88,8 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}          
-
-      - name: checkout chain
-        uses: actions/checkout@v4
+      
+      - uses: actions/checkout@v4
 
       - name: Download Tarball Artifact
         uses: actions/download-artifact@v3
@@ -101,6 +100,7 @@ jobs:
       - name: Load Docker Image
         run: |
           docker image load -i ${{ env.TAR_PATH }}
+          docker image load -i testing/previous_images/pfm_7_0_1.tar
           docker image ls -a
 
       - name: Run Test
