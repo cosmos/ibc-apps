@@ -42,7 +42,6 @@ func NewKeeper(
 	ics4Wrapper types.ICS4Wrapper, channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper, queryRouter *baseapp.GRPCQueryRouter, authority string,
 ) Keeper {
-
 	return Keeper{
 		storeKey:      key,
 		cdc:           cdc,
