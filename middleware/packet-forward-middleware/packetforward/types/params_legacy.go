@@ -20,6 +20,6 @@ func ParamKeyTable() paramtypes.KeyTable {
 // ParamSetPairs implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyFeePercentage, p.FeePercentage, validateFeePercentage),
+		paramtypes.NewParamSetPair(KeyFeePercentage, &p.FeePercentage, validateFeePercentage),
 	}
 }
