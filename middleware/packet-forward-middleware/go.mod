@@ -195,7 +195,5 @@ replace (
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
 
-retract (
-	// see https://github.com/cosmos/ibc-apps/pull/141
-	v7.1.0
-)
+// see https://github.com/cosmos/ibc-apps/pull/141
+retract v7.1.0
