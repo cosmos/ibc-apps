@@ -110,10 +110,6 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 ) error {
 	fullDenomPath := data.Denom
 
-	if !transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
-		return nil
-	}
-
 	amount, ok := sdk.NewIntFromString(data.Amount)
 	if !ok {
 		return fmt.Errorf("failed to parse amount from packet data for forward recovery: %s", data.Amount)
@@ -121,12 +117,26 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	denomTrace := transfertypes.ParseDenomTrace(fullDenomPath)
 	token := sdk.NewCoin(denomTrace.IBCDenom(), amount)
 
-	escrowAddress := transfertypes.GetEscrowAddress(packet.SourcePort, packet.SourceChannel)
-
 	userAccount, err := userRecoverableAccount(inFlightPacket)
 	if err != nil {
 		return fmt.Errorf("failed to get user recoverable account: %w", err)
 	}
+
+	if !transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
+		// mint vouchers back to sender
+		if err := k.bankKeeper.MintCoins(
+			ctx, transfertypes.ModuleName, sdk.NewCoins(token),
+		); err != nil {
+			return err
+		}
+
+		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, userAccount, sdk.NewCoins(token)); err != nil {
+			panic(fmt.Sprintf("unable to send coins from module to account despite previously minting coins to module account: %v", err))
+		}
+		return nil
+	}
+
+	escrowAddress := transfertypes.GetEscrowAddress(packet.SourcePort, packet.SourceChannel)
 
 	if err := k.bankKeeper.SendCoins(
 		ctx, escrowAddress, userAccount, sdk.NewCoins(token),
