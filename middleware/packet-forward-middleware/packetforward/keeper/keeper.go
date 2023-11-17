@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
@@ -96,6 +98,70 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", "x/"+ibcexported.ModuleName+"-"+types.ModuleName)
 }
 
+// moveFundsToUserRecoverableAccount will move the funds from the escrow account to the user recoverable account
+// this is only used when the maximum timeouts have been reached or there is an acknowledgement error and the packet is nonrefundable,
+// i.e. an operation has occurred to make the original packet funds inaccessible to the user, e.g. a swap.
+// We cannot refund the funds back to the original chain, so we move them to an account on this chain that the user can access.
+func (k *Keeper) moveFundsToUserRecoverableAccount(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	data transfertypes.FungibleTokenPacketData,
+	inFlightPacket *types.InFlightPacket,
+) error {
+	fullDenomPath := data.Denom
+
+	if !transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
+		return nil
+	}
+
+	amount, ok := sdk.NewIntFromString(data.Amount)
+	if !ok {
+		return fmt.Errorf("failed to parse amount from packet data for forward recovery: %s", data.Amount)
+	}
+	denomTrace := transfertypes.ParseDenomTrace(fullDenomPath)
+	token := sdk.NewCoin(denomTrace.IBCDenom(), amount)
+
+	escrowAddress := transfertypes.GetEscrowAddress(packet.SourcePort, packet.SourceChannel)
+
+	userAccount, err := userRecoverableAccount(inFlightPacket)
+	if err != nil {
+		return fmt.Errorf("failed to get user recoverable account: %w", err)
+	}
+
+	if err := k.bankKeeper.SendCoins(
+		ctx, escrowAddress, userAccount, sdk.NewCoins(token),
+	); err != nil {
+		return fmt.Errorf("failed to send coins from escrow account to user recoverable account: %w", err)
+	}
+
+	// update the total escrow amount for the denom.
+	k.unescrowToken(ctx, token)
+
+	return nil
+}
+
+// userRecoverableAccount finds an account on this chain that the original sender of the packet can recover funds from.
+// If the destination receiver of the original packet is a valid bech32 address for this chain, we use that address.
+// Otherwise, if the sender of the original packet is a valid bech32 address for another chain, we translate that address to this chain.
+// Note that for the fallback, the coin type of the source chain sender account must be compatible with this chain.
+func userRecoverableAccount(inFlightPacket *types.InFlightPacket) (sdk.AccAddress, error) {
+	var originalData transfertypes.FungibleTokenPacketData
+	err := transfertypes.ModuleCdc.UnmarshalJSON(inFlightPacket.PacketData, &originalData)
+	if err == nil {
+		sender, err := sdk.AccAddressFromBech32(originalData.Receiver)
+		if err == nil {
+			return sender, nil
+		}
+	}
+
+	_, sender, fallbackErr := bech32.DecodeAndConvert(inFlightPacket.OriginalSenderAddress)
+	if fallbackErr == nil {
+		return sender, nil
+	}
+
+	return nil, fmt.Errorf("failed to decode bech32 addresses: %w", errors.Join(err, fallbackErr))
+}
+
 func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
@@ -116,6 +182,12 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 		// If this packet is non-refundable due to some action that took place between the initial ibc transfer and the forward
 		// we write a successful ack containing details on what happened regardless of ack error or timeout
 		if inFlightPacket.Nonrefundable {
+			// we are not allowed to refund back to the source chain.
+			// attempt to move funds to user recoverable account on this chain.
+			if err := k.moveFundsToUserRecoverableAccount(ctx, packet, data, inFlightPacket); err != nil {
+				return err
+			}
+
 			ackResult := fmt.Sprintf("packet forward failed after point of no return: %s", ack.GetError())
 			newAck := channeltypes.NewResultAcknowledgement([]byte(ackResult))
 
