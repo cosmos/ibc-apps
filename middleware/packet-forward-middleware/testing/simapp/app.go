@@ -10,12 +10,10 @@ import (
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
-
+	upgrades "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/upgrades"
 	dummyware "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/x/dummyware"
 	dummywarekeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/x/dummyware/keeper"
 	dummywaretypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/x/dummyware/types"
-
-	upgrades "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/upgrades"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"

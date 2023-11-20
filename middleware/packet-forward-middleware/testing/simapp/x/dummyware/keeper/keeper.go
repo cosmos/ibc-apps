@@ -56,7 +56,7 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", "x/"+ibcexported.ModuleName+"-"+types.ModuleName)
 }
 
-func (k *Keeper) WriteAcknowledgementForForwardedPacket(
+func (k *Keeper) WriteAcknowledgementForForcedNonRefundablePacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
