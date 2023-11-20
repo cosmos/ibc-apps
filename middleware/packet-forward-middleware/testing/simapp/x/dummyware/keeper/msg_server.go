@@ -5,10 +5,7 @@ import (
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/x/dummyware/types"
 
-	"cosmossdk.io/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 var _ types.MsgServer = msgServer{}
@@ -26,10 +23,7 @@ func NewMsgServerImpl(k *Keeper) types.MsgServer {
 
 // UpdateParams implements types.MsgServer.
 func (ms msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if ms.authority != req.Authority {
-		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
-	}
-
+	// Anyone can update the params for this module
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if err := ms.SetParams(ctx, req.Params); err != nil {
 		return nil, err

@@ -444,10 +444,7 @@ func NewSimApp(
 		app.keys[dummywaretypes.StoreKey],
 		nil,
 		app.IBCKeeper.ChannelKeeper,
-		app.DistrKeeper,
-		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
-		authority,
 	)
 
 	// Packet Forward Middleware Keeper

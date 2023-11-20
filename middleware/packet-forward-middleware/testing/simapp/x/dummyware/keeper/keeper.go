@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"time"
-
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/testing/simapp/x/dummyware/types"
 
 	errorsmod "cosmossdk.io/errors"
@@ -21,20 +19,6 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 )
 
-var (
-	// DefaultTransferPacketTimeoutHeight is the timeout height following IBC defaults
-	DefaultTransferPacketTimeoutHeight = clienttypes.Height{
-		RevisionNumber: 0,
-		RevisionHeight: 0,
-	}
-
-	// DefaultForwardTransferPacketTimeoutTimestamp is the timeout timestamp following IBC defaults
-	DefaultForwardTransferPacketTimeoutTimestamp = time.Duration(transfertypes.DefaultRelativePacketTimeoutTimestamp) * time.Nanosecond
-
-	// DefaultRefundTransferPacketTimeoutTimestamp is a 28-day timeout for refund packets since funds are stuck in packetforward module otherwise.
-	DefaultRefundTransferPacketTimeoutTimestamp = 28 * 24 * time.Hour
-)
-
 // Keeper defines the packet forward middleware keeper
 type Keeper struct {
 	cdc      codec.BinaryCodec
@@ -42,13 +26,7 @@ type Keeper struct {
 
 	transferKeeper types.TransferKeeper
 	channelKeeper  types.ChannelKeeper
-	distrKeeper    types.DistributionKeeper
-	bankKeeper     types.BankKeeper
 	ics4Wrapper    porttypes.ICS4Wrapper
-
-	// the address capable of executing a MsgUpdateParams message. Typically, this
-	// should be the x/gov module account.
-	authority string
 }
 
 // NewKeeper creates a new forward Keeper instance
@@ -57,26 +35,15 @@ func NewKeeper(
 	key storetypes.StoreKey,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
-	distrKeeper types.DistributionKeeper,
-	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
-	authority string,
 ) *Keeper {
 	return &Keeper{
 		cdc:            cdc,
 		storeKey:       key,
 		transferKeeper: transferKeeper,
 		channelKeeper:  channelKeeper,
-		distrKeeper:    distrKeeper,
-		bankKeeper:     bankKeeper,
 		ics4Wrapper:    ics4Wrapper,
-		authority:      authority,
 	}
-}
-
-// GetAuthority returns the module's authority.
-func (k Keeper) GetAuthority() string {
-	return k.authority
 }
 
 // SetTransferKeeper sets the transferKeeper
@@ -96,9 +63,6 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 	inFlightPacket *types.InFlightPacket,
 	ack channeltypes.Acknowledgement,
 ) error {
-
-	// set inFlightPacket to be non refundable
-
 	inFlightPacket.Nonrefundable = true
 
 	// Lookup module by channel capability
@@ -117,18 +81,6 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 		TimeoutHeight:      clienttypes.MustParseHeight(inFlightPacket.PacketTimeoutHeight),
 		TimeoutTimestamp:   inFlightPacket.PacketTimeoutTimestamp,
 	}, ack)
-}
-
-func (k *Keeper) RemoveInFlightPacket(ctx sdk.Context, packet channeltypes.Packet) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.RefundPacketKey(packet.SourceChannel, packet.SourcePort, packet.Sequence)
-	if !store.Has(key) {
-		// not a forwarded packet, ignore.
-		return
-	}
-
-	// done with packet key now, delete.
-	store.Delete(key)
 }
 
 // GetAndClearInFlightPacket will fetch an InFlightPacket from the store, remove it if it exists, and return it.
