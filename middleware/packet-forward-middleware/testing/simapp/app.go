@@ -165,6 +165,7 @@ var (
 		ibctm.AppModuleBasic{},
 		solomachine.AppModuleBasic{},
 		packetforward.AppModuleBasic{},
+		dummyware.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 	)
 
