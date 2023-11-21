@@ -153,6 +153,8 @@ Generally without `memo` to handle, all handling by this module is delegated to 
 10. `B` On ICS-020 ACK from `C` find `in flight packet`, delete it and write `ACK` for original packet from `A`.
 11. `A` Handle ICS-020 `ACK` as usual 
 
+[Example](https://testnet.mintscan.io/osmosis-testnet/txs/FAB912347B8729FFCA92AC35E6B1E83BC8169DE7CC2C254A5A3F70C8EC35D771?height=3788973) of USDC transfer from Osmosis -> Noble -> Sei
+
 ### A -> B -> C with C error ACK
 
 10. `B` On ICS-020 ACK from `C` find `in flight packet`, delete it 
