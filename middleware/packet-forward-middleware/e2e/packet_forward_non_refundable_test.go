@@ -308,7 +308,8 @@ func TestNonRefundable(t *testing.T) {
 		userA := usersA[2]
 		userB := usersB[1]
 		userC := timeoutUsersC[0]
-		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
+		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C,
+		// which should result in a refund to User B on Chain B after two retries.
 		transfer := ibc.WalletAmount{
 			Address: userB.FormattedAddress(),
 			Denom:   configA.Denom,
@@ -368,7 +369,8 @@ func TestNonRefundable(t *testing.T) {
 	t.Run("forward timeout refund - invalid receiver account on B", func(t *testing.T) {
 		userA := usersA[3]
 		userC := timeoutUsersC[1]
-		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
+		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C,
+		// which should result in a refund to the bech32 equivalent of userA on chain B after two retries.
 		transfer := ibc.WalletAmount{
 			Address: "pfm",
 			Denom:   configA.Denom,
@@ -642,9 +644,10 @@ func TestNonRefundable(t *testing.T) {
 		userA := mintVoucherUsersA[2]
 		userB := usersB[3]
 		userC := timeoutUsersC[2]
-		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
+		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C,
+		// which should result in a refund to User B on Chain B after two retries.
 		transfer := ibc.WalletAmount{
-			Address: userC.FormattedAddress(),
+			Address: userB.FormattedAddress(),
 			Denom:   revSecondHopIBCDenom,
 			Amount:  transferAmount,
 		}
@@ -702,7 +705,8 @@ func TestNonRefundable(t *testing.T) {
 	t.Run("rev forward timeout refund - invalid receiver account on B", func(t *testing.T) {
 		userA := mintVoucherUsersA[3]
 		userC := timeoutUsersC[3]
-		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
+		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C,
+		// which should result in a refund to the bech32 equivalent of userA on chain B after two retries.
 		transfer := ibc.WalletAmount{
 			Address: "pfm",
 			Denom:   configA.Denom,
