@@ -81,6 +81,7 @@ jobs:
           - "ictest-forward"
           - "ictest-timeout"
           - "ictest-upgrade"
+          - "ictest-nonrefundable"
       fail-fast: false
 
     steps:

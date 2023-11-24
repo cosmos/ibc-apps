@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 )
@@ -33,6 +33,23 @@ var (
 		TrustingPeriod: "336h",
 		NoHostMount:    false,
 		EncodingConfig: encoding(),
+	}
+
+	NonRefundableConfig = ibc.ChainConfig{
+		Type:           "cosmos",
+		Name:           "pfm",
+		ChainID:        "pfm-1",
+		Images:         []ibc.DockerImage{PFMImage},
+		Bin:            "simd",
+		Bech32Prefix:   "cosmos",
+		Denom:          Denom,
+		CoinType:       "118",
+		GasPrices:      fmt.Sprintf("0.0%s", Denom),
+		GasAdjustment:  2.0,
+		TrustingPeriod: "336h",
+		NoHostMount:    false,
+		EncodingConfig: encoding(),
+		Env:            []string{"NON_REFUNDABLE_TEST=true"},
 	}
 
 	DefaultRelayer = ibc.DockerImage{
