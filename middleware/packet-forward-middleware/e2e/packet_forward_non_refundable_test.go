@@ -526,8 +526,6 @@ func TestNonRefundable(t *testing.T) {
 	require.True(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount))
 
 	t.Run("rev forward ack error refund - invalid receiver account on B", func(t *testing.T) {
-		t.Parallel()
-
 		userA := mintVoucherUsersA[0]
 
 		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
@@ -586,8 +584,6 @@ func TestNonRefundable(t *testing.T) {
 	})
 
 	t.Run("rev forward ack error refund - valid receiver account on B", func(t *testing.T) {
-		t.Parallel()
-
 		userA := mintVoucherUsersA[1]
 		userB := usersB[2]
 		// Send a malformed packet with valid receiver address from Chain A->Chain B->Chain C
@@ -643,8 +639,6 @@ func TestNonRefundable(t *testing.T) {
 	})
 
 	t.Run("rev forward timeout refund - valid receiver account on B", func(t *testing.T) {
-		t.Parallel()
-
 		userA := mintVoucherUsersA[2]
 		userB := usersB[3]
 		userC := timeoutUsersC[2]
@@ -706,8 +700,6 @@ func TestNonRefundable(t *testing.T) {
 	})
 
 	t.Run("rev forward timeout refund - invalid receiver account on B", func(t *testing.T) {
-		t.Parallel()
-
 		userA := mintVoucherUsersA[3]
 		userC := timeoutUsersC[3]
 		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
