@@ -227,6 +227,9 @@ ictest-timeout:
 ictest-upgrade:
 	cd e2e && go test -race -v -timeout 15m -run TestPFMUpgrade .
 
+ictest-nonrefundable:
+	cd e2e && go test -race -v -timeout 15m -run TestNonRefundable .
+
 ###############################################################################
 ###                                Linting                                  ###
 ###############################################################################

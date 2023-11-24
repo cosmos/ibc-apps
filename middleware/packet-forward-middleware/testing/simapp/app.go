@@ -467,10 +467,6 @@ func NewSimApp(
 	var transferStack ibcporttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 
-	if os.Getenv("NON_REFUNDABLE_TEST") != "" {
-		transferStack = dummyware.NewIBCMiddleware(transferStack)
-	}
-
 	transferStack = packetforward.NewIBCMiddleware(
 		transferStack,
 		app.PacketForwardKeeper,
@@ -478,6 +474,10 @@ func NewSimApp(
 		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
 		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,  // refund timeout
 	)
+
+	if os.Getenv("NON_REFUNDABLE_TEST") != "" {
+		transferStack = dummyware.NewIBCMiddleware(transferStack)
+	}
 
 	// Add IBC Router
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
