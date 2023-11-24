@@ -686,9 +686,9 @@ func TestNonRefundable(t *testing.T) {
 		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), configC.Denom)
 		require.NoError(t, err)
 
-		require.True(t, chainABalance.Equal(zeroBal))
-		require.True(t, chainBBalance.Equal(transferAmount))
-		require.True(t, chainCBalance.Equal(zeroBal))
+		require.Truef(t, chainABalance.Equal(zeroBal), "chain a balance, expected %s, got %s", zeroBal, chainABalance)
+		require.Truef(t, chainBBalance.Equal(transferAmount), "chain b balance, expected %s, got %s", transferAmount, chainBBalance)
+		require.Truef(t, chainCBalance.Equal(zeroBal), "chain c balance, expected %s, got %s", zeroBal, chainCBalance)
 
 		revFirstHopEscrowBalance, err := chainC.GetBalance(ctx, revFirstHopEscrowAccount, configC.Denom)
 		require.NoError(t, err)
@@ -709,7 +709,7 @@ func TestNonRefundable(t *testing.T) {
 		// which should result in a refund to the bech32 equivalent of userA on chain B after two retries.
 		transfer := ibc.WalletAmount{
 			Address: "pfm",
-			Denom:   configA.Denom,
+			Denom:   revSecondHopIBCDenom,
 			Amount:  transferAmount,
 		}
 
@@ -747,9 +747,9 @@ func TestNonRefundable(t *testing.T) {
 		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), configC.Denom)
 		require.NoError(t, err)
 
-		require.True(t, chainABalance.Equal(zeroBal))
-		require.True(t, chainBBalance.Equal(transferAmount))
-		require.True(t, chainCBalance.Equal(zeroBal))
+		require.Truef(t, chainABalance.Equal(zeroBal), "chain a balance, expected %s, got %s", zeroBal, chainABalance)
+		require.Truef(t, chainBBalance.Equal(transferAmount), "chain b balance, expected %s, got %s", transferAmount, chainBBalance)
+		require.Truef(t, chainCBalance.Equal(zeroBal), "chain c balance, expected %s, got %s", zeroBal, chainCBalance)
 
 		revFirstHopEscrowBalance, err := chainC.GetBalance(ctx, revFirstHopEscrowAccount, configC.Denom)
 		require.NoError(t, err)
