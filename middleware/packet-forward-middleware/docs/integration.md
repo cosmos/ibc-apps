@@ -61,7 +61,7 @@ app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
     appKeepers.DistrKeeper,
     app.BankKeeper,
     app.IBCKeeper.ChannelKeeper,
-	authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+    authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 )
 
 // Initialize the transfer module Keeper
