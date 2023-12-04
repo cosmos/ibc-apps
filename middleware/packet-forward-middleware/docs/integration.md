@@ -42,7 +42,7 @@ type App struct {
 
 ...
 
-// Create store keys 
+// Create store keys
 keys := sdk.NewKVStoreKeys(
     ...
     packetforwardtypes.StoreKey,
@@ -56,12 +56,12 @@ keys := sdk.NewKVStoreKeys(
 app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
     appCodec,
     keys[packetforwardtypes.StoreKey],
-    app.GetSubspace(packetforwardtypes.ModuleName),
-    app.TransferKeeper, // will be zero-value here, reference is set later on with SetTransferKeeper.
+    nil, // will be zero-value here, reference is set later on with SetTransferKeeper.
     app.IBCKeeper.ChannelKeeper,
     appKeepers.DistrKeeper,
     app.BankKeeper,
     app.IBCKeeper.ChannelKeeper,
+    authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 )
 
 // Initialize the transfer module Keeper
@@ -79,14 +79,14 @@ app.TransferKeeper = ibctransferkeeper.NewKeeper(
 
 app.PacketForwardKeeper.SetTransferKeeper(app.TransferKeeper)
 
-// See the section below for configuring an application stack with the packet forward middleware 
+// See the section below for configuring an application stack with the packet forward middleware
 
 ...
 
 // Register packet forward middleware AppModule
 app.moduleManager = module.NewManager(
     ...
-    packetforward.NewAppModule(app.PacketForwardKeeper),
+    packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 )
 
 ...
@@ -122,8 +122,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 ## Configuring the transfer application stack with Packet Forward Middleware
 
-Here is an example of how to create an application stack using `transfer` and `packet-forward-middleware`. 
-The following `transferStack` is configured in `app/app.go` and added to the IBC `Router`. 
+Here is an example of how to create an application stack using `transfer` and `packet-forward-middleware`.
+The following `transferStack` is configured in `app/app.go` and added to the IBC `Router`.
 The in-line comments describe the execution flow of packets between the application stack and IBC core.
 
 For more information on configuring an IBC application stack see the ibc-go docs [here](https://github.com/cosmos/ibc-go/blob/main/docs/middleware/ics29-fee/integration.md#configuring-an-application-stack-with-fee-middleware).
@@ -156,13 +156,13 @@ ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
 
 ## Configurable options in the Packet Forward Middleware
 
-The Packet Forward Middleware has several configurable options available when initializing the IBC application stack. 
+The Packet Forward Middleware has several configurable options available when initializing the IBC application stack.
 You can see these passed in as arguments to `packetforward.NewIBCMiddleware` and they include the number of retries that
 will be performed on a forward timeout, the timeout period that will be used for a forward, and the timeout period that
 will be used for performing refunds in the case that a forward is taking too long.
 
 Additionally, there is a fee percentage parameter that can be set in `InitGenesis`, this is an optional parameter that
-can be used to take a fee from each forwarded packet which will then be distributed to the community pool. In the 
+can be used to take a fee from each forwarded packet which will then be distributed to the community pool. In the
 `OnRecvPacket` callback `ForwardTransferPacket` is invoked which will attempt to subtract a fee from the forwarded
 packet amount if the fee percentage is non-zero.
 

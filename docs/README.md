@@ -9,7 +9,7 @@ Because chains are on different versions of ibc-go, we strive to have app compat
 To do this, we maintain several branches each targeting a different version of ibc-go. You can view our maintained branches [here](https://github.com/cosmos/ibc-apps/tree/main#maintained-branches)
 
 
-[`Mergify`](https://mergify.com/) has been integrated into this repo to help keep these branches in sync. 
+[`Mergify`](https://mergify.com/) has been integrated into this repo to help keep these branches in sync.
 
 
 Please add the `BACKPORT` label to your PR if it should be cherry-picked into our maintained branches.
