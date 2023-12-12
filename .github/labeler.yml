@@ -1,8 +1,8 @@
 async-icq:
-- 'modules/async-icq/**'
+  - modules/async-icq/**
 
 ibc-hooks:
-- 'modules/ibc-hooks/**'
+  - modules/ibc-hooks/**
 
 packet-forward-middleware:
-- 'middleware/packet-forward-middleware/**'
+  - middleware/packet-forward-middleware/**
