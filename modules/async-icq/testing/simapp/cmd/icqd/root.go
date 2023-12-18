@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	app "github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
+	app "github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 

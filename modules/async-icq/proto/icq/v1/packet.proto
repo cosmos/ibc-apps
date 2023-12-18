@@ -5,7 +5,7 @@ package icq.v1;
 import "gogoproto/gogo.proto";
 import "tendermint/abci/types.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v7/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v8/types";
 
 
 

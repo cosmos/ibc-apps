@@ -3,19 +3,19 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
 	"github.com/cometbft/cometbft/libs/log"
 
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 )
 
 // Keeper defines the IBC interchain query host keeper
@@ -84,12 +84,12 @@ func (k Keeper) SetPort(ctx sdk.Context, portID string) {
 }
 
 // AuthenticateCapability wraps the scopedKeeper's AuthenticateCapability function
-func (k Keeper) AuthenticateCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) bool {
+func (k Keeper) AuthenticateCapability(ctx sdk.Context, cap *capability.Capability, name string) bool {
 	return k.scopedKeeper.AuthenticateCapability(ctx, cap, name)
 }
 
 // ClaimCapability wraps the scopedKeeper's ClaimCapability function
-func (k Keeper) ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) error {
+func (k Keeper) ClaimCapability(ctx sdk.Context, cap *capability.Capability, name string) error {
 	return k.scopedKeeper.ClaimCapability(ctx, cap, name)
 }
 

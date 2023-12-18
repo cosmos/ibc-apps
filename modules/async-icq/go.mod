@@ -1,6 +1,6 @@
-module github.com/cosmos/ibc-apps/modules/async-icq/v7
+module github.com/cosmos/ibc-apps/modules/async-icq/v8
 
-go 1.20
+go 1.21
 
 replace (
 	// cosmos keyring
@@ -15,7 +15,7 @@ replace (
 
 	// Fix upstream GHSA-h395-qcrw-5vmq vulnerability.
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
-	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.0
+	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 
 	// https://github.com/cosmos/cosmos-sdk/issues/14949
 	// pin the version of goleveldb to v1.0.1-0.20210819022825-2ae1ddf74ef7 required by SDK v47 upgrade guide.
@@ -27,12 +27,12 @@ require (
 	cosmossdk.io/errors v1.0.0
 	cosmossdk.io/log v1.2.1
 	cosmossdk.io/tools/rosetta v0.2.1
-	github.com/cometbft/cometbft v0.37.2
-	github.com/cometbft/cometbft-db v0.8.0
+	github.com/cometbft/cometbft v0.38.2
+	github.com/cometbft/cometbft-db v0.9.1
 	github.com/cosmos/cosmos-proto v1.0.0-beta.2
-	github.com/cosmos/cosmos-sdk v0.47.5
+	github.com/cosmos/cosmos-sdk v0.50.1
 	github.com/cosmos/gogoproto v1.4.10
-	github.com/cosmos/ibc-go/v7 v7.3.0
+	github.com/cosmos/ibc-go/v8 v8.0.0
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -192,6 +192,3 @@ require (
 	pgregory.net/rapid v0.5.5 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-// see https://github.com/cosmos/ibc-apps/pull/142
-retract v7.1.0

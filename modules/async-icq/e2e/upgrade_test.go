@@ -7,14 +7,14 @@ import (
 	"testing"
 	"time"
 
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	cosmosproto "github.com/cosmos/gogoproto/proto"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/docker/docker/client"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	"github.com/strangelove-ventures/interchaintest/v8"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,7 +34,7 @@ var (
 	// docker image load -i ../prev_builds/icq-host_7_0_0.tar
 	baseChain = ibc.DockerImage{
 		Repository: "icq-host",
-		Version:    "v7.0.0",
+		Version:    "v8.0.0",
 		UidGid:     "1025:1025",
 	}
 

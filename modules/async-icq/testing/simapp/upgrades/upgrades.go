@@ -1,16 +1,16 @@
 package upgrades
 
 import (
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	consensusparamskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 const (

@@ -4,8 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types"
+	"github.com/cosmos/cosmos-sdk/x/capability"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-query-demo/x/interquery/types"
 
 	icqtypes "github.com/cosmos/ibc-go/v3/modules/apps/icq/types"
 	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
@@ -17,7 +17,7 @@ func (k Keeper) SendQuery(
 	ctx sdk.Context,
 	sourcePort,
 	sourceChannel string,
-	chanCap *capabilitytypes.Capability,
+	chanCap *capability.Capability,
 	reqs []abci.RequestQuery,
 	timeoutHeight clienttypes.Height,
 	timeoutTimestamp uint64,
@@ -47,7 +47,7 @@ func (k Keeper) createOutgoingPacket(
 	sourceChannel,
 	destinationPort,
 	destinationChannel string,
-	chanCap *capabilitytypes.Capability,
+	chanCap *capability.Capability,
 	icqPacketData icqtypes.InterchainQueryPacketData,
 	timeoutTimestamp uint64,
 ) (uint64, error) {

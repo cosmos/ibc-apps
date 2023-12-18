@@ -1,4 +1,4 @@
-module github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo
+module github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-query-demo
 
 go 1.16
 

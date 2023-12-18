@@ -4,22 +4,22 @@ import (
 	"testing"
 
 	"github.com/cosmos/gogoproto/proto"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	"github.com/cosmos/cosmos-sdk/x/capability"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	tmprotostate "github.com/cometbft/cometbft/proto/tendermint/state"
 	tmstate "github.com/cometbft/cometbft/state"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 )
 
 var (
@@ -86,7 +86,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 	var (
 		channel      *channeltypes.Channel
 		path         *ibctesting.Path
-		chanCap      *capabilitytypes.Capability
+		chanCap      *capability.Capability
 		counterparty channeltypes.Counterparty
 	)
 
@@ -169,7 +169,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 	var (
 		channel             *channeltypes.Channel
-		chanCap             *capabilitytypes.Capability
+		chanCap             *capability.Capability
 		path                *ibctesting.Path
 		counterparty        channeltypes.Counterparty
 		counterpartyVersion string

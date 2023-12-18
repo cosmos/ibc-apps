@@ -3,18 +3,18 @@ package icq
 import (
 	"strings"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	"cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	"github.com/cosmos/cosmos-sdk/x/capability"
 
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 )
 
 // IBCModule implements the ICS26 interface for interchain query host chains
@@ -36,7 +36,7 @@ func (im IBCModule) OnChanOpenInit(
 	_ []string,
 	portID string,
 	channelID string,
-	chanCap *capabilitytypes.Capability,
+	chanCap *capability.Capability,
 	_ channeltypes.Counterparty,
 	version string,
 ) (string, error) {
@@ -89,7 +89,7 @@ func (im IBCModule) OnChanOpenTry(
 	_ []string,
 	portID,
 	channelID string,
-	chanCap *capabilitytypes.Capability,
+	chanCap *capability.Capability,
 	_ channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {

@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/client/cli"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/exported"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/client/cli"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/exported"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -21,7 +21,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 )
 
 var (
