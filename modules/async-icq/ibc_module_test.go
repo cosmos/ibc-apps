@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	tmprotostate "github.com/cometbft/cometbft/proto/tendermint/state"
@@ -86,7 +86,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 	var (
 		channel      *channeltypes.Channel
 		path         *ibctesting.Path
-		chanCap      *capability.Capability
+		chanCap      *capabilitytypes.Capability
 		counterparty channeltypes.Counterparty
 	)
 
@@ -169,7 +169,7 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 	var (
 		channel             *channeltypes.Channel
-		chanCap             *capability.Capability
+		chanCap             *capabilitytypes.Capability
 		path                *ibctesting.Path
 		counterparty        channeltypes.Counterparty
 		counterpartyVersion string
