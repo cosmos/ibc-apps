@@ -122,11 +122,6 @@ func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
 // RegisterInvariants implements the AppModule interface
 func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// NewHandler implements the AppModule interface
-func (AppModule) NewHandler() sdk.Handler {
-	return nil
-}
-
 // QuerierRoute implements the AppModule interface
 func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
@@ -161,15 +156,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 2 }
-
-// BeginBlock implements the AppModule interface
-func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
-}
-
-// EndBlock implements the AppModule interface
-func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return []abci.ValidatorUpdate{}
-}
 
 // IsAppModule implements the appmodule.AppModule interface.
 func (am AppModule) IsAppModule() {}
