@@ -422,11 +422,11 @@ func (suite *InterchainQueriesTestSuite) TestABCICodeDeterminism() {
 	})
 	suite.Require().NoError(err)
 
-	deliverTx := abcitypes.ResponseDeliverTx{
+	deliverTx := abcitypes.ExecTxResult{
 		Data: txResponse,
 	}
-	responses := tmprotostate.ABCIResponses{
-		DeliverTxs: []*abcitypes.ResponseDeliverTx{
+	responses := tmprotostate.LegacyABCIResponses{
+		DeliverTxs: []*abcitypes.ExecTxResult{
 			&deliverTx,
 		},
 	}
@@ -444,18 +444,18 @@ func (suite *InterchainQueriesTestSuite) TestABCICodeDeterminism() {
 	})
 	suite.Require().NoError(err)
 
-	differentDeliverTx := abcitypes.ResponseDeliverTx{
+	differentDeliverTx := abcitypes.ExecTxResult{
 		Data: differentTxResponse,
 	}
 
-	differentResponses := tmprotostate.ABCIResponses{
-		DeliverTxs: []*abcitypes.ResponseDeliverTx{
+	differentResponses := tmprotostate.LegacyABCIResponses{
+		DeliverTxs: []*abcitypes.ExecTxResult{
 			&differentDeliverTx,
 		},
 	}
 
-	hash := tmstate.ABCIResponsesResultsHash(&responses)
-	differentHash := tmstate.ABCIResponsesResultsHash(&differentResponses)
+	hash := tmstate.TxResultsHash(responses.DeliverTxs)
+	differentHash := tmstate.TxResultsHash(differentResponses.DeliverTxs)
 
 	suite.Require().NotEqual(hash, differentHash)
 }
