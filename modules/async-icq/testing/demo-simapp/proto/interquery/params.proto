@@ -7,6 +7,5 @@ option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-
 
 // Params defines the parameters for the module.
 message Params {
-  option (gogoproto.goproto_stringer) = false;
   
 }
