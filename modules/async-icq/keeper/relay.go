@@ -52,7 +52,7 @@ func (k Keeper) executeQuery(ctx sdk.Context, reqs []abci.RequestQuery) ([]byte,
 			return nil, errors.Wrapf(sdkerrors.ErrUnauthorized, "no route found for: %s", req.Path)
 		}
 
-		resp, err := route(ctx, abci.RequestQuery{
+		resp, err := route(ctx, &abci.RequestQuery{
 			Data: req.Data,
 			Path: req.Path,
 		})
