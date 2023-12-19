@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/exported"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -16,7 +17,7 @@ import (
 // module state.
 func Migrate(
 	ctx sdk.Context,
-	store sdk.KVStore,
+	store storetypes.KVStore,
 	legacySubspace exported.Subspace,
 	cdc codec.BinaryCodec,
 ) error {
@@ -33,7 +34,7 @@ func Migrate(
 	return validate(store, cdc, currParams)
 }
 
-func validate(store sdk.KVStore, cdc codec.BinaryCodec, currParams types.Params) error {
+func validate(store storetypes.KVStore, cdc codec.BinaryCodec, currParams types.Params) error {
 	var res types.Params
 	bz := store.Get(types.ParamsKey)
 	if bz == nil {
