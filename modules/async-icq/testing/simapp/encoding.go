@@ -25,8 +25,6 @@ func MakeEncodingConfig() EncodingConfig {
 	encodingConfig := makeDefaultEncodingConfig()
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
-	ModuleBasics.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	// register ibc interfaces
 	ibctm.RegisterInterfaces(encodingConfig.InterfaceRegistry)
