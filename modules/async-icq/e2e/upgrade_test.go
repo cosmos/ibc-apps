@@ -137,7 +137,9 @@ func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.Cosm
 		},
 	}
 
-	proposal, err := chain.BuildProposal(upgradeMsg, "Chain Upgrade "+upgradeName, "Summary desc", "ipfs://CID", fmt.Sprintf(`500000000%s`, chain.Config().Denom))
+	proposer := user.FormattedAddress()
+	expedited := false
+	proposal, err := chain.BuildProposal(upgradeMsg, "Chain Upgrade "+upgradeName, "Summary desc", "ipfs://CID", fmt.Sprintf(`500000000%s`, chain.Config().Denom), proposer, expedited)
 	require.NoError(t, err, "error building proposal")
 
 	txProp, err := chain.SubmitProposal(ctx, user.KeyName(), proposal)
