@@ -127,7 +127,7 @@ jobs:
         run: |
           docker image load -i ${{ env.HOST_TAR_PATH }}
           docker image load -i ${{ env.CONTROLLER_TAR_PATH }}
-          docker image load -i testing/previous_images/icq-host_7_0_0.tar
+          docker image load -i testing/previous_images/icq-host_8_0_0.tar
           docker image ls -a
 
       - name: Run Test
