@@ -18,7 +18,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	"github.com/cometbft/cometbft/libs/log"
 
