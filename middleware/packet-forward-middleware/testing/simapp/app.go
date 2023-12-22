@@ -20,7 +20,6 @@ import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 
-	"cosmossdk.io/store/streaming"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -48,6 +47,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
@@ -97,17 +97,15 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
-	dbm "github.com/cometbft/cometbft-db"
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 	tmos "github.com/cometbft/cometbft/libs/os"
+	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v8/modules/core/02-client"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
@@ -237,9 +235,15 @@ func init() {
 
 // NewSimApp returns a reference to an initialized SimApp.
 func NewSimApp(
-	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
-	homePath string, invCheckPeriod uint,
-	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
+	logger log.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	loadLatest bool,
+	skipUpgradeHeights map[int64]bool,
+	homePath string,
+	invCheckPeriod uint,
+	appOpts servertypes.AppOptions,
+	baseAppOptions ...func(*baseapp.BaseApp),
 ) *SimApp {
 	encodingConfig := MakeEncodingConfig()
 
@@ -271,21 +275,20 @@ func NewSimApp(
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 	bApp.SetTxEncoder(encodingConfig.TxConfig.TxEncoder())
 
-	keys := sdk.NewKVStoreKeys(
+	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, crisistypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, group.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, packetforwardtypes.StoreKey, ibctransfertypes.StoreKey, authzkeeper.StoreKey, capabilitytypes.StoreKey,
 	)
-	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
+	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	// NOTE: The testingkey is just mounted for testing purposes. Actual applications should
 	// not include this key.
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
 	// load state streaming if enabled
-	if _, _, err := streaming.LoadStreamingServices(bApp, appOpts, appCodec, logger, keys); err != nil {
-		logger.Error("failed to load state streaming", "err", err)
-		os.Exit(1)
+	if err := bApp.RegisterStreamingServices(appOpts, keys); err != nil {
+		panic(err)
 	}
 
 	app := &SimApp{
@@ -302,8 +305,13 @@ func NewSimApp(
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
 
 	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec, keys[upgradetypes.StoreKey], authority)
-	bApp.SetParamStore(&app.ConsensusParamsKeeper)
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		runtime.EventService{},
+	)
+	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
 
 	// add capability keeper and ScopeToModule for ibc module
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
@@ -317,65 +325,76 @@ func NewSimApp(
 
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
-		keys[authtypes.StoreKey],
+		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		sdk.GetConfig().GetBech32AccountAddrPrefix(),
-		authority,
+		authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
+		sdk.Bech32MainPrefix,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
-		keys[banktypes.StoreKey],
+		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		app.AccountKeeper,
 		app.ModuleAccountAddrs(),
 		authority,
+		logger,
 	)
 	app.StakingKeeper = stakingkeeper.NewKeeper(
 		appCodec,
-		keys[stakingtypes.StoreKey],
+		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
-		authority,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
 	app.MintKeeper = mintkeeper.NewKeeper(
 		appCodec,
-		keys[minttypes.StoreKey],
+		runtime.NewKVStoreService(keys[minttypes.StoreKey]),
 		app.StakingKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authority,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec,
-		keys[distrtypes.StoreKey],
+		runtime.NewKVStoreService(keys[distrtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.StakingKeeper,
 		authtypes.FeeCollectorName,
-		authority,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
-		appCodec, app.legacyAmino, keys[slashingtypes.StoreKey], app.StakingKeeper, authority,
+		appCodec,
+		legacyAmino,
+		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
+		app.StakingKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		appCodec,
-		keys[crisistypes.StoreKey],
+		runtime.NewKVStoreService(keys[crisistypes.StoreKey]),
 		invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authority,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.AccountKeeper.AddressCodec(),
 	)
-
-	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
+	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[feegrant.StoreKey]),
+		app.AccountKeeper,
+	)
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
-		keys[upgradetypes.StoreKey],
+		runtime.NewKVStoreService(keys[upgradetypes.StoreKey]),
 		appCodec,
 		homePath,
 		app.BaseApp,
-		authority,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// register the staking hooks
@@ -384,7 +403,7 @@ func NewSimApp(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.AuthzKeeper = authzkeeper.NewKeeper(keys[authzkeeper.StoreKey], appCodec, app.MsgServiceRouter(), app.AccountKeeper)
+	app.AuthzKeeper = authzkeeper.NewKeeper(runtime.NewKVStoreService(keys[authzkeeper.StoreKey]), appCodec, app.MsgServiceRouter(), app.AccountKeeper)
 
 	// IBC Keepers
 	app.IBCKeeper = ibckeeper.NewKeeper(
@@ -393,6 +412,7 @@ func NewSimApp(
 		app.StakingKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// Register the proposal types
@@ -401,16 +421,22 @@ func NewSimApp(
 	// See: https://docs.cosmos.network/main/modules/gov#proposal-messages
 	govRouter := govv1beta1.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
-		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
-
+		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
 	govConfig := govtypes.DefaultConfig()
-	govConfig.MaxMetadataLen = 10_000
-
+	/*
+		Example of setting gov params:
+		govConfig.MaxMetadataLen = 10000
+	*/
 	govKeeper := govkeeper.NewKeeper(
-		appCodec, keys[govtypes.StoreKey], app.AccountKeeper, app.BankKeeper,
-		app.StakingKeeper, app.MsgServiceRouter(), govConfig, authority,
+		appCodec,
+		runtime.NewKVStoreService(keys[govtypes.StoreKey]),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
+		app.DistrKeeper,
+		app.MsgServiceRouter(),
+		govConfig,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// Set legacy router for backwards compatibility with gov v1beta1
