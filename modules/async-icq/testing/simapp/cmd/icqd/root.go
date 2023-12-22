@@ -38,6 +38,8 @@ import (
 func NewRootCmd() (*cobra.Command, app.EncodingConfig) {
 	tempApp := app.NewSimApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, map[int64]bool{}, app.DefaultNodeHome, 5, simtestutil.NewAppOptionsWithFlagHome(tempDir()))
 	encodingConfig := app.MakeEncodingConfig()
+	tempApp.BasicModuleManager.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	tempApp.BasicModuleManager.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	cfg := sdk.GetConfig()
 	cfg.Seal()
