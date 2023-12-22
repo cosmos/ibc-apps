@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -33,6 +34,6 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 }
 
 // GetFeePercentage retrieves the fee percentage for forwarded packets from the store.
-func (k Keeper) GetFeePercentage(ctx sdk.Context) sdk.Dec {
+func (k Keeper) GetFeePercentage(ctx sdk.Context) sdkmath.LegacyDec {
 	return k.GetParams(ctx).FeePercentage
 }
