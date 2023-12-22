@@ -10,7 +10,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -447,7 +447,6 @@ func TestNonRefundable(t *testing.T) {
 		userC := userC
 		userA := mintVoucherUsersA[i]
 		eg.Go(func() error {
-
 			// Send packet from Chain C->Chain B->Chain A
 			transfer := ibc.WalletAmount{
 				Address: "pfm",

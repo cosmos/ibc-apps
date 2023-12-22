@@ -3,8 +3,8 @@ package v2
 import (
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/exported"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/exported"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"

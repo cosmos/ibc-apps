@@ -1,6 +1,6 @@
-go 1.20
+go 1.21
 
-module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7
+module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8
 
 require (
 	cosmossdk.io/api v0.3.1
@@ -11,9 +11,9 @@ require (
 	github.com/cometbft/cometbft v0.37.2
 	github.com/cometbft/cometbft-db v0.8.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.2
-	github.com/cosmos/cosmos-sdk v0.47.5
+	github.com/cosmos/cosmos-sdk v0.50.2
 	github.com/cosmos/gogoproto v1.4.10
-	github.com/cosmos/ibc-go/v7 v7.3.1
+	github.com/cosmos/ibc-go/v8 v8.0.0
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -195,5 +195,5 @@ replace (
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
 
-// see https://github.com/cosmos/ibc-apps/pull/141
-retract v7.1.0
+// // see https://github.com/cosmos/ibc-apps/pull/141
+// retract v7.1.0
