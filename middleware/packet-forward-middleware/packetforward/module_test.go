@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -255,7 +256,7 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()
-	testCoin := sdk.NewCoin(denom, sdk.NewInt(100))
+	testCoin := sdk.NewCoin(denom, sdkmath.NewInt(100))
 	metadata := &types.PacketMetadata{Forward: &types.ForwardMetadata{
 		Receiver: destAddr,
 		Port:     port,
@@ -312,7 +313,7 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()
 
-	amount256, ok := sdk.NewIntFromString(testAmount256)
+	amount256, ok := sdkmath.NewIntFromString(testAmount256)
 	require.True(t, ok)
 
 	testCoin := sdk.NewCoin(denom, amount256)
@@ -371,15 +372,15 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	forwardMiddleware := setup.ForwardMiddleware
 
 	// Set fee param to 10%
-	if err := setup.Keepers.PacketForwardKeeper.SetParams(ctx, types.NewParams(sdk.NewDecWithPrec(10, 2))); err != nil {
+	if err := setup.Keepers.PacketForwardKeeper.SetParams(ctx, types.NewParams(sdkmath.LegacyNewDecWithPrec(10, 2))); err != nil {
 		t.Fatal(err)
 	}
 
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()
 	intermediateAccAddr := test.AccAddressFromBech32(t, intermediateAddr)
-	testCoin := sdk.NewCoin(denom, sdk.NewInt(90))
-	feeCoins := sdk.Coins{sdk.NewCoin(denom, sdk.NewInt(10))}
+	testCoin := sdk.NewCoin(denom, sdkmath.NewInt(90))
+	feeCoins := sdk.Coins{sdk.NewCoin(denom, sdkmath.NewInt(10))}
 	metadata := &types.PacketMetadata{Forward: &types.ForwardMetadata{
 		Receiver: destAddr,
 		Port:     port,
@@ -441,7 +442,7 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()
 	senderAccAddr2 := test.AccAddress()
-	testCoin := sdk.NewCoin(denom, sdk.NewInt(100))
+	testCoin := sdk.NewCoin(denom, sdkmath.NewInt(100))
 	nextMetadata := &types.PacketMetadata{
 		Forward: &types.ForwardMetadata{
 			Receiver: destAddr,
@@ -550,7 +551,7 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()
 	senderAccAddr2 := test.AccAddress()
-	testCoin := sdk.NewCoin(denom, sdk.NewInt(100))
+	testCoin := sdk.NewCoin(denom, sdkmath.NewInt(100))
 	nextMetadata := &types.PacketMetadata{
 		Forward: &types.ForwardMetadata{
 			Receiver: destAddr,
