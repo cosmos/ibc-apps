@@ -7,8 +7,8 @@ import (
 
 	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp"
 	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/params"
-	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	rosettaCmd "cosmossdk.io/tools/rosetta/cmd"
 
@@ -28,10 +28,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	dbm "github.com/cometbft/cometbft-db"
+	"cosmossdk.io/log"
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
-	"github.com/cometbft/cometbft/libs/log"
+	dbm "github.com/cosmos/cosmos-db"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the
@@ -193,34 +193,24 @@ type appCreator struct {
 	encCfg appparams.EncodingConfig
 }
 
-func (ac appCreator) newApp(
+func newApp(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
-	skipUpgradeHeights := make(map[int64]bool)
-	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
-		skipUpgradeHeights[int64(h)] = true
-	}
-
-	loadLatest := true
-
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 	return app.NewSimApp(
 		logger,
 		db,
 		traceStore,
-		loadLatest,
-		skipUpgradeHeights,
-		app.DefaultNodeHome,
-		uint(1),
+		true,
 		appOpts,
 		baseappOptions...,
 	)
 }
 
-func (ac appCreator) appExport(
+func appExport(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
@@ -230,35 +220,33 @@ func (ac appCreator) appExport(
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	var pfmApp *app.SimApp
+	var simApp *app.SimApp
+
+	// this check is necessary as we use the flag in x/upgrade.
+	// we can exit more gracefully by checking the flag here.
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
-		return servertypes.ExportedApp{}, errors.New("application home is not set")
+		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
-	skipUpgradeHeights := make(map[int64]bool)
-	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
-		skipUpgradeHeights[int64(h)] = true
+	viperAppOpts, ok := appOpts.(*viper.Viper)
+	if !ok {
+		return servertypes.ExportedApp{}, errors.New("appOpts is not viper.Viper")
 	}
 
-	loadLatest := height == -1
-	pfmApp = app.NewSimApp(
-		logger,
-		db,
-		traceStore,
-		loadLatest,
-		skipUpgradeHeights,
-		homePath,
-		uint(1),
-		appOpts,
-		nil,
-	)
+	// overwrite the FlagInvCheckPeriod
+	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
+	appOpts = viperAppOpts
 
 	if height != -1 {
-		if err := pfmApp.LoadHeight(height); err != nil {
+		simApp = app.NewSimApp(logger, db, traceStore, false, appOpts)
+
+		if err := simApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
+	} else {
+		simApp = app.NewSimApp(logger, db, traceStore, true, appOpts)
 	}
 
-	return pfmApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+	return simApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }
