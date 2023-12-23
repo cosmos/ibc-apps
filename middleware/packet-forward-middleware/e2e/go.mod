@@ -1,6 +1,6 @@
 module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/e2e
 
-go 1.20
+go 1.21
 
 require (
 	cosmossdk.io/math v1.1.2
@@ -37,7 +37,7 @@ require (
 	github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/StirlingMarketingGroup/go-namecase v1.0.0 // indirect
-	github.com/armon/go-metrics v0.4.1 // indirect
+	"github.com/hashicorp/go-metrics" v0.4.1 // indirect
 	github.com/avast/retry-go/v4 v4.5.0 // indirect
 	github.com/aws/aws-sdk-go v1.44.203 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
