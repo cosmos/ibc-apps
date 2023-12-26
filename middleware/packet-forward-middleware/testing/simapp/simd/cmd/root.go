@@ -41,7 +41,6 @@ import (
 	cmtcfg "github.com/cometbft/cometbft/config"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp"
-	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/params"
 	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/params"
 )
@@ -251,7 +250,7 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 
 // genesisCommand builds genesis-related `simd genesis` command. Users may provide application specific commands as a parameter
 func genesisCommand(encodingConfig appparams.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
-	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, app.ModuleBasics, app.DefaultNodeHome)
+	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, simapp.ModuleBasics, simapp.DefaultNodeHome)
 
 	for _, subCmd := range cmds {
 		cmd.AddCommand(subCmd)
