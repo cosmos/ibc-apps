@@ -6,6 +6,7 @@ package mock
 
 import (
 	reflect "reflect"
+	"context"
 
 	types "github.com/cosmos/cosmos-sdk/types"
 	gomock "go.uber.org/mock/gomock"
@@ -35,7 +36,7 @@ func (m *MockBankKeeper) EXPECT() *MockBankKeeperMockRecorder {
 }
 
 // BurnCoins mocks base method.
-func (m *MockBankKeeper) BurnCoins(arg0 types.Context, arg1 string, arg2 types.Coins) error {
+func (m *MockBankKeeper) BurnCoins(arg0 context.Context, arg1 string, arg2 types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BurnCoins", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -49,7 +50,7 @@ func (mr *MockBankKeeperMockRecorder) BurnCoins(arg0, arg1, arg2 interface{}) *g
 }
 
 // MintCoins mocks base method.
-func (m *MockBankKeeper) MintCoins(arg0 types.Context, arg1 string, arg2 types.Coins) error {
+func (m *MockBankKeeper) MintCoins(arg0 context.Context, arg1 string, arg2 types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MintCoins", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -63,7 +64,7 @@ func (mr *MockBankKeeperMockRecorder) MintCoins(arg0, arg1, arg2 interface{}) *g
 }
 
 // SendCoins mocks base method.
-func (m *MockBankKeeper) SendCoins(arg0 types.Context, arg1, arg2 types.AccAddress, arg3 types.Coins) error {
+func (m *MockBankKeeper) SendCoins(arg0 context.Context, arg1, arg2 types.AccAddress, arg3 types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoins", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -77,7 +78,7 @@ func (mr *MockBankKeeperMockRecorder) SendCoins(arg0, arg1, arg2, arg3 interface
 }
 
 // SendCoinsFromAccountToModule mocks base method.
-func (m *MockBankKeeper) SendCoinsFromAccountToModule(arg0 types.Context, arg1 types.AccAddress, arg2 string, arg3 types.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromAccountToModule(arg0 context.Context, arg1 types.AccAddress, arg2 string, arg3 types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromAccountToModule", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -91,7 +92,7 @@ func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(arg0, arg1, a
 }
 
 // SendCoinsFromModuleToAccount mocks base method.
-func (m *MockBankKeeper) SendCoinsFromModuleToAccount(arg0 types.Context, arg1 string, arg2 types.AccAddress, arg3 types.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromModuleToAccount(arg0 context.Context, arg1 string, arg2 types.AccAddress, arg3 types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromModuleToAccount", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
