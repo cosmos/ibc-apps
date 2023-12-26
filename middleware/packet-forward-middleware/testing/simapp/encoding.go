@@ -7,7 +7,7 @@ import (
 )
 
 func MakeEncodingConfig() appparams.EncodingConfig {
-	encodingConfig := appparams.MakeEncodingConfig()
+	encodingConfig := appparams.MakeTestEncodingConfig()
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
