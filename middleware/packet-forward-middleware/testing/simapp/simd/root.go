@@ -3,11 +3,12 @@ package main
 import (
 	"os"
 
-	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
 	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp"
 	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/params"
 	"github.com/spf13/cobra"
+
+	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -68,9 +69,8 @@ func NewRootCmd() *cobra.Command {
 			// sets the RPC client needed for SIGN_MODE_TEXTUAL. This sign mode
 			// is only available if the client is online.
 			if !initClientCtx.Offline {
-				enabledSignModes := append(tx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
 				txConfigOpts := tx.ConfigOptions{
-					EnabledSignModes:           enabledSignModes,
+					EnabledSignModes:           append(tx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL),
 					TextualCoinMetadataQueryFn: txmodule.NewGRPCCoinMetadataQueryFn(initClientCtx),
 				}
 				txConfig, err := tx.NewTxConfigWithOptions(
