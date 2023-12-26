@@ -42,7 +42,6 @@ import (
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/params"
-	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/params"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the
@@ -249,7 +248,7 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 }
 
 // genesisCommand builds genesis-related `simd genesis` command. Users may provide application specific commands as a parameter
-func genesisCommand(encodingConfig appparams.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
+func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
 	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, simapp.ModuleBasics, simapp.DefaultNodeHome)
 
 	for _, subCmd := range cmds {
@@ -302,10 +301,6 @@ func txCommand() *cobra.Command {
 	)
 
 	return cmd
-}
-
-type appCreator struct {
-	encCfg appparams.EncodingConfig
 }
 
 // newApp creates the application
