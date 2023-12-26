@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 )
 
 var (
@@ -49,7 +49,7 @@ var (
 		TrustingPeriod: "336h",
 		NoHostMount:    false,
 		EncodingConfig: encoding(),
-		Env:            []string{"NON_REFUNDABLE_TEST=true"},
+		// Env:            []string{"NON_REFUNDABLE_TEST=true"},
 	}
 
 	DefaultRelayer = ibc.DockerImage{

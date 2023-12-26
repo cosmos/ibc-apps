@@ -4,4 +4,5 @@ toolchain go1.21.0
 
 use (
 	./middleware/packet-forward-middleware
+	./middleware/packet-forward-middleware/e2e
 )
