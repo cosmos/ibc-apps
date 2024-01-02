@@ -182,7 +182,7 @@ func ValidatorVoting(t *testing.T, ctx context.Context, chain *cosmos.CosmosChai
 	err := chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
-	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+haltHeightDelta, proposalID, cosmos.ProposalStatusPassed)
+	_, err = cosmos.PollForProposalStatusV8(ctx, chain, height, height+haltHeightDelta, proposalID, cosmos.ProposalStatusPassedV8)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
 
 	timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, time.Second*45)
