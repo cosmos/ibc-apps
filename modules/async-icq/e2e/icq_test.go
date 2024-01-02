@@ -65,11 +65,13 @@ func TestInterchainQueries(t *testing.T) {
 		UidGid:     "1025:1025",
 	}
 
-	relayerImage := ibc.DockerImage{
-		Repository: "icq-relayer",
-		Version:    "local",
-		UidGid:     "1025:1025",
-	}
+	/*
+		relayerImage := ibc.DockerImage{
+			Repository: "icq-relayer",
+			Version:    "local",
+			UidGid:     "1025:1025",
+		}
+	*/
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		{
@@ -121,8 +123,8 @@ func TestInterchainQueries(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
-		relayer.DockerImage(&relayerImage),
-		relayer.ImagePull(false),
+		// relayer.DockerImage(&relayerImage),
+		// relayer.ImagePull(false),
 		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
