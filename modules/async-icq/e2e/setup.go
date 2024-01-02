@@ -5,9 +5,10 @@ import (
 	"os"
 	"strings"
 
-	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+
+	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
 var (

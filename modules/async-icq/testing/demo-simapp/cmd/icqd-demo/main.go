@@ -3,9 +3,10 @@ package main
 import (
 	"os"
 
-	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-query-demo/app"
 	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
+
+	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 )
 
 func main() {

@@ -9,8 +9,9 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/stretchr/testify/suite"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	tmprotostate "github.com/cometbft/cometbft/proto/tendermint/state"
