@@ -18,6 +18,7 @@ import (
 
 const (
 	V2 = "v2"
+	V3 = "v3" // SDK v50 migration
 )
 
 // CreateDefaultUpgradeHandler creates a base upgrade handler for the async-icq module.

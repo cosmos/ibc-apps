@@ -2,14 +2,12 @@ package e2e
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	cosmosproto "github.com/cosmos/gogoproto/proto"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/docker/docker/client"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
@@ -20,7 +18,7 @@ import (
 
 const (
 	chainName   = "simapp"
-	upgradeName = "v2" // x/params migration
+	upgradeName = "v3" // default handler, SDK v47 -> SDK v50.
 
 	haltHeightDelta    = uint64(9) // will propose upgrade this many blocks in the future
 	blocksAfterUpgrade = uint64(7)
@@ -31,14 +29,14 @@ const (
 
 var (
 	// baseChain is the current version of the chain that will be upgraded from
-	// docker image load -i ../prev_builds/icq-host_8_0_0.tar
+	// docker image load -i ../prev_builds/icq-host_7_1_1.tar
 	baseChain = ibc.DockerImage{
 		Repository: "icq-host",
-		Version:    "v8.0.0",
+		Version:    "v7.1.1",
 		UidGid:     "1025:1025",
 	}
 
-	// make local-image
+	// make local-image-icq
 	upgradeTo = ibc.DockerImage{
 		Repository: "icq-host",
 		Version:    "local",
@@ -106,23 +104,6 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 
 	ValidatorVoting(t, ctx, chain, proposalID, height, haltHeight)
 	UpgradeNodes(t, ctx, chain, client, haltHeight, upgradeRepo, upgradeDockerTag)
-
-	// Validate the ICQ subspace -> keeper migration was successful.
-	cmd := []string{
-		chain.Config().Bin, "q", "interchainquery", "params", "--output=json", "--node", chain.GetRPCAddress(),
-	}
-	stdout, _, err := chain.Exec(ctx, cmd, nil)
-	fmt.Println("stdout", string(stdout))
-	require.NoError(t, err, "error fetching icq params")
-
-	var params icqtypes.Params
-	err = json.Unmarshal(stdout, &params)
-	require.NoError(t, err, "error unmarshalling icq params")
-
-	t.Logf("params: %+v", params)
-	require.Equal(t, false, params.HostEnabled, "HostEnabled not equal to expected value")
-	require.Equal(t, []string{"/cosmos.bank.v1beta1.Query/AllBalances"}, params.AllowQueries, "AllowQueries not equal to expected value")
-
 }
 
 func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, upgradeName string, haltHeight uint64) string {

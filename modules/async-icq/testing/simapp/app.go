@@ -795,6 +795,10 @@ func (app *SimApp) setupUpgradeHandlers() {
 		upgrades.V2,
 		upgrades.CreateV2UpgradeHandler(app.mm, app.configurator, app.ParamsKeeper, app.ConsensusParamsKeeper, app.ICQKeeper),
 	)
+	app.UpgradeKeeper.SetUpgradeHandler(
+		upgrades.V3,
+		upgrades.CreateDefaultUpgradeHandler(app.mm, app.configurator),
+	)
 }
 
 // setupUpgradeStoreLoaders sets all necessary store loaders required by upgrades.
