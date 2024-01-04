@@ -5,10 +5,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
+	dbm "github.com/cosmos/cosmos-db"
 	app "github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+
+	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -28,10 +30,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	"cosmossdk.io/log"
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
-	dbm "github.com/cosmos/cosmos-db"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the
@@ -191,7 +191,6 @@ func txCommand(tempApp *app.SimApp) *cobra.Command {
 		authcmd.GetBroadcastCommand(),
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
-		//authcmd.GetAuxToFeeCommand(),
 	)
 
 	tempApp.BasicModuleManager.AddTxCommands(cmd)
@@ -277,7 +276,7 @@ func (ac appCreator) appExport(
 var tempDir = func() string {
 	dir, err := os.MkdirTemp("", "simapp")
 	if err != nil {
-		dir = simapp.DefaultNodeHome
+		dir = app.DefaultNodeHome
 	}
 	defer os.RemoveAll(dir)
 

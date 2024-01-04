@@ -3,9 +3,10 @@ package keeper_test
 import (
 	"fmt"
 
-	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+
+	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"

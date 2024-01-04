@@ -1,8 +1,9 @@
 package simapp
 
 import (
-	"cosmossdk.io/x/tx/signing"
 	"github.com/cosmos/gogoproto/proto"
+
+	"cosmossdk.io/x/tx/signing"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
