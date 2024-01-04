@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/client/cli"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/exported"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/client/cli"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/exported"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -21,7 +21,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 )
 
 var (
@@ -40,8 +40,7 @@ func (AppModuleBasic) RegisterInterfaces(r codectypes.InterfaceRegistry) {
 }
 
 // RegisterLegacyAminoCodec implements module.AppModuleBasic.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	types.RegisterLegacyAminoCodec(cdc)
+func (AppModuleBasic) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {
 }
 
 // Name implements AppModuleBasic interface
@@ -122,11 +121,6 @@ func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
 // RegisterInvariants implements the AppModule interface
 func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// NewHandler implements the AppModule interface
-func (AppModule) NewHandler() sdk.Handler {
-	return nil
-}
-
 // QuerierRoute implements the AppModule interface
 func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
@@ -162,11 +156,8 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 2 }
 
-// BeginBlock implements the AppModule interface
-func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {
-}
+// IsAppModule implements the appmodule.AppModule interface.
+func (am AppModule) IsAppModule() {}
 
-// EndBlock implements the AppModule interface
-func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return []abci.ValidatorUpdate{}
-}
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (am AppModule) IsOnePerModuleType() {}

@@ -5,20 +5,21 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/relayer"
-	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	"github.com/strangelove-ventures/interchaintest/v8"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/relayer"
+	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
-	ibccore "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+	ibccore "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 )
 
 func hostEncoding() *moduletestutil.TestEncodingConfig {
@@ -61,6 +62,12 @@ func TestInterchainQueries(t *testing.T) {
 	hostImage := ibc.DockerImage{
 		Repository: "icq-host",
 		Version:    "local",
+		UidGid:     "1025:1025",
+	}
+
+	relayerImage := ibc.DockerImage{
+		Repository: "ghcr.io/cosmos/relayer",
+		Version:    "main",
 		UidGid:     "1025:1025",
 	}
 
@@ -114,6 +121,7 @@ func TestInterchainQueries(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
+		relayer.DockerImage(&relayerImage),
 		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
@@ -170,7 +178,7 @@ func TestInterchainQueries(t *testing.T) {
 		func() {
 			err := r.StopRelayer(ctx, eRep)
 			if err != nil {
-				t.Logf("an error occured while stopping the relayer: %s", err)
+				t.Logf("an error occurred while stopping the relayer: %s", err)
 			}
 		},
 	)

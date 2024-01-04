@@ -4,22 +4,22 @@ import (
 	"testing"
 
 	"github.com/cosmos/gogoproto/proto"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	tmprotostate "github.com/cometbft/cometbft/proto/tendermint/state"
 	tmstate "github.com/cometbft/cometbft/state"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 )
 
 var (
@@ -422,11 +422,11 @@ func (suite *InterchainQueriesTestSuite) TestABCICodeDeterminism() {
 	})
 	suite.Require().NoError(err)
 
-	deliverTx := abcitypes.ResponseDeliverTx{
+	deliverTx := abcitypes.ExecTxResult{
 		Data: txResponse,
 	}
-	responses := tmprotostate.ABCIResponses{
-		DeliverTxs: []*abcitypes.ResponseDeliverTx{
+	responses := tmprotostate.LegacyABCIResponses{
+		DeliverTxs: []*abcitypes.ExecTxResult{
 			&deliverTx,
 		},
 	}
@@ -444,18 +444,18 @@ func (suite *InterchainQueriesTestSuite) TestABCICodeDeterminism() {
 	})
 	suite.Require().NoError(err)
 
-	differentDeliverTx := abcitypes.ResponseDeliverTx{
+	differentDeliverTx := abcitypes.ExecTxResult{
 		Data: differentTxResponse,
 	}
 
-	differentResponses := tmprotostate.ABCIResponses{
-		DeliverTxs: []*abcitypes.ResponseDeliverTx{
+	differentResponses := tmprotostate.LegacyABCIResponses{
+		DeliverTxs: []*abcitypes.ExecTxResult{
 			&differentDeliverTx,
 		},
 	}
 
-	hash := tmstate.ABCIResponsesResultsHash(&responses)
-	differentHash := tmstate.ABCIResponsesResultsHash(&differentResponses)
+	hash := tmstate.TxResultsHash(responses.DeliverTxs)
+	differentHash := tmstate.TxResultsHash(differentResponses.DeliverTxs)
 
 	suite.Require().NotEqual(hash, differentHash)
 }
