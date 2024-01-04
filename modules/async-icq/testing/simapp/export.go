@@ -79,8 +79,11 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 
 	// withdraw all validator commission
 	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		valAddr, _ := sdk.ValAddressFromBech32(val.GetOperator())
-		_, _ = app.DistrKeeper.WithdrawValidatorCommission(ctx, valAddr)
+		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
+		if err != nil {
+			panic(err)
+		}
+		_, _ = app.DistrKeeper.WithdrawValidatorCommission(ctx, valBz)
 		return false
 	})
 
@@ -90,7 +93,7 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 		panic(err)
 	}
 	for _, delegation := range dels {
-		valAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
+		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(delegation.GetValidatorAddr())
 		if err != nil {
 			panic(err)
 		}
@@ -99,7 +102,7 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 		if err != nil {
 			panic(err)
 		}
-		_, _ = app.DistrKeeper.WithdrawDelegationRewards(ctx, delAddr, valAddr)
+		_, _ = app.DistrKeeper.WithdrawDelegationRewards(ctx, delAddr, valBz)
 	}
 
 	// clear validator slash events
@@ -115,8 +118,12 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 	// reinitialize all validators
 	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
-		valAddr, _ := sdk.ValAddressFromBech32(val.GetOperator())
-		scraps, err := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, valAddr)
+		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
+		if err != nil {
+			panic(err)
+		}
+
+		scraps, err := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, valBz)
 		if err != nil {
 			panic(err)
 		}
@@ -130,13 +137,13 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 			panic(err)
 		}
 
-		err = app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, valAddr)
+		err = app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, valBz)
 		return err != nil
 	})
 
 	// reinitialize all delegations
 	for _, del := range dels {
-		valAddr, err := sdk.ValAddressFromBech32(del.ValidatorAddress)
+		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(del.GetValidatorAddr())
 		if err != nil {
 			panic(err)
 		}
@@ -144,11 +151,11 @@ func (app *SimApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []
 		if err != nil {
 			panic(err)
 		}
-		err = app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr)
+		err = app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valBz)
 		if err != nil {
 			panic(err)
 		}
-		err = app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr)
+		err = app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valBz)
 		if err != nil {
 			panic(err)
 		}
