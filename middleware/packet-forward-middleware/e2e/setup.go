@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 )
 
 var (
@@ -54,7 +54,7 @@ var (
 
 	DefaultRelayer = ibc.DockerImage{
 		Repository: "ghcr.io/cosmos/relayer",
-		Version:    "v2.4.2",
+		Version:    "main",
 		UidGid:     "1025:1025",
 	}
 )

@@ -6,7 +6,7 @@ import "packetforward/v1/genesis.proto";
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types";
+option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types";
 
 // Msg defines the Msg service.
 service Msg {

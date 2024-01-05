@@ -147,8 +147,8 @@ mocks: $(MOCKS_DIR)
 	mockgen -package=mock -destination=./test/mock/distribution_keeper.go $(GOMOD)/packetforward/types DistributionKeeper
 	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/packetforward/types BankKeeper
 	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/packetforward/types ChannelKeeper
-	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v7/modules/core/05-port/types ICS4Wrapper
-	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v7/modules/core/05-port/types IBCModule
+	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v8/modules/core/05-port/types ICS4Wrapper
+	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v8/modules/core/05-port/types IBCModule
 
 .PHONY: mocks
 

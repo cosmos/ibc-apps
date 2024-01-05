@@ -1,0 +1,8 @@
+go 1.21
+
+toolchain go1.21.0
+
+use (
+	./middleware/packet-forward-middleware
+	./middleware/packet-forward-middleware/e2e
+)
