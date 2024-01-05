@@ -128,14 +128,14 @@ func TestNonRefundable(t *testing.T) {
 
 	initBal := math.NewInt(10_000_000_000)
 
-	users1 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
-	users2 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
-	users3 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
-	users4 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
-	users5 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
-	users6 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
-	users7 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
-	users8 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainC)
+	users1 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
+	users2 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
+	users3 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
+	users4 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
+	users5 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
+	users6 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
+	users7 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
+	users8 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
 	usersA := []ibc.Wallet{users1[0], users2[0], users3[0], users4[0], users5[0], users6[0], users7[0], users8[0]}
 	usersC := []ibc.Wallet{users1[1], users2[1], users3[1], users4[1], users5[1], users6[1], users7[1], users8[1]}
 

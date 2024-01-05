@@ -120,7 +120,7 @@ func TestTimeoutOnForward(t *testing.T) {
 
 	// Fund user accounts with initial balances and get the transfer channel information between each set of chains
 	initBal := math.NewInt(10_000_000_000)
-	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainB, chainC, chainD)
+	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainB, chainC, chainD)
 
 	abChan, err := ibc.GetTransferChannel(ctx, r, eRep, chainIdA, chainIdB)
 	require.NoError(t, err)

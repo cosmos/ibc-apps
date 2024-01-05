@@ -49,7 +49,7 @@ var (
 		TrustingPeriod: "336h",
 		NoHostMount:    false,
 		EncodingConfig: encoding(),
-		// Env:            []string{"NON_REFUNDABLE_TEST=true"},
+		Env:            []string{"NON_REFUNDABLE_TEST=true"},
 	}
 
 	DefaultRelayer = ibc.DockerImage{
