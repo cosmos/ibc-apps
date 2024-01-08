@@ -6,7 +6,7 @@ on:
       - '.github/workflows/async-icq.yml'
 
 env:
-  LINT_VERSION: v1.52
+  LINT_VERSION: v1.55.2
   GO_VERSION: 1.21.0
   WORKING_DIRECTORY: modules/async-icq
 
