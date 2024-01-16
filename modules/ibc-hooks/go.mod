@@ -1,15 +1,17 @@
-module github.com/cosmos/ibc-apps/modules/ibc-hooks/v7
+module github.com/cosmos/ibc-apps/modules/ibc-hooks/v8
 
 go 1.20
 
 require (
-	cosmossdk.io/errors v1.0.0-beta.7
-	cosmossdk.io/math v1.0.0
-	github.com/CosmWasm/wasmd v0.40.0-rc.1
-	github.com/cometbft/cometbft v0.37.1
-	github.com/cometbft/cometbft-db v0.7.0
-	github.com/cosmos/cosmos-sdk v0.47.3-0.20230513170018-83d600596f5d
-	github.com/cosmos/ibc-go/v7 v7.0.0
+	cosmossdk.io/errors v1.0.0
+	cosmossdk.io/math v1.2.0
+	github.com/CosmWasm/wasmd v0.50.0
+	github.com/cometbft/cometbft v0.38.2
+	github.com/cosmos/cosmos-db v1.0.0
+	cosmossdk.io/store v1.0.1
+	github.com/cosmos/cosmos-proto v1.0.0-beta.3
+	github.com/cosmos/cosmos-sdk v0.50.1
+	github.com/cosmos/ibc-go/v8 v8.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/prometheus/client_golang v1.15.0
