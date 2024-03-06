@@ -25,7 +25,6 @@ import (
 	"cosmossdk.io/api/tendermint/abci"
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
-	"cosmossdk.io/log"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
 	storetypes "cosmossdk.io/store/types"
@@ -432,21 +431,22 @@ func NewSimApp(
 	// 2. 'auth'
 	// 3. 'bank'
 	app.MintKeeper = mintkeeper.NewKeeper(
-		cdc,
-		app.keys[minttypes.StoreKey],
+		appCodec,
+		runtime.NewKVStoreService(keys[minttypes.StoreKey]),
 		app.StakingKeeper,
-		app.AuthKeeper,
+		app.AccountKeeper,
 		app.BankKeeper,
-		authtypes.FeeCollectorName, // TODO: Find out what this is
+		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	app.NftKeeper = nftkeeper.NewKeeper(
-		app.keys[nftkeeper.StoreKey],
-		cdc,
-		app.AuthKeeper,
+	app.NFTKeeper = nftkeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[nftkeeper.StoreKey]),
+		appCodec,
+		app.AccountKeeper,
 		app.BankKeeper,
 	)
+
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		cdc,
 		encodingConfig.Amino,
@@ -882,12 +882,12 @@ func (app *App) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.
 	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-
-	if err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap()); err != nil {
+	err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
+	if err != nil {
 		panic(err)
 	}
-
-	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
+	response, err := app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
+	return response, err
 }
 
 // LoadHeight loads a particular height
@@ -1016,4 +1016,11 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
+}
+
+// GetKey returns the KVStoreKey for the provided store key.
+//
+// NOTE: This is solely to be used for testing purposes.
+func (app *App) GetKey(storeKey string) *storetypes.KVStoreKey {
+	return app.keys[storeKey]
 }

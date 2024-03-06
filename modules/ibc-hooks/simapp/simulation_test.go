@@ -6,7 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/server"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
@@ -28,59 +31,50 @@ func init() {
 //
 // go test -v -run=TestFullAppSimulation ./app -NumBlocks 200 -BlockSize 50 -Commit -Enabled -Period 1 -Seed 40
 func TestFullAppSimulation(t *testing.T) {
-	config := simcli.NewConfigFromFlags()
-	config.ChainID = simulationAppChainID
-
-	if !simcli.FlagEnabledValue {
-		t.Skip("skipping application simulation")
-	}
-
-	db, dir, logger, _, err := simtestutil.SetupSimulation(
-		config,
-		simulationDirPrefix,
-		simulationDbName,
-		simcli.FlagVerboseValue,
-		true, // Don't use this as it is confusing
-	)
-	require.NoError(t, err, "simulation setup failed")
-
-	defer func() {
-		require.NoError(t, db.Close())
-		require.NoError(t, os.RemoveAll(dir))
-	}()
-
-	app := NewSimApp(logger,
-		db,
-		nil,
-		true,
-		map[int64]bool{},
-		DefaultNodeHome,
-		simcli.FlagPeriodValue,
-		MakeEncodingConfig(),
-		simtestutil.EmptyAppOptions{},
-		baseapp.SetChainID(simulationAppChainID),
-	)
-	require.Equal(t, AppName, app.Name())
-
+	config, db, _, app := setupSimulationApp(t, "skipping application simulation")
 	// run randomized simulation
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		t,
 		os.Stdout,
 		app.BaseApp,
 		simtestutil.AppStateFn(app.AppCodec(), app.SimulationManager(), app.DefaultGenesis()),
-		simtypes.RandomAccounts,
+		simtypes.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
 		simtestutil.SimulationOperations(app, app.AppCodec(), config),
-		app.BankKeeper.GetBlockedAddresses(),
+		BlockedAddresses(),
 		config,
 		app.AppCodec(),
 	)
 
-	// export state and simParams before the simulatino error is checked
-	err = simtestutil.CheckExportSimulation(app, config, simParams)
+	// export state and simParams before the simulation error is checked
+	err := simtestutil.CheckExportSimulation(app, config, simParams)
 	require.NoError(t, err)
 	require.NoError(t, simErr)
 
 	if config.Commit {
 		simtestutil.PrintStats(db)
 	}
+}
+
+func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simtestutil.AppOptionsMap, *App) {
+	config := simcli.NewConfigFromFlags()
+	config.ChainID = SimAppChainID
+
+	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, "leveldb-app-sim", "Simulation", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
+	if skip {
+		t.Skip(msg)
+	}
+	require.NoError(t, err, "simulation setup failed")
+
+	t.Cleanup(func() {
+		require.NoError(t, db.Close())
+		require.NoError(t, os.RemoveAll(dir))
+	})
+
+	appOptions := make(simtestutil.AppOptionsMap, 0)
+	appOptions[flags.FlagHome] = dir // ensure a unique folder
+	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
+
+	app := NewApp(logger, db, nil, true, appOptions, emptyWasmOpts, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	require.Equal(t, "WasmApp", app.Name())
+	return config, db, appOptions, app
 }

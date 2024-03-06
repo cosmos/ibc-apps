@@ -5,11 +5,11 @@ import (
 
 	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/types"
 
+	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
-
-	"github.com/cometbft/cometbft/libs/log"
 )
 
 type (
