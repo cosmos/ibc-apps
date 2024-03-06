@@ -8,8 +8,11 @@ option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-
 
 // Msg defines the Msg service.
 service Msg {
-      rpc SendQueryAllBalances(MsgSendQueryAllBalances) returns (MsgSendQueryAllBalancesResponse);
-// this line is used by starport scaffolding # proto/tx/rpc
+  option (cosmos.msg.v1.service) = true;
+
+  rpc SendQueryAllBalances(MsgSendQueryAllBalances)
+      returns (MsgSendQueryAllBalancesResponse);
+  // this line is used by starport scaffolding # proto/tx/rpc
 }
 
 message MsgSendQueryAllBalances {
@@ -19,8 +22,6 @@ message MsgSendQueryAllBalances {
   cosmos.base.query.v1beta1.PageRequest pagination = 4;
 }
 
-message MsgSendQueryAllBalancesResponse {
-  uint64 sequence = 1;
-}
+message MsgSendQueryAllBalancesResponse { uint64 sequence = 1; }
 
 // this line is used by starport scaffolding # proto/tx/message
