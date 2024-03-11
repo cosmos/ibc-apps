@@ -115,7 +115,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
-		&suite.App.IBCHooksKeeper,
+		suite.App.IBCHooksKeeper,
 		&suite.App.WasmKeeper,
 		"cosmos",
 	)
@@ -177,7 +177,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketCounterContract() {
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
-		&suite.App.IBCHooksKeeper,
+		suite.App.IBCHooksKeeper,
 		&suite.App.WasmKeeper,
 		"cosmos",
 	)
@@ -255,7 +255,7 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
-		&suite.App.IBCHooksKeeper,
+		suite.App.IBCHooksKeeper,
 		&suite.App.WasmKeeper,
 		"cosmos",
 	)
@@ -354,7 +354,7 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 
 	// create the wasm hooks
 	wasmHooks := ibc_hooks.NewWasmHooks(
-		&suite.App.IBCHooksKeeper,
+		suite.App.IBCHooksKeeper,
 		&suite.App.WasmKeeper,
 		"cosmos",
 	)
