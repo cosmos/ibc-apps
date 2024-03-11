@@ -1,0 +1,92 @@
+name: polytone
+on:
+  pull_request:
+    paths:
+      - 'cosmwasm/polytone/**'
+      - '.github/workflows/polytone.yml'
+
+env:
+    WORKING_DIRECTORY: cosmwasm/polytone
+    JUST_VERSION: 1.25.2
+    GO_VERSION: 1.19
+
+jobs:
+  clippy_check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            components: clippy
+            override: true
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  rust_fmt:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            components: rustfmt
+            override: true
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --check
+
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get cached just
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/just
+          key: ${{ runner.os }}-just-${{ env.JUST_VERSION }}
+
+      - name: Install just
+        run: cargo install just || true
+
+      - name: simulation tests
+        run: just simtest
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test

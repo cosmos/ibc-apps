@@ -1,0 +1,5 @@
+[advisories]
+# Ignoring two advisories that are introduced by cw-orchestrator. 
+# They are safe to ignore as cw-orch is excluded from the binary as it's feature flagged.
+# Deps that triggered the audit: [tungstenite, webpki]
+ignore = ["RUSTSEC-2023-0065","RUSTSEC-2023-0052"]
