@@ -2,10 +2,10 @@
 
 Polytone is a protocol that gives every smart contract an account on every IBC-connected blockchain. Polytone has a CosmWasm implementation so CosmWasm chains can deploy Polytone Interchain Accounts and Queries today!
 
-More detail information on Polytone can be found in the [wiki](https://github.com/DA0-DA0/polytone/wiki):
-- [How Polytone Works](https://github.com/DA0-DA0/polytone/wiki/How-Polytone-Works)
-- [How to use Polytone](https://github.com/DA0-DA0/polytone/wiki/How-to-use-Polytone)
-- [How Polytone Handles Channel Closure](https://github.com/DA0-DA0/polytone/wiki/How-Polytone-Handles-Channel-Closure)
+More detail information on Polytone can be found in the [wiki](https://github.com/cosmos/ibc-apps/wiki):
+- [How Polytone Works](https://github.com/cosmos/ibc-apps/wiki/How-Polytone-Works)
+- [How to use Polytone](https://github.com/cosmos/ibc-apps/wiki/How-to-use-Polytone)
+- [How Polytone Handles Channel Closure](https://github.com/cosmos/ibc-apps/wiki/How-Polytone-Handles-Channel-Closure)
 
 ## Overview
 
@@ -27,7 +27,7 @@ Once a note has connected to a voice, it is “paired”. Once paired, the note 
 
 ![image](https://user-images.githubusercontent.com/30676292/232922352-63e1ea54-d9fb-41c5-a707-441c61ecfb7e.png)
 
-More information on connections and using Polytone as a developer is available in the [wiki](https://github.com/DA0-DA0/polytone/wiki/How-to-use-Polytone).
+More information on connections and using Polytone as a developer is available in the [wiki](https://github.com/cosmos/ibc-apps/wiki/How-to-use-Polytone).
 
 ### Executing Messages
 

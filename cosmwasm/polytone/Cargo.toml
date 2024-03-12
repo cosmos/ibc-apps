@@ -4,7 +4,7 @@ members = ["packages/*", "contracts/accessories/*", "contracts/main/*"]
 [workspace.package]
 edition = "2021"
 license = "BSD-3-Clause"
-repository = "https://github.com/DA0-DA0/polytone"
+repository = "https://github.com/cosmos/ibc-apps/cosmwasm/polytone"
 rust-version = "1.67"
 version = "1.0.2"
 
