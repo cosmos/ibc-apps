@@ -26,6 +26,7 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path ${{env.WORKING_DIRECTORY}}/Cargo.toml
 
   rust_fmt:
     runs-on: ubuntu-latest
@@ -43,7 +44,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --check
+          args: --check --manifest-path ${{env.WORKING_DIRECTORY}}/Cargo.toml
 
   build:
     runs-on: ubuntu-latest
@@ -90,3 +91,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+          args: --manifest-path ${{env.WORKING_DIRECTORY}}/Cargo.toml
