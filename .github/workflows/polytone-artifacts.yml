@@ -1,10 +1,16 @@
 # Builds and commits the artifacts whenever a change is pushed to main.
-name: artifact compiler
+name: polytone artifact compiler
 on:
   workflow_dispatch:
   push:
+    paths:
+      - 'cosmwasm/polytone/**'
+      - '.github/workflows/polytone.yml'
     branches:
       - main
+
+env:
+    WORKING_DIRECTORY: cosmwasm/polytone
 
 jobs:
   release-artifacts:
@@ -19,7 +25,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build Artifacts
         run: |
-          ./devtools/optimize.sh
+          ${{ env.WORKING_DIRECTORY }}/devtools/optimize.sh
       - name: Commit artifacts
         run: |
           git config --global user.name 'DA0-DA0'
