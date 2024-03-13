@@ -30,6 +30,9 @@ import (
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 
 	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/x/circuit"
+	circuitkeeper "cosmossdk.io/x/circuit/keeper"
+	circuittypes "cosmossdk.io/x/circuit/types"
 	"cosmossdk.io/x/evidence"
 	"cosmossdk.io/x/tx/signing"
 	dbm "github.com/cosmos/cosmos-db"
@@ -256,6 +259,7 @@ type App struct {
 	GroupKeeper           groupkeeper.Keeper
 	WasmKeeper            wasm.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
+	CircuitKeeper         circuitkeeper.Keeper
 	IBCFeeKeeper          ibcfeekeeper.Keeper
 	ContractKeeper        wasmtypes.ContractOpsKeeper
 
@@ -319,7 +323,7 @@ func NewSimApp(
 		govtypes.StoreKey, group.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey,
 		ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibcfeetypes.StoreKey, ibctransfertypes.StoreKey,
-		authzkeeper.StoreKey, capabilitytypes.StoreKey, nftkeeper.StoreKey,
+		authzkeeper.StoreKey, capabilitytypes.StoreKey, nftkeeper.StoreKey, circuittypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -379,6 +383,14 @@ func NewSimApp(
 		authority,
 		logger,
 	)
+
+	app.CircuitKeeper = circuitkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[circuittypes.StoreKey]),
+		govModAddress,
+		app.AccountKeeper.AddressCodec(),
+	)
+	app.BaseApp.SetCircuitBreaker(&app.CircuitKeeper)
 
 	app.keys[authzkeeper.StoreKey] = storetypes.NewKVStoreKey(authzkeeper.StoreKey)
 	app.AuthzKeeper = authzkeeper.NewKeeper(
@@ -718,6 +730,7 @@ func NewSimApp(
 		params.NewAppModule(app.ParamsKeeper),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
+		circuit.NewAppModule(appCodec, app.CircuitKeeper),
 
 		// IBC modules
 		ibc.NewAppModule(app.IBCKeeper),
@@ -818,6 +831,7 @@ func NewSimApp(
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		consensustypes.ModuleName,
+		circuittypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
@@ -1073,6 +1087,7 @@ func (app *App) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.Wa
 			WasmConfig:            &wasmConfig,
 			WasmKeeper:            &app.WasmKeeper,
 			TXCounterStoreService: runtime.NewKVStoreService(txCounterStoreKey),
+			CircuitKeeper:         &app.CircuitKeeper,
 		},
 	)
 	if err != nil {
