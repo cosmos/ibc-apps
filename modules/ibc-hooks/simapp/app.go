@@ -193,6 +193,7 @@ var (
 		authtypes.FeeCollectorName:     nil,
 		distrtypes.ModuleName:          nil,
 		ibcfeetypes.ModuleName:         nil,
+		nft.ModuleName:                 nil,
 		minttypes.ModuleName:           {authtypes.Minter},
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
@@ -318,7 +319,7 @@ func NewSimApp(
 		govtypes.StoreKey, group.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey,
 		ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibcfeetypes.StoreKey, ibctransfertypes.StoreKey,
-		authzkeeper.StoreKey, capabilitytypes.StoreKey,
+		authzkeeper.StoreKey, capabilitytypes.StoreKey, nftkeeper.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -431,7 +432,6 @@ func NewSimApp(
 		app.AccountKeeper,
 		group.DefaultConfig(),
 	)
-	modules = append(modules, groupmodule.NewAppModule(appCodec, app.GroupKeeper, app.AccountKeeper, app.BankKeeper, interfaceRegistry))
 	simModules = append(simModules, groupmodule.NewAppModule(appCodec, app.GroupKeeper, app.AccountKeeper, app.BankKeeper, interfaceRegistry))
 
 	app.StakingKeeper = stakingkeeper.NewKeeper(
