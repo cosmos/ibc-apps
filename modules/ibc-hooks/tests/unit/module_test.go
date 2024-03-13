@@ -46,7 +46,7 @@ func TestIBCHooksTestSuite(t *testing.T) {
 
 func (suite *HooksTestSuite) SetupEnv() {
 	// Setup the environment
-	app := simapp.Setup(suite.T())
+	app, ctx, acc := simapp.Setup(suite.T())
 
 	// create the echo contract
 	contractID, _, err := app.ContractKeeper.Create(ctx, acc.GetAddress(), counterWasm, nil)
