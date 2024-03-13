@@ -9,15 +9,13 @@ import (
 	"testing"
 	"time"
 
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	dbm "github.com/cosmos/cosmos-db"
+	"github.com/stretchr/testify/require"
+
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 	pruningtypes "cosmossdk.io/store/pruning/types"
-	abci "github.com/cometbft/cometbft/abci/types"
-	cmtjson "github.com/cometbft/cometbft/libs/json"
-	cmttypes "github.com/cometbft/cometbft/types"
-	dbm "github.com/cosmos/cosmos-db"
-
-	"github.com/stretchr/testify/require"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -40,7 +38,9 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	abci "github.com/cometbft/cometbft/abci/types"
+	cmtjson "github.com/cometbft/cometbft/libs/json"
+	cmttypes "github.com/cometbft/cometbft/types"
 )
 
 // SetupOptions defines arguments that are passed into `App` constructor.
@@ -51,15 +51,16 @@ type SetupOptions struct {
 	WasmOpts []wasmkeeper.Option
 }
 
-func setup(t testing.TB, chainID string, withGenesis bool, invCheckPeriod uint, opts ...wasmkeeper.Option) (*App, GenesisState) {
+func setup(tb testing.TB, chainID string, withGenesis bool, invCheckPeriod uint, opts ...wasmkeeper.Option) (*App, GenesisState) {
+	tb.Helper()
 	db := dbm.NewMemDB()
-	nodeHome := t.TempDir()
+	nodeHome := tb.TempDir()
 	snapshotDir := filepath.Join(nodeHome, "data", "snapshots")
 
 	snapshotDB, err := dbm.NewDB("metadata", dbm.GoLevelDBBackend, snapshotDir)
-	require.NoError(t, err)
-	t.Cleanup(func() { snapshotDB.Close() })
-	require.NoError(t, err)
+	require.NoError(tb, err)
+	tb.Cleanup(func() { snapshotDB.Close() })
+	require.NoError(tb, err)
 
 	appOptions := make(simtestutil.AppOptionsMap, 0)
 	appOptions[flags.FlagHome] = nodeHome // ensure unique folder
@@ -139,8 +140,6 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) (*App, sdk.Context, *authtyp
 	ctx := app.BaseApp.NewContext(false)
 	ctx = ctx.WithBlockTime(time.Now())
 
-	fmt.Println("context: ", ctx.BlockTime().UnixNano())
-
 	return app, ctx, acc
 }
 
@@ -189,8 +188,9 @@ func SetupWithGenesisValSet(
 }
 
 // SetupWithEmptyStore set up a wasmd app instance with empty DB
-func SetupWithEmptyStore(t testing.TB) *App {
-	app, _ := setup(t, "testing", false, 0)
+func SetupWithEmptyStore(tb testing.TB) *App {
+	tb.Helper()
+	app, _ := setup(tb, "testing", false, 0)
 	return app
 }
 
@@ -258,8 +258,6 @@ func initAccountWithCoins(app *App, ctx sdk.Context, addr sdk.AccAddress, coins 
 	}
 }
 
-var emptyWasmOptions []wasmkeeper.Option
-
 // NewTestNetworkFixture returns a new App AppConstructor for network simulation tests
 func NewTestNetworkFixture() network.TestFixture {
 	dir, err := os.MkdirTemp("", "simapp")
@@ -293,6 +291,7 @@ func NewTestNetworkFixture() network.TestFixture {
 
 // SignAndDeliverWithoutCommit signs and delivers a transaction. No commit
 func SignAndDeliverWithoutCommit(t *testing.T, txCfg client.TxConfig, app *bam.BaseApp, msgs []sdk.Msg, fees sdk.Coins, chainID string, accNums, accSeqs []uint64, blockTime time.Time, priv ...cryptotypes.PrivKey) (*abci.ResponseFinalizeBlock, error) {
+	t.Helper()
 	tx, err := simtestutil.GenSignedMockTx(
 		rand.New(rand.NewSource(time.Now().UnixNano())),
 		txCfg,

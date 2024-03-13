@@ -12,11 +12,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
-	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
-	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
-	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8"
 	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/keeper"
@@ -26,17 +22,12 @@ import (
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
-	abci "github.com/cometbft/cometbft/abci/types"
-	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
-
+	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/circuit"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	circuittypes "cosmossdk.io/x/circuit/types"
 	"cosmossdk.io/x/evidence"
-	"cosmossdk.io/x/tx/signing"
-	dbm "github.com/cosmos/cosmos-db"
-
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	"cosmossdk.io/x/feegrant"
@@ -45,17 +36,21 @@ import (
 	"cosmossdk.io/x/nft"
 	nftkeeper "cosmossdk.io/x/nft/keeper"
 	nftmodule "cosmossdk.io/x/nft/module"
+	"cosmossdk.io/x/tx/signing"
 	"cosmossdk.io/x/upgrade"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
+	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
@@ -66,7 +61,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
@@ -77,12 +74,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/ibc-go/modules/capability"
-
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensustypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
@@ -117,8 +108,11 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"cosmossdk.io/log"
+	abci "github.com/cometbft/cometbft/abci/types"
 
+	"github.com/cosmos/ibc-go/modules/capability"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icahost "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host"
@@ -320,7 +314,7 @@ func NewSimApp(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, crisistypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, group.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey,
+		govtypes.StoreKey, group.StoreKey, paramstypes.StoreKey, consensustypes.StoreKey,
 		ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibcfeetypes.StoreKey, ibctransfertypes.StoreKey,
 		authzkeeper.StoreKey, capabilitytypes.StoreKey, nftkeeper.StoreKey, circuittypes.StoreKey,
@@ -358,9 +352,9 @@ func NewSimApp(
 	govModAddress := authtypes.NewModuleAddress(govtypes.ModuleName).String()
 
 	// set the BaseApp's parameter store
-	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
+	app.ConsensusParamsKeeper = consensuskeeper.NewKeeper(
 		appCodec,
-		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
+		runtime.NewKVStoreService(keys[consensustypes.StoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		runtime.EventService{},
 	)
@@ -400,10 +394,8 @@ func NewSimApp(
 		app.AccountKeeper,
 	)
 
-	modules := make([]module.AppModule, 0)
 	simModules := make([]module.AppModuleSimulation, 0)
 
-	modules = append(modules, authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, interfaceRegistry))
 	simModules = append(simModules, authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, interfaceRegistry))
 
 	// add capability keeper and ScopeToModule for ibc module
@@ -563,7 +555,6 @@ func NewSimApp(
 	)
 
 	govLegacyRouter.AddRoute(ibcexported.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
-	modules = append(modules, ibc.NewAppModule(app.IBCKeeper))
 	simModules = append(simModules, ibc.NewAppModule(app.IBCKeeper))
 
 	// 'ibcfeekeeper' module - depends on
@@ -586,7 +577,6 @@ func NewSimApp(
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 	icaHostStack := ibcfee.NewIBCMiddleware(icaHostIBCModule, app.IBCFeeKeeper)
 
-	modules = append(modules, ibcfee.NewAppModule(app.IBCFeeKeeper))
 	simModules = append(simModules, ibcfee.NewAppModule(app.IBCFeeKeeper))
 
 	// Create fee enabled wasm ibc Stack
@@ -632,7 +622,6 @@ func NewSimApp(
 		scopedTransferKeeper,
 		govModAddress,
 	)
-	modules = append(modules, ibctransfer.NewAppModule(app.TransferKeeper))
 	simModules = append(simModules, ibctransfer.NewAppModule(app.TransferKeeper))
 
 	// 'ica'
@@ -859,7 +848,9 @@ func NewSimApp(
 	// app.mm.SetOrderMigrations(custom order)
 
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	app.ModuleManager.RegisterServices(app.configurator)
+	if err := app.ModuleManager.RegisterServices(app.configurator); err != nil {
+		panic(fmt.Errorf("failed to register module services: %w", err))
+	}
 
 	app.MountKVStores(app.keys)
 	app.MountTransientStores(tkeys)

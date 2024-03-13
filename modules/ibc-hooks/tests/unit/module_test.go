@@ -15,8 +15,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"

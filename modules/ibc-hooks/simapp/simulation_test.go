@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -56,6 +56,7 @@ func TestFullAppSimulation(t *testing.T) {
 }
 
 func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simtestutil.AppOptionsMap, *App) {
+	t.Helper()
 	config := simcli.NewConfigFromFlags()
 	config.ChainID = simulationAppChainID
 
