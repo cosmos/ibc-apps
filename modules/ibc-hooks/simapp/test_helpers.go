@@ -137,6 +137,9 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) (*App, sdk.Context, *authtyp
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, chainID, opts, balance)
 
 	ctx := app.BaseApp.NewContext(false)
+	ctx = ctx.WithBlockTime(time.Now())
+
+	fmt.Println("context: ", ctx.BlockTime().UnixNano())
 
 	return app, ctx, acc
 }
