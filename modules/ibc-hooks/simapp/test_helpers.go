@@ -51,7 +51,7 @@ type SetupOptions struct {
 	WasmOpts []wasmkeeper.Option
 }
 
-func setup(tb testing.TB, chainID string, withGenesis bool, invCheckPeriod uint, opts ...wasmkeeper.Option) (*App, GenesisState) {
+func setup(tb testing.TB, chainID string, withGenesis bool, invCheckPeriod uint) (*App, GenesisState) {
 	tb.Helper()
 	db := dbm.NewMemDB()
 	nodeHome := tb.TempDir()
