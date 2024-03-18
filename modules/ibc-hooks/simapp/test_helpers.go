@@ -157,7 +157,7 @@ func SetupWithGenesisValSet(
 ) *App {
 	t.Helper()
 
-	app, genesisState := setup(t, chainID, true, 5, opts...)
+	app, genesisState := setup(t, chainID, true, 5)
 	genesisState, err := GenesisStateWithValSet(app.AppCodec(), genesisState, valSet, genAccs, balances...)
 	require.NoError(t, err)
 
