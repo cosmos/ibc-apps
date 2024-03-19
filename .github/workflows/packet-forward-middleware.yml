@@ -1,23 +1,23 @@
 name: packet-forward-middleware
-on: 
+on:
   pull_request:
     paths:
       - 'middleware/packet-forward-middleware/**'
       - '.github/workflows/packet-forward-middleware.yml'
 
 env:
-    LINT_VERSION: v1.52
+    LINT_VERSION: v1.55.2
     GO_VERSION: 1.21.0
     WORKING_DIRECTORY: middleware/packet-forward-middleware
-    
+
     DOCKER_TAG: pfm:local
     TAR_PATH: /tmp/pfm-docker-image.tar
     IMAGE_NAME: pfm-docker-image
 
 jobs:
   golangci:
-    name: Linter    
-    runs-on: ubuntu-latest    
+    name: Linter
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -51,14 +51,14 @@ jobs:
       - name: Setup Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.GO_VERSION }}          
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3        
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and export
         uses: docker/build-push-action@v5
-        with:          
+        with:
           context: ${{ env.WORKING_DIRECTORY }}
           tags: ${{ env.DOCKER_TAG }}
           outputs: type=docker,dest=${{ env.TAR_PATH }}
@@ -68,7 +68,7 @@ jobs:
         with:
           name: ${{ env.IMAGE_NAME }}
           path: ${{ env.TAR_PATH }}
-  
+
   e2e-tests:
     needs: build-docker
     runs-on: ubuntu-latest
@@ -76,7 +76,7 @@ jobs:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     strategy:
-      matrix:          
+      matrix:
         test:
           - "ictest-forward"
           - "ictest-timeout"
@@ -88,8 +88,8 @@ jobs:
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.GO_VERSION }}          
-      
+          go-version: ${{ env.GO_VERSION }}
+
       - uses: actions/checkout@v4
 
       - name: Download Tarball Artifact
