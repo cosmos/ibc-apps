@@ -14,44 +14,63 @@ initial IBC release.
 
 ## Sequence diagrams
 
-### Multi-hop A->B->C->D success
-```ascii
-        channel-0 channel-1         channel-2 channel-3        channel-4 channel-5
-┌───────┐       ibc        ┌───────┐        ibc       ┌───────┐        ibc       ┌───────┐
-│Chain A│◄────────────────►│Chain B│◄────────────────►│Chain C│◄────────────────►│Chain D│
-└───────┘                  └───────┘                  └───────┘                  └───────┘
-     1. transfer 2. recv_packet  3. forward 4. recv_packet  5. forward 6. recv_packet
-         ─────────────────► packet  ─────────────────► packet  ─────────────────►
-     9. ack                 forward   8. ack           forward   7. ack  
-         ◄───────────────── middleware◄─────────────── middleware◄───────────────
+### Let's stipulate the following connections between chains A, B, C, and D
+```mermaid
+flowchart LR
+    A((Chain A))
+    B((Chain B))
+    C((Chain C))
+    D((Chain D))
+
+    A <--"ch-0 ch-1 (IBC)"--> B
+    B <--"ch-2 ch-3 (IBC)"--> C
+    C <--"ch-4 ch-5 (IBC)"--> D
 ```
 
-### Multi-hop A->B->C->D, C->D `recv_packet` error, refund back to A
-```ascii
-        channel-0 channel-1         channel-2 channel-3        channel-4 channel-5
-┌───────┐       ibc        ┌───────┐        ibc       ┌───────┐        ibc       ┌───────┐
-│Chain A│◄────────────────►│Chain B│◄────────────────►│Chain C│◄────────────────►│Chain D│
-└───────┘                  └───────┘                  └───────┘                  └───────┘
-     1. transfer 2. recv_packet  3. forward 4. recv_packet  5. forward 6. recv_packet ERR
-         ─────────────────► packet  ─────────────────► packet  ─────────────────►
-         9. ack ERR         forward   8. ack ERR       forward   7. ack ERR
-         ◄───────────────── middleware◄─────────────── middleware◄───────────────
+
+### SCENARIO: Via PFM, Chain A wants to pass a message to Chain D (to which it's not directly connected).
+```mermaid
+sequenceDiagram
+    autonumber
+    Chain A ->> Chain B: PFM transfer
+    Chain B --> Chain B: recv_packet
+    Chain B ->> Chain C: forward
+    Chain C --> Chain C: recv_packet
+    Chain C ->> Chain D: forward
+    Chain D --> Chain D: recv_packet
+    Chain D ->> Chain C: ack
+    Chain C ->> Chain B: ack
+    Chain B ->> Chain A: ack
 ```
 
-### Forward A->B->C with 1 retry, max timeouts occurs, refund back to A
-```ascii
-        channel-0 channel-1         channel-2 channel-3
-┌───────┐       ibc        ┌───────┐        ibc       ┌───────┐
-│Chain A│◄────────────────►│Chain B│◄────────────────►│Chain C│
-└───────┘                  └───────┘                  └───────┘
-     1. transfer 2. recv_packet     3. forward
-         ─────────────────► packet  ─────────────────►
-                            forward   4. timeout
-                            middleware◄───────────────
-                                    5. forward retry
-                                    ─────────────────►
-         7. ack ERR                 6. timeout
-         ◄─────────────────         ◄─────────────────
+### SCENARIO: Multi-hop A->B->C->D, C->D `recv_packet` error, refund back to A
+
+```mermaid
+sequenceDiagram
+    autonumber
+    Chain A ->> Chain B: PFM transfer
+    Chain B --> Chain B: recv_packet
+    Chain B ->> Chain C: forward
+    Chain C --> Chain C: recv_packet
+    Chain C ->> Chain D: forward
+    Chain D --> Chain D: ☠️ recv_packet ERR ☠️
+    Chain D ->> Chain C: ☠️ ack ERR ☠️
+    Chain C ->> Chain B: ☠️ ack ERR ☠️
+    Chain B ->> Chain A: ☠️ ack ERR ☠️
+```
+
+### SCENARIO: Forward A->B->C with 1 retry, max timeouts occurs, refund back to A
+
+```mermaid
+sequenceDiagram
+    autonumber
+    Chain A ->> Chain B: PFM transfer
+    Chain B --> Chain B: recv_packet
+    Chain B ->> Chain C: forward
+    Chain C --x Chain B: timeout
+    Chain B ->> Chain C: forward retry
+    Chain C --x Chain B: timeout
+    Chain B ->> Chain A: ☠️ ack ERR ☠️
 ```
 
 ## Examples
