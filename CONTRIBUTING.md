@@ -28,7 +28,7 @@ For modules, ensure full test coverage and compatibility with the main branch.
 - [ ] After approval, write privileges will be granted to a member of an external team.
 - [ ] Merging PRs will require approval from more than one team
 
-Privileges will be revoked in case of failure to comply with the [Code of Conduct](../CODE_OF_CONDUCT.md)
+Privileges will be revoked in case of failure to comply with the [Code of Conduct](./CODE_OF_CONDUCT.md)
 
 
 ## Versioning
