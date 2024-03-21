@@ -46,7 +46,7 @@ IBC Middleware are self-contained modules that sit between core IBC and an under
 🌌🌌🌌🌌 How to Use this repo
 =============================
 
-If you'd like to include software in this repo, please see [contributing](../ibc-apps/CONTRIBUTING.md).
+If you'd like to include software in this repo, please see [contributing](CONTRIBUTING.md).
 
 🌌🌌🌌🌌🌌 Bonus Content
 =============================
