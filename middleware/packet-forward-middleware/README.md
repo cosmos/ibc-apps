@@ -196,5 +196,4 @@ In this case `A` assets `hang` until final hop timeouts or ACK.
 ## References
 
 - <https://www.mintscan.io/cosmos/proposals/56>
-- <https://github.com/cosmos/ibc-go/pull/373>
-- <https://github.com/strangelove-ventures/governance/blob/master/proposals/2021-09-hub-ibc-router/README.md>
+- PFM was originally implemented in <https://github.com/cosmos/ibc-go/pull/373>
