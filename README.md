@@ -59,7 +59,8 @@ An [example IBC app](./examples/hello-world/)
 
 |                          **Branch Name**                         | **IBC-Go** |
 |:----------------------------------------------------------------:|:----------:|
-|            [main](https://github.com/cosmos/ibc-apps)            |     v7     |
+|            [main](https://github.com/cosmos/ibc-apps)            |     v8     |
+| [release/v7](https://github.com/cosmos/ibc-apps/tree/release/v7) |     v7     |
 | [release/v6](https://github.com/cosmos/ibc-apps/tree/release/v6) |     v6     |
 | [release/v5](https://github.com/cosmos/ibc-apps/tree/release/v5) |     v5     |
 | [release/v4](https://github.com/cosmos/ibc-apps/tree/release/v4) |     v4     |
