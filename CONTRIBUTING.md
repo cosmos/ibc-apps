@@ -23,7 +23,7 @@ For features, every module should have [interchain-test](https://github.com/stra
 For modules, ensure full test coverage and compatibility with the main branch.
 
 
-## New contributer approval process
+## New contributor approval process
 - [ ] Submit a Github issue titled "I should be a maintainer because..."
 - [ ] After approval, write privileges will be granted to a member of an external team.
 - [ ] Merging PRs will require approval from more than one team

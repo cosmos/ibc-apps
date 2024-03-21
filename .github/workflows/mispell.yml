@@ -1,4 +1,4 @@
-name: Fix typos nightly
+name: typos
 
 on:
   pull_request:
