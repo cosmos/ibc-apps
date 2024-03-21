@@ -7,3 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: gaurav-nelson/github-action-markdown-link-check@1.0.15
+        with:
+          # markdown-link-check .github/markdown-link-check-config.json *.md
+          config-file: '.github/markdown-link-check-config.json'
+          folder-path: '.'
