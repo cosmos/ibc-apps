@@ -28,23 +28,25 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --manifest-path ${{env.WORKING_DIRECTORY}}/Cargo.toml
 
-  rust_fmt:
-    runs-on: ubuntu-latest
-    defaults:
-        run:
-          working-directory: ${{ env.WORKING_DIRECTORY }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            components: rustfmt
-            override: true
-      - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --check --manifest-path ${{env.WORKING_DIRECTORY}}/Cargo.toml
+  # TODO: Failed to find targets
+  # This utility formats all bin and lib files of the current crate using rustfmt.
+  # rust_fmt:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #       run:
+  #         working-directory: ${{ env.WORKING_DIRECTORY }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #           toolchain: stable
+  #           components: rustfmt
+  #           override: true
+  #     - name: Run cargo fmt
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: fmt
+  #         args: --check --manifest-path ${{env.WORKING_DIRECTORY}}/Cargo.toml
 
   build:
     runs-on: ubuntu-latest

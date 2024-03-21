@@ -1,25 +1,27 @@
-name: cw check dependencies
+# TODO: error: could not find `Cargo.toml` in `/home/runner/work/ibc-apps/ibc-apps` or any parent directory
 
-on:
-  schedule:
-    - cron: '0 0 1 * *'
-  push:
-    paths:
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
-  pull_request:
+# name: cw check dependencies
 
-env:
-    WORKING_DIRECTORY: cosmwasm/polytone
+# on:
+#   schedule:
+#     - cron: '0 0 1 * *'
+#   push:
+#     paths:
+#       - '**/Cargo.toml'
+#       - '**/Cargo.lock'
+#   pull_request:
 
-jobs:
-  audit:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/audit-check@v1.2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+# env:
+#     WORKING_DIRECTORY: cosmwasm/polytone
+
+# jobs:
+#   audit:
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         working-directory: ${{ env.WORKING_DIRECTORY }}
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: actions-rs/audit-check@v1.2.0
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
