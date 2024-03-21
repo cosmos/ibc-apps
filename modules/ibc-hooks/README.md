@@ -5,14 +5,14 @@
 ## IBC hooks
 
 The IBC hooks module is an IBC middleware that enables ICS-20 token transfers to initiate contract calls.
-This functionality allows cross-chain contract calls that involve token movement. 
+This functionality allows cross-chain contract calls that involve token movement.
 IBC hooks are useful for a variety of use cases, including cross-chain swaps, which are an extremely powerful primitive.
 
 ## How do IBC hooks work?
 
 IBC hooks are made possible through the `memo` field included in every ICS-20 transfer packet, as introduced in [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
 
-The IBC hooks IBC middleware parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a Wasm contract call. 
+The IBC hooks IBC middleware parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a Wasm contract call.
 
 The following sections detail the `memo` format for Wasm contract calls and the execution guarantees provided.
 
@@ -33,13 +33,14 @@ type MsgExecuteContract struct {
 }
 ```
 
-For use with IBC hooks, the message fields above can be derived from the following: 
+For use with IBC hooks, the message fields above can be derived from the following:
 
-- `Sender`: IBC packet senders cannot be explicitly trusted, as they can be deceitful. Chains cannot risk the sender being confused with a particular local user or module address. To prevent this, the `sender` is replaced with an account that represents the sender prefixed by the channel and a Wasm module prefix. This is done by setting the sender to `Bech32(Hash("ibc-wasm-hook-intermediary" || channelID || sender))`, where the `channelId` is the channel id on the local chain. 
+- `Sender`: IBC packet senders cannot be explicitly trusted, as they can be deceitful. Chains cannot risk the sender being confused with a particular local user or module address. To prevent this, the `sender` is replaced with an account that represents the sender prefixed by the channel and a Wasm module prefix. This is done by setting the sender to `Bech32(Hash("ibc-wasm-hook-intermediary" || channelID || sender))`, where the `channelId` is the channel id on the local chain.
 - `Contract`: This field should be directly obtained from the ICS-20 packet metadata
 - `Msg`: This field should be directly obtained from the ICS-20 packet metadata.
 - `Funds`: This field is set to the amount of funds being sent over in the ICS-20 packet. The denom in the packet must be specified as the counterparty chain's representation of the denom.
 
+<!-- markdown-link-check-disable-next-line -->
 > **_WARNING:_**  Due to a [bug](https://twitter.com/SCVSecurity/status/1682329758020022272) in the packet forward middleware, we cannot trust the sender from chains that use PFM. Until that is fixed, we recommend chains to not trust the sender on contracts executed via IBC hooks.
 
 
@@ -63,7 +64,7 @@ msg := MsgExecuteContract{
 Given the details above, you can propagate the implied ICS-20 packet data structure.
 ICS20 is JSON native, so you can use JSON for the memo format.
 
-```json 
+```json
 {
     //... other ibc fields that we don't care about
     "data":{
@@ -86,15 +87,15 @@ ICS20 is JSON native, so you can use JSON for the memo format.
 An ICS-20 packet is formatted correctly for IBC hooks if all of the following are true:
 
 - The `memo` is not blank.
-- The`memo` is valid JSON. 
+- The`memo` is valid JSON.
 - The `memo` has at least one key, with the value `"wasm"`.
-- The `memo["wasm"]` has exactly two entries, `"contract"` and `"msg"`. 
+- The `memo["wasm"]` has exactly two entries, `"contract"` and `"msg"`.
 - The `memo["wasm"]["msg"]` is a valid JSON object.
-- The `receiver == "" || receiver == memo["wasm"]["contract"]`. 
+- The `receiver == "" || receiver == memo["wasm"]["contract"]`.
 
 An ICS-20 packet is directed toward IBC hooks if all of the following are true:
 
-- The `memo` is not blank. 
+- The `memo` is not blank.
 - The `memo` is valid JSON.
 - The `memo` has at least one key, with the name `"wasm"`.
 
@@ -105,7 +106,7 @@ If an ICS-20 packet is directed towards IBC hooks, and is formatted incorrectly,
 
 1. Pre-IBC hooks:
 
-- Ensure the incoming IBC packet is cryptographically valid. 
+- Ensure the incoming IBC packet is cryptographically valid.
 - Ensure the incoming IBC packet is not timed out.
 
 2. In IBC hooks, pre-packet execution:
@@ -127,14 +128,14 @@ contracts to listen in on the `ack` of specific packets.
 
 ### Design
 
-The sender of an IBC transfer packet may specify a callback for when the `Ack` of that packet is received in the memo 
-field of the transfer packet. 
+The sender of an IBC transfer packet may specify a callback for when the `Ack` of that packet is received in the memo
+field of the transfer packet.
 
 Crucially, **only the IBC packet sender can set the callback**.
 
 ### Use case
 
-The cross-chain swaps implementation sends an IBC transfer. If the transfer were to fail, the sender should be able to retrieve their funds which would otherwise be stuck in the contract. To do this, users should be allowed to retrieve the funds after the timeout has passed. However, without the `Ack` information, one cannot guarantee that the send hasn't failed (i.e.: returned an error ack notifying that the receiving chain didn't accept it). 
+The cross-chain swaps implementation sends an IBC transfer. If the transfer were to fail, the sender should be able to retrieve their funds which would otherwise be stuck in the contract. To do this, users should be allowed to retrieve the funds after the timeout has passed. However, without the `Ack` information, one cannot guarantee that the send hasn't failed (i.e.: returned an error ack notifying that the receiving chain didn't accept it).
 
 ### Implementation
 
@@ -188,7 +189,7 @@ pub enum SudoMsg {
 
 Follow these steps to install the IBC hooks module. The following lines are all added to `app.go`
 
-1. Import the following packages. 
+1. Import the following packages.
 
 ```go
 // import (
@@ -200,7 +201,7 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 // )
 ```
 
-2. Add the module. 
+2. Add the module.
 
 ```go
 // var (
@@ -209,10 +210,10 @@ Follow these steps to install the IBC hooks module. The following lines are all 
         ...
         ibchooks.AppModuleBasic{},
         ...
-    // ) 
+    // )
 ```
 
-3. Add the IBC hooks keeper. 
+3. Add the IBC hooks keeper.
 
 ```go
 
@@ -237,7 +238,7 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 		app.keys[ibchookstypes.StoreKey],
 	)
 	app.Ics20WasmHooks = ibchooks.NewWasmHooks(&app.IBCHooksKeeper, nil, AccountAddressPrefix) // The contract keeper needs to be set later
-	
+
 	// initialize the wasm keeper with
 	// wasmKeeper := wasm.NewKeeper( ... )
 	app.WasmKeeper = &wasmKeeper
@@ -256,7 +257,7 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 ...
 ```
 
-5. Register the genesis, begin blocker and end block hooks. 
+5. Register the genesis, begin blocker and end block hooks.
 
 ```go
 ...
@@ -358,4 +359,4 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 ```
 ## Tests
 
-Tests are included in the [tests folder](./tests/testdata/counter/README.md). 
+Tests are included in the [tests folder](./tests/unit/testdata/counter/README.md).
