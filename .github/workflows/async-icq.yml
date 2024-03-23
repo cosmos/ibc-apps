@@ -2,12 +2,12 @@ name: async-icq
 on:
   pull_request:
     paths:
-      - 'modules/async-icq/**'
-      - '.github/workflows/async-icq.yml'
+      - "modules/async-icq/**"
+      - ".github/workflows/async-icq.yml"
 
 env:
   LINT_VERSION: v1.55.2
-  GO_VERSION: 1.21.0
+  GO_VERSION: 1.22.1
   WORKING_DIRECTORY: modules/async-icq
 
   HOST_TAR_PATH: /tmp/icq-host.tar
@@ -33,9 +33,9 @@ jobs:
           args: --timeout=5m
 
   test:
-      runs-on: ubuntu-latest
-      name: test
-      steps:
+    runs-on: ubuntu-latest
+    name: test
+    steps:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
