@@ -3,8 +3,8 @@ package ibc_hooks
 import (
 	"encoding/json"
 
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/client/cli"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/client/cli"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
