@@ -126,7 +126,7 @@ Here is an example of how to create an application stack using `transfer` and `p
 The following `transferStack` is configured in `app/app.go` and added to the IBC `Router`.
 The in-line comments describe the execution flow of packets between the application stack and IBC core.
 
-For more information on configuring an IBC application stack see the ibc-go docs [here](https://github.com/cosmos/ibc-go/blob/main/docs/middleware/ics29-fee/integration.md#configuring-an-application-stack-with-fee-middleware).
+For more information on configuring an IBC application stack see the ibc-go docs [here](https://github.com/cosmos/ibc-go/blob/e69a833de764fa0f5bdf0338d9452fd6e579a675/docs/docs/04-middleware/01-ics29-fee/02-integration.md#configuring-an-application-stack-with-fee-middleware).
 
 
 ```go
