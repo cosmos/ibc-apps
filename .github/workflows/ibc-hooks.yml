@@ -1,19 +1,19 @@
 name: ibc-hooks
-on: 
+on:
   pull_request:
     paths:
       - 'modules/ibc-hooks/**'
       - '.github/workflows/ibc-hooks.yml'
 
 env:
-  LINT_VERSION: v1.52
+  LINT_VERSION: v1.55.2
   GO_VERSION: 1.21.0
   WORKING_DIRECTORY: modules/ibc-hooks
 
 jobs:
   golangci:
-    name: Linter    
-    runs-on: ubuntu-latest    
+    name: Linter
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -37,4 +37,4 @@ jobs:
 
       - name: Test
         run: go test ./...
-        working-directory: ${{ env.WORKING_DIRECTORY }}  
+        working-directory: ${{ env.WORKING_DIRECTORY }}
