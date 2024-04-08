@@ -6,7 +6,7 @@ on:
       - ".github/workflows/packet-forward-middleware.yml"
 
 env:
-  LINT_VERSION: v1.56.2
+  LINT_VERSION: v1.57.1
   GO_VERSION: 1.22.1
   WORKING_DIRECTORY: middleware/packet-forward-middleware
 
