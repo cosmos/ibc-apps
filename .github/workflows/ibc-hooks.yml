@@ -6,7 +6,7 @@ on:
       - ".github/workflows/ibc-hooks.yml"
 
 env:
-  LINT_VERSION: v1.56.2
+  LINT_VERSION: v1.57.1
   GO_VERSION: 1.22.1
   WORKING_DIRECTORY: modules/ibc-hooks
 
@@ -38,3 +38,4 @@ jobs:
       - name: Test
         run: go test ./...
         working-directory: ${{ env.WORKING_DIRECTORY }}
+
