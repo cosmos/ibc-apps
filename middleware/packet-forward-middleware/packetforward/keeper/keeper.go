@@ -260,7 +260,7 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 					ctx, transfertypes.ModuleName, newToken,
 				); err != nil {
 					// NOTE: should not happen as the module account was
-					// retrieved on the step above and it has enough balace
+					// retrieved on the step above and it has enough balance
 					// to burn.
 					panic(fmt.Sprintf("cannot burn coins after a successful send from escrow account to module account: %v", err))
 				}

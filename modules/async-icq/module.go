@@ -54,7 +54,7 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(types.DefaultGenesis())
 }
 
-// ValidateGenesis performs genesis state validation for the IBC interchain acounts module
+// ValidateGenesis performs genesis state validation for the IBC interchain accounts module
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var gs types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &gs); err != nil {
@@ -103,7 +103,7 @@ func NewAppModule(keeper keeper.Keeper, ss exported.Subspace) AppModule {
 	}
 }
 
-// InitModule will initialize the interchain query moudule. It should only be
+// InitModule will initialize the interchain query module. It should only be
 // called once and as an alternative to InitGenesis.
 func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
 	if err := am.keeper.SetParams(ctx, params); err != nil {
