@@ -6,3 +6,6 @@ ibc-hooks:
 
 packet-forward-middleware:
   - middleware/packet-forward-middleware/**
+
+polytone:
+  - cosmwasm/polytone/**
