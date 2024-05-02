@@ -361,7 +361,7 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 		return im.app.OnTimeoutPacket(ctx, packet, relayer)
 	}
 
-	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnAcknowledgementPacket",
+	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnTimeoutPacket",
 		"sequence", packet.Sequence,
 		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
