@@ -35,7 +35,7 @@ type QueryClient interface {
 	AllRateLimits(ctx context.Context, in *QueryAllRateLimitsRequest, opts ...grpc.CallOption) (*QueryAllRateLimitsResponse, error)
 	// Queries a specific rate limit by channel ID and denom
 	// Ex:
-	//   - /rate-limit/{channel_id}/by_denom?denom={denom}
+	//   - /ratelimit/{channel_id}/by_denom?denom={denom}
 	RateLimit(ctx context.Context, in *QueryRateLimitRequest, opts ...grpc.CallOption) (*QueryRateLimitResponse, error)
 	// Queries all the rate limits for a given chain
 	RateLimitsByChainId(ctx context.Context, in *QueryRateLimitsByChainIdRequest, opts ...grpc.CallOption) (*QueryRateLimitsByChainIdResponse, error)
@@ -117,7 +117,7 @@ type QueryServer interface {
 	AllRateLimits(context.Context, *QueryAllRateLimitsRequest) (*QueryAllRateLimitsResponse, error)
 	// Queries a specific rate limit by channel ID and denom
 	// Ex:
-	//   - /rate-limit/{channel_id}/by_denom?denom={denom}
+	//   - /ratelimit/{channel_id}/by_denom?denom={denom}
 	RateLimit(context.Context, *QueryRateLimitRequest) (*QueryRateLimitResponse, error)
 	// Queries all the rate limits for a given chain
 	RateLimitsByChainId(context.Context, *QueryRateLimitsByChainIdRequest) (*QueryRateLimitsByChainIdResponse, error)
