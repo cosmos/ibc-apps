@@ -6,3 +6,4 @@ The current IBC modules in this repository are:
 
 - [Interchain Queries](./async-icq/README.md)
 - [IBC Hooks](./ibc-hooks/README.md)
+- [Rate Limiting](./rate-limiting/README.md)
