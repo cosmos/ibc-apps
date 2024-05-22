@@ -147,7 +147,6 @@ transferStack = packetforward.NewIBCMiddleware(
 	app.PacketForwardKeeper,
 	0, // retries on timeout
 	packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
-	packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp, // refund timeout
 )
 
 // Add transfer stack to IBC Router

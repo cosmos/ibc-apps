@@ -542,7 +542,6 @@ func NewSimApp(
 		app.PacketForwardKeeper,
 		0, // retries on timeout
 		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
-		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,  // refund timeout
 	)
 
 	if os.Getenv("NON_REFUNDABLE_TEST") != "" {
