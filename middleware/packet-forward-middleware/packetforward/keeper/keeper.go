@@ -39,9 +39,6 @@ var (
 
 	// DefaultForwardTransferPacketTimeoutTimestamp is the timeout timestamp following IBC defaults
 	DefaultForwardTransferPacketTimeoutTimestamp = time.Duration(transfertypes.DefaultRelativePacketTimeoutTimestamp) * time.Nanosecond
-
-	// DefaultRefundTransferPacketTimeoutTimestamp is a 28-day timeout for refund packets since funds are stuck in packetforward module otherwise.
-	DefaultRefundTransferPacketTimeoutTimestamp = 28 * 24 * time.Hour
 )
 
 // Keeper defines the packet forward middleware keeper

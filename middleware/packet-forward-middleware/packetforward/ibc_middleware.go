@@ -35,7 +35,6 @@ type IBCMiddleware struct {
 
 	retriesOnTimeout uint8
 	forwardTimeout   time.Duration
-	refundTimeout    time.Duration
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application.
@@ -44,14 +43,12 @@ func NewIBCMiddleware(
 	k *keeper.Keeper,
 	retriesOnTimeout uint8,
 	forwardTimeout time.Duration,
-	refundTimeout time.Duration,
 ) IBCMiddleware {
 	return IBCMiddleware{
 		app:              app,
 		keeper:           k,
 		retriesOnTimeout: retriesOnTimeout,
 		forwardTimeout:   forwardTimeout,
-		refundTimeout:    refundTimeout,
 	}
 }
 

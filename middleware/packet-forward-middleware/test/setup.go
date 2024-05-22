@@ -63,7 +63,7 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 			ICS4WrapperMock:        ics4WrapperMock,
 		},
 
-		ForwardMiddleware: initializer.forwardMiddleware(ibcModuleMock, packetforwardKeeper, 0, keeper.DefaultForwardTransferPacketTimeoutTimestamp, keeper.DefaultRefundTransferPacketTimeoutTimestamp),
+		ForwardMiddleware: initializer.forwardMiddleware(ibcModuleMock, packetforwardKeeper, 0, keeper.DefaultForwardTransferPacketTimeoutTimestamp),
 	}
 }
 
@@ -158,6 +158,6 @@ func (i initializer) packetforwardKeeper(
 	return packetforwardKeeper
 }
 
-func (i initializer) forwardMiddleware(app porttypes.IBCModule, k *keeper.Keeper, retriesOnTimeout uint8, forwardTimeout time.Duration, refundTimeout time.Duration) packetforward.IBCMiddleware {
-	return packetforward.NewIBCMiddleware(app, k, retriesOnTimeout, forwardTimeout, refundTimeout)
+func (i initializer) forwardMiddleware(app porttypes.IBCModule, k *keeper.Keeper, retriesOnTimeout uint8, forwardTimeout time.Duration) packetforward.IBCMiddleware {
+	return packetforward.NewIBCMiddleware(app, k, retriesOnTimeout, forwardTimeout)
 }
