@@ -2,17 +2,17 @@ name: packet-forward-middleware
 on:
   pull_request:
     paths:
-      - 'middleware/packet-forward-middleware/**'
-      - '.github/workflows/packet-forward-middleware.yml'
+      - "middleware/packet-forward-middleware/**"
+      - ".github/workflows/packet-forward-middleware.yml"
 
 env:
-    LINT_VERSION: v1.55.2
-    GO_VERSION: 1.21.0
-    WORKING_DIRECTORY: middleware/packet-forward-middleware
+  LINT_VERSION: v1.57.1
+  GO_VERSION: 1.22.1
+  WORKING_DIRECTORY: middleware/packet-forward-middleware
 
-    DOCKER_TAG: pfm:local
-    TAR_PATH: /tmp/pfm-docker-image.tar
-    IMAGE_NAME: pfm-docker-image
+  DOCKER_TAG: pfm:local
+  TAR_PATH: /tmp/pfm-docker-image.tar
+  IMAGE_NAME: pfm-docker-image
 
 jobs:
   golangci:
@@ -29,9 +29,9 @@ jobs:
           args: --timeout=5m
 
   test:
-      runs-on: ubuntu-latest
-      name: test
-      steps:
+    runs-on: ubuntu-latest
+    name: test
+    steps:
       - name: Install Go
         uses: actions/setup-go@v4
         with:

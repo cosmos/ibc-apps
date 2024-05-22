@@ -194,9 +194,9 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 ```go
 // import (
     ...
-    ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
-	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
-	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+    ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8"
+	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/keeper"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/types"
     ...
 // )
 ```
@@ -358,5 +358,6 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 ...
 ```
 ## Tests
+
 
 Tests are included in the [tests folder](./tests/unit/testdata/counter/README.md).

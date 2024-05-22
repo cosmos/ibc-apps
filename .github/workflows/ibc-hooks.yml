@@ -2,12 +2,12 @@ name: ibc-hooks
 on:
   pull_request:
     paths:
-      - 'modules/ibc-hooks/**'
-      - '.github/workflows/ibc-hooks.yml'
+      - "modules/ibc-hooks/**"
+      - ".github/workflows/ibc-hooks.yml"
 
 env:
-  LINT_VERSION: v1.55.2
-  GO_VERSION: 1.21.0
+  LINT_VERSION: v1.57.1
+  GO_VERSION: 1.22.1
   WORKING_DIRECTORY: modules/ibc-hooks
 
 jobs:
@@ -25,9 +25,9 @@ jobs:
           args: --timeout=5m
 
   test:
-      runs-on: ubuntu-latest
-      name: test
-      steps:
+    runs-on: ubuntu-latest
+    name: test
+    steps:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
@@ -38,3 +38,4 @@ jobs:
       - name: Test
         run: go test ./...
         working-directory: ${{ env.WORKING_DIRECTORY }}
+
