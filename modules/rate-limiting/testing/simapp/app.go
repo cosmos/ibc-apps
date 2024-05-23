@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
+	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
 	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 

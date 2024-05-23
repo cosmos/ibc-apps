@@ -53,7 +53,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=stride \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=strided \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" 
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(LINK_STATICALLY),true)
 	ldflags += -linkmode=external -extldflags "-Wl,-z,muldefs -static"
@@ -121,3 +121,13 @@ proto-gen:
 proto-lint:
 	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
 		bufbuild/buf:$(BUF_VERSION) lint
+
+###############################################################################
+###                             e2e interchain test                         ###
+###############################################################################
+
+local-image:
+	docker build . -f Dockerfile -t rate-limiting:local
+
+ictest-icq:
+	cd e2e && go test -race -v -timeout 15m -run TestRateLimitBasic .
