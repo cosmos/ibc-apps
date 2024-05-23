@@ -3,12 +3,14 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 )
 
 type (

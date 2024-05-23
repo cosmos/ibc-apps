@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 )
 
 type RateLimitedPacketInfo struct {
