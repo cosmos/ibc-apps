@@ -18,7 +18,11 @@ You can target any of the maintained branches. For example, if you target branch
 
 ## Adding a new Repo
 
-- Copy in the files from the original reposity.
+- Copy in the files from the original repo.
 - Find and replace all the namespace to `github.com/cosmos/ibc-apps/modules/<MODULE_NAME>/v#` *(where # is the IBC major version)*
 - Add the name to .github/labeler.yml
+- Keep original proto files paths the same, unless the team wishes to move to a new namespace.
+    > i.e. keep `/Stride-Labs/ibc-rate-limiting/...` instead of changing to `/cosmos/rate-limit/...` so other tools still work
+    > If this is a new repo with no one using it yet in prod, you can change this without issue.
 - Create that same name label in <https://github.com/cosmos/ibc-apps/labels>
+- Add to the root [ReadMe](../README.md) in `List of Apps`

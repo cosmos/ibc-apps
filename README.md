@@ -68,6 +68,7 @@ If you'd like to include software in this repo, please see [contributing](CONTRI
 | [Async Interchain Query](./modules/async-icq/) | Module | Link | [Strangelove](https://github.com/strangelove-ventures/) | Interchain Queries enable blockchains to query the state of an account on another chain without the need for ICA auth. |
 | [IBC Hooks](./modules/ibc-hooks/) | Module | [Link](./modules/ibc-hooks/simapp/app.go) | [Osmosis](https://github.com/osmosis-labs) | The IBC hooks module is an IBC middleware that enables ICS-20 token transfers to initiate contract calls. |
 | [Packet Forward Middleware](./middleware/packet-forward-middleware) | Middleware | Link | [Strangelove](https://github.com/strangelove-ventures/) | Middleware for forwarding IBC packets. |
+| [Rate Limit](./modules/rate-limiting/) | Module | Link | [Stride](https://github.com/Stride-Labs/) | Module for rate limiting ingress/egress of packets. |
 
 ## Ecosystem Apps
 
@@ -80,6 +81,5 @@ Modules and middleware developed by other awesome teams in the ecosystem:
 | [NFT Transfer (ICS 721)](https://github.com/bianjieai/nft-transfer) | Module | [Bianjieai](https://github.com/bianjieai) | An application that enables cross chain NFT transfer. |
 | <!-- markdown-link-check-disable-line --> [CosmWasm NFT Transfer (ICS 721)](https://github.com/public-awesome/cw-ics721) | WASM Contract | [Public Awesome (Stargaze)](https://github.com/public-awesome), [Ark Protocol](https://x.com/ArkProtocol) | An application that enables cross chain NFT transfer. CosmWasm implementation of the above, written in Rust. |
 | [recovery](https://github.com/evmos/evmos/tree/v15.0.0/x/recovery) | Middleware | [Evmos](https://github.com/evmos) | Middleware enabling the recovery of tokens sent to unsupported addresses. |
-| [ibc-rate-limit](https://github.com/osmosis-labs/osmosis/tree/main/x/ibc-rate-limit) | Middleware | [Osmosis Labs](https://github.com/osmosis-labs) | Middleware that limits the in or out flow of an asset in a certain time period to minimise the risks of cross chain token transfers. This is implemented as a middleware wrapping ICS20 with the rate limiting logic implemented by cosmwasm contracts. |
 | [Interchain Atomic Swap](https://github.com/sideprotocol/mesh-liquidity-wasm/tree/v0.1.0/contracts/ics100) | WASM Contract | [Side Labs](https://github.com/sideprotocol) | An application that facilitates inter-blockchain peer-to-peer asset swaps. |
 | [Interchain Liquidity](https://github.com/sideprotocol/ibcswap-wasm/tree/main/contracts/ics101) | WASM Contract | [Side Labs](https://github.com/sideprotocol) | An application that splits the state of a weighted liquidity pool between two chains, enabling inter-blockchain automated asset swaps. |
