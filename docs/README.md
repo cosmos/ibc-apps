@@ -26,3 +26,4 @@ You can target any of the maintained branches. For example, if you target branch
     > If this is a new repo with no one using it yet in prod, you can change this without issue.
 - Create that same name label in <https://github.com/cosmos/ibc-apps/labels>
 - Add to the root [ReadMe](../README.md) in `List of Apps`
+- Create workflow for the linting, unit testing, and e2e. The file must match the application name.
