@@ -116,7 +116,7 @@ proto-format:
 
 proto-gen:
 	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
-		ghcr.io/cosmos/proto-builder:$(BUILDER_VERSION) sh ./proto/generate.sh
+		ghcr.io/cosmos/proto-builder:$(BUILDER_VERSION) sh ./scripts/generate.sh
 
 proto-lint:
 	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
