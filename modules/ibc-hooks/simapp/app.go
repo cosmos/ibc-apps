@@ -6,9 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
-	wasmd "github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -689,7 +687,7 @@ func NewSimApp(
 		app.GRPCQueryRouter(),
 		wasmDir,
 		wasmConfig,
-		strings.Join(wasmd.AllCapabilities(), ","),
+		wasmkeeper.BuiltInCapabilities(),
 		govModAddress,
 	)
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(&app.WasmKeeper)
