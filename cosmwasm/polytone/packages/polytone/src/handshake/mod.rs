@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-     to_json_binary, Ibc3ChannelOpenResponse, IbcChannelOpenMsg, IbcChannelOpenResponse, IbcOrder,
+    to_json_binary, Ibc3ChannelOpenResponse, IbcChannelOpenMsg, IbcChannelOpenResponse, IbcOrder,
 };
 
 use error::HandshakeError;
@@ -59,7 +59,7 @@ fn open(
                 Err(HandshakeError::ExpectUnordered)
             } else {
                 Ok(Some(Ibc3ChannelOpenResponse {
-                    version:  to_json_binary(extensions).unwrap().to_base64(),
+                    version: to_json_binary(extensions).unwrap().to_base64(),
                 }))
             }
         }

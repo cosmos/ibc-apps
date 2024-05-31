@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-     to_json_binary, Addr, Api, Binary, CosmosMsg, IbcPacketAckMsg, IbcPacketTimeoutMsg, StdResult,
+    to_json_binary, Addr, Api, Binary, CosmosMsg, IbcPacketAckMsg, IbcPacketTimeoutMsg, StdResult,
     Storage, SubMsgResponse, Uint64, WasmMsg,
 };
 use cw_storage_plus::Map;
@@ -178,7 +178,7 @@ fn callback_message(request: PendingCallback, result: Callback) -> CosmosMsg {
     }
     WasmMsg::Execute {
         contract_addr: request.receiver.into_string(),
-        msg:  to_json_binary(&C::Callback(CallbackMessage {
+        msg: to_json_binary(&C::Callback(CallbackMessage {
             initiator: request.initiator,
             initiator_msg: request.initiator_msg,
             result,

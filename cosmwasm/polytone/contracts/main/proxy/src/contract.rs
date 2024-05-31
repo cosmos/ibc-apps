@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-     to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult, SubMsg,
+    to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult, SubMsg,
     SubMsgResponse, SubMsgResult,
 };
 use cw2::set_contract_version;
@@ -65,7 +65,7 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::Instantiator {} =>  to_json_binary(&INSTANTIATOR.load(deps.storage)?),
+        QueryMsg::Instantiator {} => to_json_binary(&INSTANTIATOR.load(deps.storage)?),
     }
 }
 
