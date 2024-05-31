@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response, StdResult,
+    to_json_binary, Binary, Deps, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response, StdResult,
 };
 use cw2::set_contract_version;
 use polytone::callbacks::CallbackRequestType;
@@ -106,7 +106,7 @@ pub fn execute(
         .add_attribute("method", "execute")
         .add_message(IbcMsg::SendPacket {
             channel_id,
-            data: to_binary(&ibc::Packet {
+            data: to_json_binary(&ibc::Packet {
                 sender: info.sender.into_string(),
                 msg,
             })
@@ -118,18 +118,18 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ActiveChannel => to_binary(&CHANNEL.may_load(deps.storage)?),
-        QueryMsg::Pair => to_binary(&CONNECTION_REMOTE_PORT.may_load(deps.storage)?.map(
+        QueryMsg::ActiveChannel => to_json_binary(&CHANNEL.may_load(deps.storage)?),
+        QueryMsg::Pair => to_json_binary(&CONNECTION_REMOTE_PORT.may_load(deps.storage)?.map(
             |(connection_id, remote_port)| Pair {
                 connection_id,
                 remote_port,
             },
         )),
-        QueryMsg::RemoteAddress { local_address } => to_binary(&accounts::query_account(
+        QueryMsg::RemoteAddress { local_address } => to_json_binary(&accounts::query_account(
             deps.storage,
             deps.api.addr_validate(&local_address)?,
         )?),
-        QueryMsg::BlockMaxGas => to_binary(&BLOCK_MAX_GAS.load(deps.storage)?),
+        QueryMsg::BlockMaxGas => to_json_binary(&BLOCK_MAX_GAS.load(deps.storage)?),
     }
 }
 

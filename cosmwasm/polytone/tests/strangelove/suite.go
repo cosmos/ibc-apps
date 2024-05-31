@@ -190,8 +190,9 @@ func (s *Suite) SetupChain(chain *SuiteChain) {
 
 	chain.Note = s.Instantiate(cc, user, noteId, NoteInstantiate{})
 	chain.Voice = s.Instantiate(cc, user, voiceId, VoiceInstantiate{
-		ProxyCodeId: uint64(proxyUint),
-		BlockMaxGas: 100_000_000,
+		ProxyCodeId:     uint64(proxyUint),
+		BlockMaxGas:     100_000_000,
+		ContractAddrLen: 32,
 	})
 	chain.Tester = s.Instantiate(cc, user, testerId, TesterInstantiate{})
 	return

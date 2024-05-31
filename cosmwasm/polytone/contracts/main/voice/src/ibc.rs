@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, DepsMut, Env, IbcBasicResponse, IbcChannelCloseMsg,
+    from_json, to_json_binary, DepsMut, Env, IbcBasicResponse, IbcChannelCloseMsg,
     IbcChannelConnectMsg, IbcChannelOpenMsg, IbcChannelOpenResponse, IbcPacketAckMsg,
     IbcPacketReceiveMsg, IbcPacketTimeoutMsg, IbcReceiveResponse, Never, Reply, Response, SubMsg,
     SubMsgResult, WasmMsg,
@@ -94,7 +94,7 @@ pub fn ibc_packet_receive(
             id: REPLY_ACK,
             msg: WasmMsg::Execute {
                 contract_addr: env.contract.address.into_string(),
-                msg: to_binary(&ExecuteMsg::Rx {
+                msg: to_json_binary(&ExecuteMsg::Rx {
                     connection_id,
                     counterparty_port: msg.packet.src.port_id,
                     data: msg.packet.data,
@@ -125,7 +125,7 @@ pub fn reply(_deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, Contract
                     .expect("execution succeeded")
                     .data
                     .expect("reply_forward_data sets data");
-                match from_binary::<Callback>(&data) {
+                match from_json::<Callback>(&data) {
                     Ok(_) => Response::default().set_data(data),
                     Err(e) => Response::default()
                         .set_data(ack_fail(format!("unmarshalling callback data: ({e})"))),

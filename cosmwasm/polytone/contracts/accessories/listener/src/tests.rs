@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, Addr, Empty, Uint64};
+use cosmwasm_std::{to_json_binary, Addr, Empty, Uint64};
 
 use cw_multi_test::{App, Contract, ContractWrapper, Executor};
 use polytone::callbacks::{Callback, CallbackMessage};
@@ -87,7 +87,7 @@ fn test() {
     // Allows note to execute callback.
     let callback = CallbackMessage {
         initiator: Addr::unchecked(INITIATOR_ADDR),
-        initiator_msg: to_binary(INITIATOR_MSG).unwrap(),
+        initiator_msg: to_json_binary(INITIATOR_MSG).unwrap(),
         result: Callback::Execute(Result::Err("ERROR".to_string())),
     };
     app.execute_contract(
@@ -118,7 +118,7 @@ fn test() {
             listener,
             &QueryMsg::Result {
                 initiator: INITIATOR_ADDR.to_string(),
-                initiator_msg: to_binary(INITIATOR_MSG).unwrap().to_string(),
+                initiator_msg: to_json_binary(INITIATOR_MSG).unwrap().to_string(),
             },
         )
         .unwrap();

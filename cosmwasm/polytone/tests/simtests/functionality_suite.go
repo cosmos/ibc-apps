@@ -52,8 +52,9 @@ func SetupChain(t *testing.T, c *ibctesting.Coordinator, index int) Chain {
 		BlockMaxGas: uint64(blockMaxGas),
 	})
 	voice := Instantiate(t, chain, 2, VoiceInstantiate{
-		ProxyCodeId: 3,
-		BlockMaxGas: uint64(blockMaxGas),
+		ProxyCodeId:     3,
+		BlockMaxGas:     uint64(blockMaxGas),
+		ContractAddrLen: 32,
 	})
 	tester := Instantiate(t, chain, 4, TesterInstantiate{})
 

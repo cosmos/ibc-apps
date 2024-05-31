@@ -15,8 +15,9 @@ type NoteInstantiate struct {
 }
 
 type VoiceInstantiate struct {
-	ProxyCodeId uint64 `json:"proxy_code_id,string"`
-	BlockMaxGas uint64 `json:"block_max_gas,string"`
+	ProxyCodeId     uint64 `json:"proxy_code_id,string"`
+	BlockMaxGas     uint64 `json:"block_max_gas,string"`
+	ContractAddrLen uint8  `json:"contract_addr_len"`
 }
 
 type TesterInstantiate struct {

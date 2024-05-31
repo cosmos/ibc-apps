@@ -1,6 +1,6 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use cw2::set_contract_version;
 
 use crate::error::ContractError;
@@ -60,11 +60,11 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::Note {} => to_binary(&NOTE.load(deps.storage)?),
+        QueryMsg::Note {} => to_json_binary(&NOTE.load(deps.storage)?),
         QueryMsg::Result {
             initiator,
             initiator_msg,
-        } => to_binary(&ResultResponse {
+        } => to_json_binary(&ResultResponse {
             callback: RESULTS.load(deps.storage, (initiator, initiator_msg))?,
         }),
     }

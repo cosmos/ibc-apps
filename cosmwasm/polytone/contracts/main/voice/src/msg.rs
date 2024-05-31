@@ -1,12 +1,17 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Binary, Uint64};
 
+use crate::state::SenderInfo;
+
 #[cw_serde]
 pub struct InstantiateMsg {
     /// Code ID to use for instantiating proxy contracts.
     pub proxy_code_id: Uint64,
     /// The max gas allowed in a single block.
     pub block_max_gas: Uint64,
+    /// The contract address length used by the chain. Defaults to 32. Some
+    /// chains use other lengths, such as Injective which uses 20.
+    pub contract_addr_len: Option<u8>,
 }
 
 #[cw_serde]
@@ -35,6 +40,12 @@ pub enum QueryMsg {
     /// `"proxy_code_id"`.
     #[returns(Uint64)]
     ProxyCodeId,
+    /// Queries the configured contract address length.
+    #[returns(u8)]
+    ContractAddrLen,
+    /// Queries the sender information for a given proxy.
+    #[returns(SenderInfo)]
+    SenderInfoForProxy { proxy: String },
 }
 
 #[cw_serde]
@@ -45,5 +56,7 @@ pub enum MigrateMsg {
         proxy_code_id: Uint64,
         /// The max gas allowed in a single block.
         block_max_gas: Uint64,
+        /// The contract address length used by the chain.
+        contract_addr_len: u8,
     },
 }

@@ -1,4 +1,4 @@
-use cosmwasm_std::{from_json, to_binary, Binary, IbcAcknowledgement, SubMsgResponse, Uint64};
+use cosmwasm_std::{from_json,  to_json_binary, Binary, IbcAcknowledgement, SubMsgResponse, Uint64};
 
 pub use crate::callbacks::Callback;
 use crate::callbacks::{ErrorResponse, ExecutionResponse};
@@ -12,12 +12,12 @@ pub type Ack = Callback;
 
 /// Serializes an ACK-SUCCESS containing the provided data.
 pub fn ack_query_success(result: Vec<Binary>) -> Binary {
-    to_binary(&Callback::Query(Ok(result))).unwrap()
+     to_json_binary(&Callback::Query(Ok(result))).unwrap()
 }
 
 /// Serializes an ACK-SUCCESS for a query that failed.
 pub fn ack_query_fail(message_index: Uint64, error: String) -> Binary {
-    to_binary(&Callback::Query(Err(ErrorResponse {
+     to_json_binary(&Callback::Query(Err(ErrorResponse {
         message_index,
         error,
     })))
@@ -26,7 +26,7 @@ pub fn ack_query_fail(message_index: Uint64, error: String) -> Binary {
 
 /// Serializes an ACK-SUCCESS for execution that succeeded.
 pub fn ack_execute_success(result: Vec<SubMsgResponse>, executed_by: String) -> Binary {
-    to_binary(&Callback::Execute(Ok(ExecutionResponse {
+     to_json_binary(&Callback::Execute(Ok(ExecutionResponse {
         result,
         executed_by,
     })))
@@ -35,12 +35,12 @@ pub fn ack_execute_success(result: Vec<SubMsgResponse>, executed_by: String) -> 
 
 /// Serializes an ACK-SUCCESS for execution that failed.
 pub fn ack_execute_fail(error: String) -> Binary {
-    to_binary(&Callback::Execute(Err(error))).unwrap()
+     to_json_binary(&Callback::Execute(Err(error))).unwrap()
 }
 
 /// Serializes an ACK-FAIL containing the provided error.
 pub fn ack_fail(err: String) -> Binary {
-    to_binary(&Callback::FatalError(err)).unwrap()
+     to_json_binary(&Callback::FatalError(err)).unwrap()
 }
 
 /// Unmarshals an ACK from an acknowledgement returned by the SDK. If

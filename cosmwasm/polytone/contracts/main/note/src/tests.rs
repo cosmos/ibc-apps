@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     testing::{mock_dependencies, mock_env, mock_info},
-    to_binary, Uint64, WasmMsg,
+    to_json_binary, Uint64, WasmMsg,
 };
 
 use crate::{
@@ -35,7 +35,7 @@ fn simple_note() {
             on_behalf_of: None,
             msgs: vec![WasmMsg::Execute {
                 contract_addr: "some_addr".to_string(),
-                msg: to_binary("some_msg").unwrap(),
+                msg: to_json_binary("some_msg").unwrap(),
                 funds: vec![],
             }
             .into()],

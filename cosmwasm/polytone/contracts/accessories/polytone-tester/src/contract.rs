@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, WasmMsg,
+    to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, WasmMsg,
 };
 use cw2::set_contract_version;
 
@@ -58,7 +58,7 @@ pub fn execute(
         }
         ExecuteMsg::RunOutOfGas {} => Ok(Response::default().add_message(WasmMsg::Execute {
             contract_addr: env.contract.address.into_string(),
-            msg: to_binary(&ExecuteMsg::RunOutOfGas {}).unwrap(),
+            msg: to_json_binary(&ExecuteMsg::RunOutOfGas {}).unwrap(),
             funds: vec![],
         })),
     }
@@ -67,10 +67,10 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::History {} => to_binary(&CallbackHistoryResponse {
+        QueryMsg::History {} => to_json_binary(&CallbackHistoryResponse {
             history: CALLBACK_HISTORY.load(deps.storage)?,
         }),
-        QueryMsg::HelloHistory {} => to_binary(&HelloHistoryResponse {
+        QueryMsg::HelloHistory {} => to_json_binary(&HelloHistoryResponse {
             history: HELLO_CALL_HISTORY.load(deps.storage)?,
         }),
     }

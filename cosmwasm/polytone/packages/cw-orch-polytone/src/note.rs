@@ -9,7 +9,7 @@ use cw_orch::{interface, prelude::*};
 pub struct PolytoneNote<Chain>;
 
 impl<Chain: CwEnv> Uploadable for PolytoneNote<Chain> {
-    fn wrapper(&self) -> <Mock as TxHandler>::ContractSource {
+    fn wrapper() -> <Mock as TxHandler>::ContractSource {
         Box::new(
             ContractWrapper::new(
                 polytone_note::contract::execute,
@@ -27,7 +27,7 @@ impl<Chain: CwEnv> Uploadable for PolytoneNote<Chain> {
             ),
         )
     }
-    fn wasm(&self) -> WasmPath {
+    fn wasm(_chain_info: &ChainInfoOwned) -> WasmPath {
         artifacts_dir_from_workspace!()
             .find_wasm_path("polytone_note")
             .unwrap()
