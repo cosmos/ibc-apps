@@ -1,6 +1,8 @@
 module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/e2e
 
-go 1.20
+go 1.21
+
+toolchain go1.22.3
 
 require (
 	cosmossdk.io/math v1.3.0
@@ -247,6 +249,9 @@ replace (
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 	github.com/ChainSafe/go-schnorrkel/1 => github.com/ChainSafe/go-schnorrkel v1.0.0
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.2 //indirect
+
+	// sr25519/sr25519.go:43:13 issue
+	github.com/cometbft/cometbft => github.com/cometbft/cometbft v0.37.2
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 => ../
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/vedhavyas/go-subkey => github.com/strangelove-ventures/go-subkey v1.0.7
