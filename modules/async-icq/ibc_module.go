@@ -137,7 +137,7 @@ func (im IBCModule) OnChanOpenAck(
 	return nil
 }
 
-// OnChanOpenAck implements the IBCModule interface
+// OnChanOpenConfirm implements the IBCModule interface
 func (im IBCModule) OnChanOpenConfirm(
 	ctx sdk.Context,
 	_ string,
