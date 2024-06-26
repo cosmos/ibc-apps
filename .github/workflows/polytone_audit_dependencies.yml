@@ -1,0 +1,27 @@
+name: polytone audit dependencies
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  push:
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+  pull_request:
+
+env:
+  WORKING_DIRECTORY: cosmwasm/polytone
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - uses: actions/checkout@v2
+      # Hack to get around requirement for audit-check to use top-level dir
+      - run: cd $GITHUB_WORKSPACE && mv ${{ env.WORKING_DIRECTORY}}/* .
+      - uses: actions-rs/audit-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
