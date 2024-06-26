@@ -34,7 +34,7 @@ func (s *AppTestHelper) Setup() {
 	s.TestAccs = CreateRandomAccounts(3)
 }
 
-// Generate random account addresss
+// Generate random account addresses
 func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
 	testAddrs := make([]sdk.AccAddress, numAccts)
 	for i := 0; i < numAccts; i++ {
