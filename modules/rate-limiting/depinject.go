@@ -1,15 +1,17 @@
 package ratelimit
 
 import (
-	"cosmossdk.io/core/appmodule"
-	"cosmossdk.io/core/store"
-	"cosmossdk.io/depinject"
-	"github.com/cosmos/cosmos-sdk/codec"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	modulev1 "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/api/ratelimit/module/v1"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+
+	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/store"
+	"cosmossdk.io/depinject"
+
+	"github.com/cosmos/cosmos-sdk/codec"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 var _ depinject.OnePerModuleType = AppModule{}

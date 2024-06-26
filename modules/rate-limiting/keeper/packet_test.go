@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"testing"
 
-	sdkmath "cosmossdk.io/math"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
 
 	tmbytes "github.com/cometbft/cometbft/libs/bytes"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
 const (
@@ -279,7 +280,7 @@ func (s *KeeperTestSuite) TestReceiveRateLimitedPacket() {
 	destinationChannel := channelOnStride
 	amountToExceed := "5"
 
-	// When the packet is recieved, the port and channel prefix will be added and the denom will be hashed
+	// When the packet is received, the port and channel prefix will be added and the denom will be hashed
 	//  before the rate limit is found from the store
 	rateLimitDenom := hashDenomTrace(fmt.Sprintf("%s/%s/%s", transferPort, channelOnStride, packetDenom))
 

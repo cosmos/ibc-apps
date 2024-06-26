@@ -3,10 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp/apptesting"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/stretchr/testify/suite"
 )
 
 type KeeperTestSuite struct {

@@ -1,11 +1,14 @@
 package keeper
 
 import (
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
+
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 )
 

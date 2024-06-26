@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 )
 
 // Sets the sequence number of a packet that was just sent

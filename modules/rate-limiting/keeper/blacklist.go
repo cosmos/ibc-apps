@@ -1,10 +1,12 @@
 package keeper
 
 import (
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+
 	"cosmossdk.io/store/prefix"
+
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 )
 
 // Adds a denom to a blacklist to prevent all IBC transfers with this denom
