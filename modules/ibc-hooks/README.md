@@ -16,9 +16,9 @@ The IBC hooks IBC middleware parses an ICS20 transfer, and if the `memo` field i
 
 The following sections detail the `memo` format for Wasm contract calls and the execution guarantees provided.
 
-### Cosmwasm Contract Execution Format
+### CosmWasm Contract Execution Format
 
-Before diving into the IBC metadata format, it's important to understand the Cosmwasm execute message format to get a sense of the specific fields that need to be set. Provided below is the CosmWasm `MsgExecuteContract` format as defined in the [Wasm module](https://github.com/CosmWasm/wasmd/blob/4fe2fbc8f322efdaf187e2e5c99ce32fd1df06f0/x/wasm/types/tx.pb.go#L340-L349).
+Before diving into the IBC metadata format, it's important to understand the CosmWasm execute message format to get a sense of the specific fields that need to be set. Provided below is the CosmWasm `MsgExecuteContract` format as defined in the [Wasm module](https://github.com/CosmWasm/wasmd/blob/4fe2fbc8f322efdaf187e2e5c99ce32fd1df06f0/x/wasm/types/tx.pb.go#L340-L349).
 
 ```go
 type MsgExecuteContract struct {
