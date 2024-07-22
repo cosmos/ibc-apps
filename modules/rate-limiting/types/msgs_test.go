@@ -8,8 +8,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
-	"github.com/Stride-Labs/ibc-rate-limiting/testing/simapp/apptesting"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp/apptesting"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 // ----------------------------------------------

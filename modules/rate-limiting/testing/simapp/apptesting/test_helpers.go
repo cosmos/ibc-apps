@@ -9,7 +9,7 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/stretchr/testify/suite"
 
-	app "github.com/Stride-Labs/ibc-rate-limiting/testing/simapp"
+	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 // Stores/Updates a rate limit object in the store

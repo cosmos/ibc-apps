@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "ratelimit/v1/params.proto";
 import "ratelimit/v1/ratelimit.proto";
 
-option go_package = "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types";
 
 // GenesisState defines the ratelimit module's genesis state.
 message GenesisState {

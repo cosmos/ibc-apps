@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	app "github.com/Stride-Labs/ibc-rate-limiting/testing/simapp"
-	appparams "github.com/Stride-Labs/ibc-rate-limiting/testing/simapp/params"
+	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp"
+	appparams "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp/params"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 

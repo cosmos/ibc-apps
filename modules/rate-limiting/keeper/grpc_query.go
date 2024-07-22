@@ -9,7 +9,7 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 var _ types.QueryServer = Keeper{}

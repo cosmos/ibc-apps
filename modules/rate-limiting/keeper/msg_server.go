@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 type msgServer struct {

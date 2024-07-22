@@ -6,7 +6,7 @@ import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
 import "cosmos/msg/v1/msg.proto";
 
-option go_package = "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types";
 
 // Msg service for rate limit txs
 service Msg {

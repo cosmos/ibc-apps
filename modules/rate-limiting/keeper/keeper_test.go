@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
-	"github.com/Stride-Labs/ibc-rate-limiting/testing/simapp/apptesting"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp/apptesting"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 type KeeperTestSuite struct {

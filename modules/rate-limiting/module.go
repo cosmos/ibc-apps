@@ -17,9 +17,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/client/cli"
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/client/cli"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 var (

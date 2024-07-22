@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit"
-	ratelimitkeeper "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
-	ratelimittypes "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v7"
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"

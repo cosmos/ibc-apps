@@ -9,9 +9,9 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 var (

@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"time"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 // Tests Get/Set Hour epoch

@@ -2,10 +2,10 @@ package keeper_test
 
 import (
 	sdkmath "cosmossdk.io/math"
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 func (s *KeeperTestSuite) TestGetChannelValue() {

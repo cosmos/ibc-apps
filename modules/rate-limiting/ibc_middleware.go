@@ -3,7 +3,7 @@ package ratelimit
 import (
 	"fmt"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
