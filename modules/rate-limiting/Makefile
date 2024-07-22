@@ -113,7 +113,7 @@ proto-all: proto-format proto-gen
 proto-gen:
 	@echo "Generating Protobuf files"
 	@$(DOCKER) run --user $(id -u):$(id -g) --rm -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protocgen.sh; 
+		sh ./scripts/generate.sh; 
 
 proto-format:
 	@echo "Formatting Protobuf files"
