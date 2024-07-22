@@ -12,6 +12,11 @@ import (
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
+const (
+	validChannelId = "channel-0"
+	validDenom     = "denom"
+)
+
 // ----------------------------------------------
 //               MsgAddRateLimit
 // ----------------------------------------------
@@ -20,8 +25,6 @@ func TestMsgAddRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
 	validMaxPercentSend := sdkmath.NewInt(10)
 	validMaxPercentRecv := sdkmath.NewInt(10)
 	validDurationHours := uint64(60)
@@ -179,8 +182,6 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
 	validMaxPercentSend := sdkmath.NewInt(10)
 	validMaxPercentRecv := sdkmath.NewInt(10)
 	validDurationHours := uint64(60)
@@ -338,8 +339,6 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
 
 	testCases := []struct {
 		name string
@@ -407,8 +406,6 @@ func TestMsgResetRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
 
 	testCases := []struct {
 		name string
