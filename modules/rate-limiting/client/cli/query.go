@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
-
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 )
 
 const (
@@ -80,7 +79,6 @@ Example:
 				ChannelId: channelId,
 			}
 			res, err := queryClient.RateLimit(context.Background(), req)
-
 			if err != nil {
 				return err
 			}
@@ -137,7 +135,6 @@ func GetCmdQueryRateLimitsByChainId() *cobra.Command {
 				ChainId: chainId,
 			}
 			res, err := queryClient.RateLimitsByChainId(context.Background(), req)
-
 			if err != nil {
 				return err
 			}
