@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
-
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+
+	sdkmath "cosmossdk.io/math"
 )
 
 func createRateLimits() []types.RateLimit {

@@ -10,7 +10,6 @@ import (
 	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v7"
 	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
-
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"

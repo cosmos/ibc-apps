@@ -1,18 +1,19 @@
 package apptesting
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/crypto/ed25519"
-	tmtypesproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/stretchr/testify/suite"
 
-	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp"
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/crypto/ed25519"
+	tmtypesproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
-var (
+const (
 	TestChainId = "chain-0"
 )
 

@@ -1,17 +1,19 @@
 package keeper_test
 
 import (
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
 )
 
 var (

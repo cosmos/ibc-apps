@@ -3,13 +3,14 @@ package types_test
 import (
 	"testing"
 
-	sdkmath "cosmossdk.io/math"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/stretchr/testify/require"
-
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp/apptesting"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 const (

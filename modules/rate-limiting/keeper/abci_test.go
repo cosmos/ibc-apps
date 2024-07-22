@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
-
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+
+	sdkmath "cosmossdk.io/math"
 )
 
 // Store a rate limit with a non-zero flow for each duration
