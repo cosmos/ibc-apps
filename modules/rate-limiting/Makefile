@@ -129,5 +129,5 @@ proto-lint:
 local-image:
 	docker build . -f Dockerfile -t rate-limiting:local
 
-ictest-icq:
+ictest-ratelimit:
 	cd e2e && go test -race -v -timeout 15m -run TestRateLimitBasic .
