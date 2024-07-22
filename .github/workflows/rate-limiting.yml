@@ -40,5 +40,5 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Test
-        run: go test ./...
+        run: make test-unit
         working-directory: ${{ env.WORKING_DIRECTORY }}
