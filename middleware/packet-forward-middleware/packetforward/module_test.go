@@ -361,6 +361,7 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 	require.NoError(t, err)
 }
 
+<<<<<<< HEAD
 func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	var err error
 	ctl := gomock.NewController(t)
@@ -427,6 +428,8 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	require.NoError(t, err)
 }
 
+=======
+>>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 	var err error
 	ctl := gomock.NewController(t)

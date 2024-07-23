@@ -7,8 +7,11 @@ option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middle
 
 // GenesisState defines the packetforward genesis state
 message GenesisState {
+<<<<<<< HEAD
   Params params = 1 [ (gogoproto.nullable) = false ];
 
+=======
+>>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
   // key - information about forwarded packet: src_channel
   // (parsedReceiver.Channel), src_port (parsedReceiver.Port), sequence value -
   // information about original packet for refunding if necessary: retries,
@@ -19,6 +22,7 @@ message GenesisState {
   ];
 }
 
+<<<<<<< HEAD
 // Params defines the set of packetforward parameters.
 message Params {
   string fee_percentage = 1 [
@@ -28,6 +32,8 @@ message Params {
   ];
 }
 
+=======
+>>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 // InFlightPacket contains information about original packet for
 // writing the acknowledgement and refunding if necessary.
 message InFlightPacket {
