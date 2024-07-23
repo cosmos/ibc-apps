@@ -34,33 +34,25 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 
 	transferKeeperMock := mock.NewMockTransferKeeper(ctl)
 	channelKeeperMock := mock.NewMockChannelKeeper(ctl)
-	distributionKeeperMock := mock.NewMockDistributionKeeper(ctl)
 	bankKeeperMock := mock.NewMockBankKeeper(ctl)
 	ibcModuleMock := mock.NewMockIBCModule(ctl)
 	ics4WrapperMock := mock.NewMockICS4Wrapper(ctl)
 
-	paramsKeeper := initializer.paramsKeeper()
-	packetforwardKeeper := initializer.packetforwardKeeper(paramsKeeper, transferKeeperMock, channelKeeperMock, distributionKeeperMock, bankKeeperMock, ics4WrapperMock)
+	packetforwardKeeper := initializer.packetforwardKeeper(transferKeeperMock, channelKeeperMock, bankKeeperMock, ics4WrapperMock)
 
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
-
-	if err := packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams()); err != nil {
-		t.Fatal(err)
-	}
 
 	return &Setup{
 		Initializer: initializer,
 
 		Keepers: &testKeepers{
-			ParamsKeeper:        &paramsKeeper,
 			PacketForwardKeeper: packetforwardKeeper,
 		},
 
 		Mocks: &testMocks{
-			TransferKeeperMock:     transferKeeperMock,
-			DistributionKeeperMock: distributionKeeperMock,
-			IBCModuleMock:          ibcModuleMock,
-			ICS4WrapperMock:        ics4WrapperMock,
+			TransferKeeperMock: transferKeeperMock,
+			IBCModuleMock:      ibcModuleMock,
+			ICS4WrapperMock:    ics4WrapperMock,
 		},
 
 		ForwardMiddleware: initializer.forwardMiddleware(ibcModuleMock, packetforwardKeeper, 0, keeper.DefaultForwardTransferPacketTimeoutTimestamp),
@@ -77,15 +69,13 @@ type Setup struct {
 }
 
 type testKeepers struct {
-	ParamsKeeper        *paramskeeper.Keeper
 	PacketForwardKeeper *keeper.Keeper
 }
 
 type testMocks struct {
-	TransferKeeperMock     *mock.MockTransferKeeper
-	DistributionKeeperMock *mock.MockDistributionKeeper
-	IBCModuleMock          *mock.MockIBCModule
-	ICS4WrapperMock        *mock.MockICS4Wrapper
+	TransferKeeperMock *mock.MockTransferKeeper
+	IBCModuleMock      *mock.MockIBCModule
+	ICS4WrapperMock    *mock.MockICS4Wrapper
 }
 
 type initializer struct {
@@ -132,10 +122,8 @@ func (i initializer) paramsKeeper() paramskeeper.Keeper {
 }
 
 func (i initializer) packetforwardKeeper(
-	paramsKeeper paramskeeper.Keeper,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
-	distributionKeeper types.DistributionKeeper,
 	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 ) *keeper.Keeper {
@@ -149,7 +137,6 @@ func (i initializer) packetforwardKeeper(
 		storeKey,
 		transferKeeper,
 		channelKeeper,
-		distributionKeeper,
 		bankKeeper,
 		ics4Wrapper,
 		govModuleAddress,

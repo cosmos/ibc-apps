@@ -372,16 +372,9 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	cdc := setup.Initializer.Marshaler
 	forwardMiddleware := setup.ForwardMiddleware
 
-	// Set fee param to 10%
-	if err := setup.Keepers.PacketForwardKeeper.SetParams(ctx, types.NewParams(sdkmath.LegacyNewDecWithPrec(10, 2))); err != nil {
-		t.Fatal(err)
-	}
-
 	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
 	senderAccAddr := test.AccAddress()
-	intermediateAccAddr := test.AccAddressFromBech32(t, intermediateAddr)
 	testCoin := sdk.NewCoin(denom, sdkmath.NewInt(90))
-	feeCoins := sdk.Coins{sdk.NewCoin(denom, sdkmath.NewInt(10))}
 	metadata := &types.PacketMetadata{Forward: &types.ForwardMetadata{
 		Receiver: destAddr,
 		Port:     port,
@@ -397,12 +390,6 @@ func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
 	gomock.InOrder(
 		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetModifiedSender, senderAccAddr).
 			Return(acknowledgement),
-
-		setup.Mocks.DistributionKeeperMock.EXPECT().FundCommunityPool(
-			ctx,
-			feeCoins,
-			intermediateAccAddr,
-		).Return(nil),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
 			sdk.WrapSDKContext(ctx),
