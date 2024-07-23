@@ -49,7 +49,6 @@ type Keeper struct {
 
 	transferKeeper types.TransferKeeper
 	channelKeeper  types.ChannelKeeper
-	distrKeeper    types.DistributionKeeper
 	bankKeeper     types.BankKeeper
 	ics4Wrapper    porttypes.ICS4Wrapper
 }
@@ -61,7 +60,6 @@ func NewKeeper(
 	paramSpace paramtypes.Subspace,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
-	distrKeeper types.DistributionKeeper,
 	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 ) *Keeper {
@@ -77,7 +75,6 @@ func NewKeeper(
 
 		transferKeeper: transferKeeper,
 		channelKeeper:  channelKeeper,
-		distrKeeper:    distrKeeper,
 		bankKeeper:     bankKeeper,
 		ics4Wrapper:    ics4Wrapper,
 	}
@@ -218,6 +215,7 @@ func (k *Keeper) ForwardTransferPacket(
 	labels []metrics.Label,
 	nonrefundable bool,
 ) error {
+<<<<<<< HEAD
 	var err error
 	feeAmount := sdk.NewDecFromInt(token.Amount).Mul(k.GetFeePercentage(ctx)).RoundInt()
 	packetAmount := token.Amount.Sub(feeAmount)
@@ -237,12 +235,26 @@ func (k *Keeper) ForwardTransferPacket(
 			)
 			return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 		}
+=======
+	memo := ""
+
+	// set memo for next transfer with next from this transfer.
+	if metadata.Next != nil {
+		memoBz, err := json.Marshal(metadata.Next)
+		if err != nil {
+			k.Logger(ctx).Error("packetForwardMiddleware error marshaling next as JSON",
+				"error", err,
+			)
+			return errorsmod.Wrapf(sdkerrors.ErrJSONMarshal, err.Error())
+		}
+		memo = string(memoBz)
+>>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 	}
 
 	msgTransfer := transfertypes.NewMsgTransfer(
 		metadata.Port,
 		metadata.Channel,
-		packetCoin,
+		token,
 		receiver,
 		metadata.Receiver,
 		DefaultTransferPacketTimeoutHeight,
@@ -264,7 +276,7 @@ func (k *Keeper) ForwardTransferPacket(
 	k.Logger(ctx).Debug("packetForwardMiddleware ForwardTransferPacket",
 		"port", metadata.Port, "channel", metadata.Channel,
 		"sender", receiver, "receiver", metadata.Receiver,
-		"amount", packetCoin.Amount.String(), "denom", packetCoin.Denom,
+		"amount", token.Amount.String(), "denom", token.Denom,
 	)
 
 	// send tokens to destination
@@ -276,7 +288,7 @@ func (k *Keeper) ForwardTransferPacket(
 		k.Logger(ctx).Error("packetForwardMiddleware ForwardTransferPacket error",
 			"port", metadata.Port, "channel", metadata.Channel,
 			"sender", receiver, "receiver", metadata.Receiver,
-			"amount", packetCoin.Amount.String(), "denom", packetCoin.Denom,
+			"amount", token.Amount.String(), "denom", token.Denom,
 			"error", err,
 		)
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
@@ -285,7 +297,6 @@ func (k *Keeper) ForwardTransferPacket(
 	// Store the following information in keeper:
 	// key - information about forwarded packet: src_channel (parsedReceiver.Channel), src_port (parsedReceiver.Port), sequence
 	// value - information about original packet for refunding if necessary: retries, srcPacketSender, srcPacket.DestinationChannel, srcPacket.DestinationPort
-
 	if inFlightPacket == nil {
 		inFlightPacket = &types.InFlightPacket{
 			PacketData:            srcPacket.Data,

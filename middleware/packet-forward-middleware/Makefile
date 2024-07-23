@@ -142,10 +142,13 @@ cosmovisor:
 .PHONY: build build-linux build-simd-all build-simd-linux cosmovisor
 
 mocks: $(MOCKS_DIR)
-	go install go.uber.org/mock/mockgen@v0.2.0
+	go install go.uber.org/mock/mockgen@v0.4.0
 	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/packetforward/types TransferKeeper
+<<<<<<< HEAD
 	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/packetforward/types ChannelKeeper
 	mockgen -package=mock -destination=./test/mock/distribution_keeper.go $(GOMOD)/packetforward/types DistributionKeeper
+=======
+>>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/packetforward/types BankKeeper
 	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/packetforward/types ChannelKeeper
 	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v4/modules/core/05-port/types ICS4Wrapper
