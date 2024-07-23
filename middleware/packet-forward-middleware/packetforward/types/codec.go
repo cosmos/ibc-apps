@@ -7,9 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	amino = codec.NewLegacyAmino()
-)
+var amino = codec.NewLegacyAmino()
 
 func init() {
 	RegisterLegacyAminoCodec(amino)

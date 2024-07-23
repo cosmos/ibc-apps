@@ -20,8 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
@@ -108,17 +106,6 @@ func newInitializer(t *testing.T) initializer {
 		Marshaler:  marshaler,
 		Amino:      amino,
 	}
-}
-
-func (i initializer) paramsKeeper() paramskeeper.Keeper {
-	storeKey := storetypes.NewKVStoreKey(paramstypes.StoreKey)
-	transientStoreKey := storetypes.NewTransientStoreKey(paramstypes.TStoreKey)
-	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
-	i.StateStore.MountStoreWithDB(transientStoreKey, storetypes.StoreTypeTransient, i.DB)
-
-	paramsKeeper := paramskeeper.NewKeeper(i.Marshaler, i.Amino, storeKey, transientStoreKey)
-
-	return paramsKeeper
 }
 
 func (i initializer) packetforwardKeeper(

@@ -3,8 +3,9 @@ package upgrades
 import (
 	"context"
 
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
+
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
