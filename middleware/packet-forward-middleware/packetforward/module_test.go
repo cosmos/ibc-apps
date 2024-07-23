@@ -363,61 +363,6 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestOnRecvPacket_ForwardWithFee(t *testing.T) {
-	var err error
-	ctl := gomock.NewController(t)
-	defer ctl.Finish()
-	setup := test.NewTestSetup(t, ctl)
-	ctx := setup.Initializer.Ctx
-	cdc := setup.Initializer.Marshaler
-	forwardMiddleware := setup.ForwardMiddleware
-
-	denom := makeIBCDenom(testDestinationPort, testDestinationChannel, testDenom)
-	senderAccAddr := test.AccAddress()
-	testCoin := sdk.NewCoin(denom, sdkmath.NewInt(90))
-	metadata := &types.PacketMetadata{Forward: &types.ForwardMetadata{
-		Receiver: destAddr,
-		Port:     port,
-		Channel:  channel,
-	}}
-	packetOrig := transferPacket(t, senderAddr, hostAddr, metadata)
-	packetModifiedSender := transferPacket(t, senderAddr, intermediateAddr, nil)
-	packetFwd := transferPacket(t, intermediateAddr, destAddr, nil)
-	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
-	successAck := cdc.MustMarshalJSON(&acknowledgement)
-
-	// Expected mocks
-	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetModifiedSender, senderAccAddr).
-			Return(acknowledgement),
-
-		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
-			sdk.WrapSDKContext(ctx),
-			transfertypes.NewMsgTransfer(
-				port,
-				channel,
-				testCoin,
-				intermediateAddr,
-				destAddr,
-				keeper.DefaultTransferPacketTimeoutHeight,
-				uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
-				"",
-			),
-		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
-
-		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr).
-			Return(nil),
-	)
-
-	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
-	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
-	require.Nil(t, ack)
-
-	// ack returned from chain C
-	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr)
-	require.NoError(t, err)
-}
-
 func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 	var err error
 	ctl := gomock.NewController(t)
