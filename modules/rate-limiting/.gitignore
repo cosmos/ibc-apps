@@ -1,0 +1,42 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+**state.json
+**test.py
+**test.sh
+**test.py
+# build
+launch.sh
+build/*
+state/*
+scripts/state
+scripts/logs
+dockernet/state
+dockernet/logs
+dockernet/upgrades/binaries
+dockernet/upgrades/cosmovisor
+dockernet/temp.sh
+scripts/temp.sh
+vue/*
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+
+.DS_Store
+.terraform
+*.pem
+
+.vscode
+!.vscode/settings.json
+
+.ipynb_checkpoints/*
