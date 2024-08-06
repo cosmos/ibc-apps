@@ -230,7 +230,7 @@ func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap
 	}
 
 	// We remove the meta.callback provides instructions for post-send processing. This instruction are saved
-	// in the keepr (at the end of this function), and  at the end - it is set as  as it has already been processed.
+	// in the keeper (at the end of this function), and  at the end - it is set as  as it has already been processed.
 
 	// If the only available key in the memo is the callback, we should remove the memo
 	// from the data completely so the packet is sent without it.
