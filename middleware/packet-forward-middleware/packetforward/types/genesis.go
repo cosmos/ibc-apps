@@ -1,22 +1,19 @@
 package types
 
-// NewGenesisState creates a pfm GenesisState instance.
-func NewGenesisState(params Params, inFlightPackets map[string]InFlightPacket) *GenesisState {
-	return &GenesisState{
-		Params:          params,
-		InFlightPackets: inFlightPackets,
-	}
-}
+import "errors"
 
-// DefaultGenesisState returns a GenesisState with a default fee percentage of 0.
+// DefaultGenesisState returns a GenesisState with an empty map of in-flight packets.
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		Params:          DefaultParams(),
 		InFlightPackets: make(map[string]InFlightPacket),
 	}
 }
 
 // Validate performs basic genesis state validation returning an error upon any failure.
 func (gs GenesisState) Validate() error {
-	return gs.Params.Validate()
+	if gs.InFlightPackets == nil {
+		return errors.New("in-flight packets cannot be nil")
+	}
+
+	return nil
 }

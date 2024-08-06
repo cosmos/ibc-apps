@@ -8,8 +8,6 @@ option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middle
 
 // GenesisState defines the packetforward genesis state
 message GenesisState {
-  Params params = 1 [(gogoproto.nullable) = false];
-
   // key - information about forwarded packet: src_channel
   // (parsedReceiver.Channel), src_port (parsedReceiver.Port), sequence value -
   // information about original packet for refunding if necessary: retries,
@@ -17,15 +15,6 @@ message GenesisState {
   map<string, InFlightPacket> in_flight_packets = 2 [
     (gogoproto.moretags) = "yaml:\"in_flight_packets\"",
     (gogoproto.nullable) = false
-  ];
-}
-
-// Params defines the set of packetforward parameters.
-message Params {
-  string fee_percentage = 1 [
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable)   = false,
-    (amino.dont_omitempty) = true
   ];
 }
 

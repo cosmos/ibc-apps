@@ -6,18 +6,19 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/keeper"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/types"
 
 	errors "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 )
 
 type ContractAck struct {
@@ -92,9 +93,9 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 		return ack
 	}
 
-	amount, ok := sdk.NewIntFromString(data.GetAmount())
+	amount, ok := sdkmath.NewIntFromString(data.GetAmount())
 	if !ok {
-		// This should never happen, as it should've been caught in the underlaying call to OnRecvPacket,
+		// This should never happen, as it should've been caught in the underlying call to OnRecvPacket,
 		// but returning here for completeness
 		return NewEmitErrorAcknowledgement(ctx, types.ErrInvalidPacket, "Amount is not an int")
 	}
