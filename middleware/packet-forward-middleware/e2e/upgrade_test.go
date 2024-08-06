@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -100,21 +99,6 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 
 	ValidatorVoting(t, ctx, chain, proposalID, height, haltHeight)
 	UpgradeNodes(t, ctx, chain, client, haltHeight, upgradeRepo, upgradeDockerTag)
-
-	// Validate the PFM subspace -> keeper migration was successful.
-	cmd := []string{
-		chain.Config().Bin, "q", "packetforward", "params", "--output=json", "--node", chain.GetRPCAddress(),
-	}
-	stdout, _, err := chain.Exec(ctx, cmd, nil)
-	fmt.Println("stdout", string(stdout))
-	require.NoError(t, err, "error fetching pfm params")
-
-	var params packetforwardtypes.Params
-	err = json.Unmarshal(stdout, &params)
-	require.NoError(t, err, "error unmarshalling pfm params")
-	t.Logf("params: %+v", params)
-	require.Equal(t, sdk.NewDec(0), params.FeePercentage, "fee percentage not equal to expected value")
-
 }
 
 func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, upgradeName string, haltHeight uint64) string {
