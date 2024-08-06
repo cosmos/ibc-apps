@@ -20,8 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
@@ -34,33 +32,25 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 
 	transferKeeperMock := mock.NewMockTransferKeeper(ctl)
 	channelKeeperMock := mock.NewMockChannelKeeper(ctl)
-	distributionKeeperMock := mock.NewMockDistributionKeeper(ctl)
 	bankKeeperMock := mock.NewMockBankKeeper(ctl)
 	ibcModuleMock := mock.NewMockIBCModule(ctl)
 	ics4WrapperMock := mock.NewMockICS4Wrapper(ctl)
 
-	paramsKeeper := initializer.paramsKeeper()
-	packetforwardKeeper := initializer.packetforwardKeeper(paramsKeeper, transferKeeperMock, channelKeeperMock, distributionKeeperMock, bankKeeperMock, ics4WrapperMock)
+	packetforwardKeeper := initializer.packetforwardKeeper(transferKeeperMock, channelKeeperMock, bankKeeperMock, ics4WrapperMock)
 
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
-
-	if err := packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams()); err != nil {
-		t.Fatal(err)
-	}
 
 	return &Setup{
 		Initializer: initializer,
 
 		Keepers: &testKeepers{
-			ParamsKeeper:        &paramsKeeper,
 			PacketForwardKeeper: packetforwardKeeper,
 		},
 
 		Mocks: &testMocks{
-			TransferKeeperMock:     transferKeeperMock,
-			DistributionKeeperMock: distributionKeeperMock,
-			IBCModuleMock:          ibcModuleMock,
-			ICS4WrapperMock:        ics4WrapperMock,
+			TransferKeeperMock: transferKeeperMock,
+			IBCModuleMock:      ibcModuleMock,
+			ICS4WrapperMock:    ics4WrapperMock,
 		},
 
 		ForwardMiddleware: initializer.forwardMiddleware(ibcModuleMock, packetforwardKeeper, 0, keeper.DefaultForwardTransferPacketTimeoutTimestamp),
@@ -77,15 +67,13 @@ type Setup struct {
 }
 
 type testKeepers struct {
-	ParamsKeeper        *paramskeeper.Keeper
 	PacketForwardKeeper *keeper.Keeper
 }
 
 type testMocks struct {
-	TransferKeeperMock     *mock.MockTransferKeeper
-	DistributionKeeperMock *mock.MockDistributionKeeper
-	IBCModuleMock          *mock.MockIBCModule
-	ICS4WrapperMock        *mock.MockICS4Wrapper
+	TransferKeeperMock *mock.MockTransferKeeper
+	IBCModuleMock      *mock.MockIBCModule
+	ICS4WrapperMock    *mock.MockICS4Wrapper
 }
 
 type initializer struct {
@@ -120,22 +108,9 @@ func newInitializer(t *testing.T) initializer {
 	}
 }
 
-func (i initializer) paramsKeeper() paramskeeper.Keeper {
-	storeKey := storetypes.NewKVStoreKey(paramstypes.StoreKey)
-	transientStoreKey := storetypes.NewTransientStoreKey(paramstypes.TStoreKey)
-	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
-	i.StateStore.MountStoreWithDB(transientStoreKey, storetypes.StoreTypeTransient, i.DB)
-
-	paramsKeeper := paramskeeper.NewKeeper(i.Marshaler, i.Amino, storeKey, transientStoreKey)
-
-	return paramsKeeper
-}
-
 func (i initializer) packetforwardKeeper(
-	paramsKeeper paramskeeper.Keeper,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
-	distributionKeeper types.DistributionKeeper,
 	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 ) *keeper.Keeper {
@@ -149,7 +124,6 @@ func (i initializer) packetforwardKeeper(
 		storeKey,
 		transferKeeper,
 		channelKeeper,
-		distributionKeeper,
 		bankKeeper,
 		ics4Wrapper,
 		govModuleAddress,

@@ -304,7 +304,7 @@ func TestTimeoutOnForward(t *testing.T) {
 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 	require.NoError(t, err)
 
-	err = testutil.WaitForBlocks(ctx, 5, chainA)
+	err = testutil.WaitForBlocks(ctx, 10, chainA)
 	require.NoError(t, err)
 
 	// Assert balances are updated to reflect tokens now being on ChainD
@@ -411,4 +411,143 @@ func TestTimeoutOnForward(t *testing.T) {
 	require.True(t, firstHopEscrowBalance.Equal(transferAmount))
 	require.True(t, secondHopEscrowBalance.Equal(transferAmount))
 	require.True(t, thirdHopEscrowBalance.Equal(transferAmount))
+
+	// ---
+
+	// Compose IBC tx that will go from ChainD -> ChainC -> ChainB -> ChainA and succeed.
+	transfer = ibc.WalletAmount{
+		Address: userC.FormattedAddress(),
+		Denom:   thirdHopDenom,
+		Amount:  transferAmount,
+	}
+
+	secondHopMetadata = &PacketMetadata{
+		Forward: &ForwardMetadata{
+			Receiver: userA.FormattedAddress(),
+			Channel:  baChan.ChannelID,
+			Port:     baChan.PortID,
+		},
+	}
+	nextBz, err = json.Marshal(secondHopMetadata)
+	require.NoError(t, err)
+	next = string(nextBz)
+
+	firstHopMetadata = &PacketMetadata{
+		Forward: &ForwardMetadata{
+			Receiver: userB.FormattedAddress(),
+			Channel:  cbChan.ChannelID,
+			Port:     cbChan.PortID,
+			Next:     &next,
+		},
+	}
+
+	memo, err = json.Marshal(firstHopMetadata)
+	require.NoError(t, err)
+
+	chainDHeight, err = chainD.Height(ctx)
+	require.NoError(t, err)
+
+	transferTx, err = chainD.SendIBCTransfer(ctx, dcChan.ChannelID, userD.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+	require.NoError(t, err)
+
+	_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+25, transferTx.Packet)
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, chainD)
+	require.NoError(t, err)
+
+	// Assert balances to ensure timeout happened and user funds are still present on ChainD
+	chainABalance, err = chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+	require.NoError(t, err)
+
+	chainBBalance, err = chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+	require.NoError(t, err)
+
+	chainCBalance, err = chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+	require.NoError(t, err)
+
+	chainDBalance, err = chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
+	require.NoError(t, err)
+
+	require.True(t, chainABalance.Equal(initBal))
+	require.True(t, chainBBalance.Equal(zeroBal))
+	require.True(t, chainCBalance.Equal(zeroBal))
+	require.True(t, chainDBalance.Equal(zeroBal))
+
+	firstHopEscrowBalance, err = chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+	require.NoError(t, err)
+
+	secondHopEscrowBalance, err = chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+	require.NoError(t, err)
+
+	thirdHopEscrowBalance, err = chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
+	require.NoError(t, err)
+
+	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
+	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+	require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
+
+	// ----- 2
+
+	// Compose IBC tx that will go from ChainD -> ChainC -> ChainB -> ChainA and succeed.
+	transfer = ibc.WalletAmount{
+		Address: userB.FormattedAddress(),
+		Denom:   chainA.Config().Denom,
+		Amount:  transferAmount,
+	}
+
+	firstHopMetadata = &PacketMetadata{
+		Forward: &ForwardMetadata{
+			Receiver: userA.FormattedAddress(),
+			Channel:  baChan.ChannelID,
+			Port:     baChan.PortID,
+			Timeout:  1 * time.Second,
+		},
+	}
+
+	memo, err = json.Marshal(firstHopMetadata)
+	require.NoError(t, err)
+
+	chainAHeight, err = chainA.Height(ctx)
+	require.NoError(t, err)
+
+	transferTx, err = chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+	require.NoError(t, err)
+
+	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
+	require.NoError(t, err)
+
+	err = testutil.WaitForBlocks(ctx, 5, chainA)
+	require.NoError(t, err)
+
+	// Assert balances to ensure timeout happened and user funds are still present on ChainD
+	chainABalance, err = chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+	require.NoError(t, err)
+
+	chainBBalance, err = chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+	require.NoError(t, err)
+
+	chainCBalance, err = chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+	require.NoError(t, err)
+
+	chainDBalance, err = chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
+	require.NoError(t, err)
+
+	require.True(t, chainABalance.Equal(initBal))
+	require.True(t, chainBBalance.Equal(zeroBal))
+	require.True(t, chainCBalance.Equal(zeroBal))
+	require.True(t, chainDBalance.Equal(zeroBal))
+
+	firstHopEscrowBalance, err = chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+	require.NoError(t, err)
+
+	secondHopEscrowBalance, err = chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+	require.NoError(t, err)
+
+	thirdHopEscrowBalance, err = chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
+	require.NoError(t, err)
+
+	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
+	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+	require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
 }

@@ -3,10 +3,10 @@ package types_test
 import (
 	"testing"
 
-	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	sdkmath "cosmossdk.io/math"
 )
 
 func TestAddInflow(t *testing.T) {

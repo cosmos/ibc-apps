@@ -3,25 +3,30 @@ package types_test
 import (
 	"testing"
 
-	sdkmath "cosmossdk.io/math"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/stretchr/testify/require"
-
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp/apptesting"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 // ----------------------------------------------
 //               MsgAddRateLimit
 // ----------------------------------------------
 
+const (
+	validChannelId = "channel-0"
+	validDenom     = "denom"
+)
+
 func TestMsgAddRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
+
 	validMaxPercentSend := sdkmath.NewInt(10)
 	validMaxPercentRecv := sdkmath.NewInt(10)
 	validDurationHours := uint64(60)
@@ -179,8 +184,6 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
 	validMaxPercentSend := sdkmath.NewInt(10)
 	validMaxPercentRecv := sdkmath.NewInt(10)
 	validDurationHours := uint64(60)
@@ -338,8 +341,6 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
 
 	testCases := []struct {
 		name string
@@ -407,8 +408,6 @@ func TestMsgResetRateLimit(t *testing.T) {
 	apptesting.SetupConfig()
 
 	validAuthority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
-	validDenom := "denom"
-	validChannelId := "channel-0"
 
 	testCases := []struct {
 		name string

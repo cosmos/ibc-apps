@@ -1,6 +1,6 @@
 module github.com/cosmos/ibc-apps/modules/rate-limiting/v8
 
-go 1.22
+go 1.22.0
 
 require (
 	cosmossdk.io/api v0.7.4

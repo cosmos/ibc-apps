@@ -496,7 +496,6 @@ func NewSimApp(
 		app.keys[packetforwardtypes.StoreKey],
 		nil, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
 		app.IBCKeeper.ChannelKeeper,
-		app.DistrKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		authority,
@@ -990,7 +989,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
-	paramsKeeper.Subspace(packetforwardtypes.ModuleName).WithKeyTable(packetforwardtypes.ParamKeyTable())
 
 	return paramsKeeper
 }

@@ -1,18 +1,18 @@
 package apptesting
 
 import (
-	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/cometbft/cometbft/crypto/ed25519"
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp"
 	"github.com/stretchr/testify/suite"
 
-	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/cometbft/cometbft/crypto/ed25519"
 )
 
-var (
-	TestChainId = "chain-0"
-)
+var TestChainId = "chain-0"
 
 type AppTestHelper struct {
 	suite.Suite
@@ -60,7 +60,8 @@ func (s *AppTestHelper) ConfirmUpgradeSucceededs(upgradeName string, upgradeHeig
 
 	s.Ctx = s.Ctx.WithBlockHeight(upgradeHeight)
 	s.Require().NotPanics(func() {
-		s.App.BeginBlocker(s.Ctx)
+		_, err := s.App.BeginBlocker(s.Ctx)
+		s.Require().NoError(err)
 	})
 }
 

@@ -26,11 +26,6 @@ type ChannelKeeper interface {
 	LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, *capabilitytypes.Capability, error)
 }
 
-// DistributionKeeper defines the expected distribution keeper
-type DistributionKeeper interface {
-	FundCommunityPool(ctx context.Context, amount sdk.Coins, sender sdk.AccAddress) error
-}
-
 // BankKeeper defines the expected bank keeper
 type BankKeeper interface {
 	SendCoins(ctx context.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error

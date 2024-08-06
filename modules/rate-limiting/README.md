@@ -20,9 +20,9 @@ To add the rate limit module, wire it up in `app.go` in line with the following 
 
 // Import the rate limit module
 import (
-  "github.com/Stride-Labs/ibc-rate-limiting/v1/ratelimit"
-  ratelimitkeeper "github.com/Stride-Labs/ibc-rate-limiting/v1/ratelimit/keeper"
-  ratelimittypes "github.com/Stride-Labs/ibc-rate-limiting/v1/ratelimit/types"
+  "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/ratelimit"
+  ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/ratelimit/keeper"
+  ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/ratelimit/types"
 )
 
 ...
@@ -63,10 +63,10 @@ app.RatelimitKeeper = *ratelimitkeeper.NewKeeper(
 
 // Add the rate limit module to a middleware stack with the transfer module
 //
-// Note: If the integrating chain already has middleware wired, you'll just 
+// Note: If the integrating chain already has middleware wired, you'll just
 // have to add the rate limit module to the existing stack
 //
-// The following will create the following stack 
+// The following will create the following stack
 // - Core IBC
 // - ratelimit
 // - transfer
@@ -146,7 +146,7 @@ The module also contains a blacklist to completely halt all IBC transfers for a 
 
 ## Address Whitelist
 
-There is also a whitelist, mainly used to exclude protocol-owned accounts. For instance, Stride periodically bundles liquid staking deposits and transfers in a single transaction at the top of the epoch. Without a whitelist, this transfer would make the rate limit more likely to trigger a false positive. 
+There is also a whitelist, mainly used to exclude protocol-owned accounts. For instance, Stride periodically bundles liquid staking deposits and transfers in a single transaction at the top of the epoch. Without a whitelist, this transfer would make the rate limit more likely to trigger a false positive.
 
 ## Denoms
 
@@ -241,7 +241,7 @@ RateLimit
 ```
 
 ## Keeper functions
-### RateLimit 
+### RateLimit
 ```go
 // Stores a RateLimit object in the store
 SetRateLimit(rateLimit types.RateLimit)
@@ -259,14 +259,14 @@ GetAllRateLimits() []RateLimit
 ResetRateLimit(denom string, channelId string)
 ```
 
-### PendingSendPacket 
+### PendingSendPacket
 ```go
 // Sets the sequence number of a packet that was just sent
-SetPendingSendPacket(channelId string, sequence uint64) 
+SetPendingSendPacket(channelId string, sequence uint64)
 
 // Remove a pending packet sequence number from the store
 // This is used after the ack or timeout for a packet has been received
-RemovePendingSendPacket(channelId string, sequence uint64) 
+RemovePendingSendPacket(channelId string, sequence uint64)
 
 // Checks whether the packet sequence number is in the store - indicating that it was
 // sent during the current quota
@@ -274,13 +274,13 @@ CheckPacketSentDuringCurrentQuota(channelId string, sequence uint64) bool
 
 // Removes all pending sequence numbers from the store
 // This is executed when the quota resets
-RemoveAllChannelPendingSendPackets(channelId string) 
+RemoveAllChannelPendingSendPackets(channelId string)
 ```
 
 ### DenomBlacklist
 ```go
 // Adds a denom to a blacklist to prevent all IBC transfers with this denom
-AddDenomToBlacklist(denom string) 
+AddDenomToBlacklist(denom string)
 
 // Removes a denom from a blacklist to re-enable IBC transfers for that denom
 RemoveDenomFromBlacklist(denom string)
@@ -289,7 +289,7 @@ RemoveDenomFromBlacklist(denom string)
 IsDenomBlacklisted(denom string) bool
 
 // Get all the blacklisted denoms
-GetAllBlacklistedDenoms() []string 
+GetAllBlacklistedDenoms() []string
 ```
 
 ### AddressWhitelist
@@ -299,10 +299,10 @@ GetAllBlacklistedDenoms() []string
 SetWhitelistedAddressPair(whitelist types.WhitelistedAddressPair)
 
 // Removes a whitelisted address pair so that it's transfers are counted in the quota
-RemoveWhitelistedAddressPair(sender, receiver string) 
+RemoveWhitelistedAddressPair(sender, receiver string)
 
 // Check if a sender/receiver address pair is currently whitelisted
-IsAddressPairWhitelisted(sender, receiver string) bool 
+IsAddressPairWhitelisted(sender, receiver string) bool
 
 // Get all the whitelisted addresses
 GetAllWhitelistedAddressPairs() []types.WhitelistedAddressPair
@@ -317,7 +317,7 @@ GetAllWhitelistedAddressPairs() []types.WhitelistedAddressPair
 CheckRateLimitAndUpdateFlow(direction types.PacketDirection, packetInfo RateLimitedPacketInfo) (updated bool)
 
 // Reverts the change in outflow from a SendPacket if it fails or times out
-UndoSendPacket(channelId string, sequence uint64, denom string, amount sdkmath.Int) 
+UndoSendPacket(channelId string, sequence uint64, denom string, amount sdkmath.Int)
 ```
 
 ## Middleware Functions

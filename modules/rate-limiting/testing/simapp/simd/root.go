@@ -5,10 +5,13 @@ import (
 	"io"
 	"os"
 
+	dbm "github.com/cosmos/cosmos-db"
 	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp"
 	appparams "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp/params"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+
+	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -26,10 +29,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	"cosmossdk.io/log"
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
-	dbm "github.com/cosmos/cosmos-db"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the
@@ -117,7 +118,6 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig appparams.EncodingConfig
 		txCommand(),
 		keys.Commands(),
 	)
-
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
