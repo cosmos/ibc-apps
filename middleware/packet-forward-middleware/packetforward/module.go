@@ -1,12 +1,10 @@
 package packetforward
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/client/cli"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
 	"github.com/gorilla/mux"
@@ -63,17 +61,16 @@ func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Rout
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the packetforward module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	_ = types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
 }
 
 // GetTxCmd implements AppModuleBasic interface
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.NewTxCmd()
+	return nil
 }
 
 // GetQueryCmd implements AppModuleBasic interface
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd()
+	return nil
 }
 
 // AppModule represents the AppModule for this module
@@ -109,7 +106,6 @@ func (am AppModule) LegacyQuerierHandler(*codec.LegacyAmino) sdk.Querier {
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 // InitGenesis performs genesis initialization for the packetforward module. It returns

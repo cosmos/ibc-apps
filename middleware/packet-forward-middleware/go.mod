@@ -13,7 +13,6 @@ require (
 	github.com/cosmos/cosmos-sdk v0.46.15
 	github.com/cosmos/ibc-go/v6 v6.2.0
 	github.com/gogo/protobuf v1.3.3
-	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/iancoleman/orderedmap v0.2.0
@@ -22,8 +21,6 @@ require (
 	github.com/tendermint/tendermint v0.34.29
 	github.com/tendermint/tm-db v0.6.7
 	go.uber.org/mock v0.2.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
-	google.golang.org/grpc v1.56.2
 )
 
 require (
@@ -59,6 +56,7 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/golang/glog v1.1.0 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -113,7 +111,9 @@ require (
 	golang.org/x/term v0.7.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/genproto v0.0.0-20230525234025-438c736192d0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
+	google.golang.org/grpc v1.56.2 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
