@@ -8,11 +8,6 @@ import (
 
 // InitGenesis
 func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
-<<<<<<< HEAD
-	k.SetParams(ctx, state.Params)
-
-=======
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 	// Initialize store refund path for forwarded packets in genesis state that have not yet been acked.
 	store := ctx.KVStore(k.storeKey)
 	for key, value := range state.InFlightPackets {

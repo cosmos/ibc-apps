@@ -38,15 +38,8 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *TestSetup {
 
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
 
-<<<<<<< HEAD
-	packetforwardKeeper.SetParams(initializer.Ctx, types.DefaultParams())
-
 	return &TestSetup{
-=======
-	return &Setup{
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 		Initializer: initializer,
-
 		Keepers: &testKeepers{
 			PacketForwardKeeper: packetforwardKeeper,
 		},
@@ -110,20 +103,6 @@ func newInitializer() initializer {
 	}
 }
 
-<<<<<<< HEAD
-func (i initializer) paramsKeeper() paramskeeper.Keeper {
-	storeKey := sdk.NewKVStoreKey(paramstypes.StoreKey)
-	transientStoreKey := sdk.NewTransientStoreKey(paramstypes.TStoreKey)
-	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
-	i.StateStore.MountStoreWithDB(transientStoreKey, storetypes.StoreTypeTransient, i.DB)
-
-	paramsKeeper := paramskeeper.NewKeeper(i.Marshaler, i.Amino, storeKey, transientStoreKey)
-
-	return paramsKeeper
-}
-
-=======
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 func (i initializer) packetforwardKeeper(
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
@@ -133,11 +112,9 @@ func (i initializer) packetforwardKeeper(
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 
-	subspace := paramsKeeper.Subspace(types.ModuleName)
 	packetforwardKeeper := keeper.NewKeeper(
 		i.Marshaler,
 		storeKey,
-		subspace,
 		transferKeeper,
 		channelKeeper,
 		bankKeeper,

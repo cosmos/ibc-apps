@@ -18,8 +18,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
@@ -45,9 +43,8 @@ var (
 
 // Keeper defines the packet forward middleware keeper
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	storeKey   storetypes.StoreKey
-	paramSpace paramtypes.Subspace
+	cdc      codec.BinaryCodec
+	storeKey storetypes.StoreKey
 
 	transferKeeper types.TransferKeeper
 	channelKeeper  types.ChannelKeeper
@@ -59,27 +56,16 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	key storetypes.StoreKey,
-	paramSpace paramtypes.Subspace,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 ) *Keeper {
-	// set KeyTable if it has not already been set
-	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return &Keeper{
 		cdc:            cdc,
 		storeKey:       key,
 		transferKeeper: transferKeeper,
 		channelKeeper:  channelKeeper,
-<<<<<<< HEAD
-		paramSpace:     paramSpace,
-		distrKeeper:    distrKeeper,
-=======
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 		bankKeeper:     bankKeeper,
 		ics4Wrapper:    ics4Wrapper,
 	}
@@ -220,30 +206,6 @@ func (k *Keeper) ForwardTransferPacket(
 	labels []metrics.Label,
 	nonrefundable bool,
 ) error {
-<<<<<<< HEAD
-	var err error
-	feeAmount := sdk.NewDecFromInt(token.Amount).Mul(k.GetFeePercentage(ctx)).RoundInt()
-	packetAmount := token.Amount.Sub(feeAmount)
-	feeCoins := sdk.Coins{sdk.NewCoin(token.Denom, feeAmount)}
-	packetCoin := sdk.NewCoin(token.Denom, packetAmount)
-
-	// pay fees
-	if feeAmount.IsPositive() {
-		hostAccAddr, err := sdk.AccAddressFromBech32(receiver)
-		if err != nil {
-			return err
-		}
-		err = k.distrKeeper.FundCommunityPool(ctx, feeCoins, hostAccAddr)
-		if err != nil {
-			k.Logger(ctx).Error("packetForwardMiddleware error funding community pool",
-				"error", err,
-			)
-			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
-		}
-	}
-
-=======
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 	memo := ""
 
 	// set memo for next transfer with next from this transfer.

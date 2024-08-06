@@ -5,26 +5,18 @@ import (
 	"fmt"
 	"math/rand"
 
-<<<<<<< HEAD
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/client/cli"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
-	"github.com/gorilla/mux"
-=======
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/exported"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
-	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v6/packetforward/types"
+	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
@@ -113,10 +105,7 @@ func (am AppModule) LegacyQuerierHandler(*codec.LegacyAmino) sdk.Querier {
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-<<<<<<< HEAD
-	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-=======
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
+
 }
 
 // InitGenesis performs genesis initialization for the packetforward module. It returns

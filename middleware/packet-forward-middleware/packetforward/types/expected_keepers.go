@@ -24,14 +24,6 @@ type ChannelKeeper interface {
 	LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, *capabilitytypes.Capability, error)
 }
 
-<<<<<<< HEAD
-// DistributionKeeper defines the expected distribution keeper
-type DistributionKeeper interface {
-	FundCommunityPool(ctx sdk.Context, amount sdk.Coins, sender sdk.AccAddress) error
-}
-
-=======
->>>>>>> 26d8080 (refactor: remove the ability to take a fee for each forwarded packet (#202))
 // BankKeeper defines the expected bank keeper
 type BankKeeper interface {
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
