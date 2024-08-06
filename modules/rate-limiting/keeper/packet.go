@@ -146,8 +146,8 @@ func ParseDenomFromRecvPacket(packet channeltypes.Packet, packetData transfertyp
 // For a SEND packet, the Stride channelID is the SOURCE channel
 // For a RECEIVE packet, the Stride channelID is the DESTINATION channel
 //
-// The Source and Desination are defined from the perspective of a packet recipient
-// Meaning, when a send packet lands on a the host chain, the "Source" will be the Stride Channel,
+// The Source and Designation are defined from the perspective of a packet recipient
+// Meaning, when a send packet lands on the host chain, the "Source" will be the Stride Channel,
 // and the "Destination" will be the Host Channel
 // And, when a receive packet lands on a Stride, the "Source" will be the host zone's channel,
 // and the "Destination" will be the Stride Channel
