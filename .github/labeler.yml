@@ -9,3 +9,6 @@ packet-forward-middleware:
 
 polytone:
   - cosmwasm/polytone/**
+
+rate-limit:
+  - modules/rate-limit/**

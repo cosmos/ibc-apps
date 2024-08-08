@@ -35,7 +35,6 @@ type IBCMiddleware struct {
 
 	retriesOnTimeout uint8
 	forwardTimeout   time.Duration
-	refundTimeout    time.Duration
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application.
@@ -44,14 +43,12 @@ func NewIBCMiddleware(
 	k *keeper.Keeper,
 	retriesOnTimeout uint8,
 	forwardTimeout time.Duration,
-	refundTimeout time.Duration,
 ) IBCMiddleware {
 	return IBCMiddleware{
 		app:              app,
 		keeper:           k,
 		retriesOnTimeout: retriesOnTimeout,
 		forwardTimeout:   forwardTimeout,
-		refundTimeout:    refundTimeout,
 	}
 }
 
@@ -361,7 +358,7 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 		return im.app.OnTimeoutPacket(ctx, packet, relayer)
 	}
 
-	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnAcknowledgementPacket",
+	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnTimeoutPacket",
 		"sequence", packet.Sequence,
 		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
