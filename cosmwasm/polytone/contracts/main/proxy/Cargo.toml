@@ -1,0 +1,45 @@
+[package]
+name         = "polytone-proxy"
+authors      = ["ekez <ekez@withoutdoing.com>"]
+description  = "An Interchain Account contract."
+edition      = { workspace = true }
+license      = { workspace = true }
+repository   = { workspace = true }
+rust-version = { workspace = true }
+version      = { workspace = true }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# for more explicit tests, cargo test --features=backtraces
+backtraces = ["cosmwasm-std/backtraces"]
+# disables #[entry_point] (i.e. instantiate/execute/query) export
+library = []
+interface = ["dep:cw-orch"]
+
+# This is here inspite of the warnings to make sure it is not missed
+# if the contract is taken out of the workspace
+[profile.release]
+codegen-units    = 1
+debug            = false
+debug-assertions = false
+incremental      = false
+lto              = true
+opt-level        = 3
+overflow-checks  = true    # very important, do not turn these off.
+panic            = 'abort'
+rpath            = false
+
+[dependencies]
+cosmwasm-schema = { workspace = true }
+cosmwasm-std    = { workspace = true }
+cw-storage-plus = { workspace = true }
+cw-utils        = { workspace = true }
+cw2             = { workspace = true }
+thiserror       = { workspace = true }
+polytone        = { workspace = true }
+cw-orch         = { workspace = true, optional = true }
+
+[dev-dependencies]
+cw-multi-test = { workspace = true }
