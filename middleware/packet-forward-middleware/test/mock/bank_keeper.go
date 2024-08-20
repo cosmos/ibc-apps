@@ -43,7 +43,7 @@ func (m *MockBankKeeper) BurnCoins(arg0 types.Context, arg1 string, arg2 types.C
 }
 
 // BurnCoins indicates an expected call of BurnCoins.
-func (mr *MockBankKeeperMockRecorder) BurnCoins(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) BurnCoins(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BurnCoins", reflect.TypeOf((*MockBankKeeper)(nil).BurnCoins), arg0, arg1, arg2)
 }
@@ -57,7 +57,7 @@ func (m *MockBankKeeper) MintCoins(arg0 types.Context, arg1 string, arg2 types.C
 }
 
 // MintCoins indicates an expected call of MintCoins.
-func (mr *MockBankKeeperMockRecorder) MintCoins(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) MintCoins(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MintCoins", reflect.TypeOf((*MockBankKeeper)(nil).MintCoins), arg0, arg1, arg2)
 }
@@ -71,7 +71,7 @@ func (m *MockBankKeeper) SendCoins(arg0 types.Context, arg1, arg2 types.AccAddre
 }
 
 // SendCoins indicates an expected call of SendCoins.
-func (mr *MockBankKeeperMockRecorder) SendCoins(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) SendCoins(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendCoins", reflect.TypeOf((*MockBankKeeper)(nil).SendCoins), arg0, arg1, arg2, arg3)
 }
@@ -85,7 +85,7 @@ func (m *MockBankKeeper) SendCoinsFromAccountToModule(arg0 types.Context, arg1 t
 }
 
 // SendCoinsFromAccountToModule indicates an expected call of SendCoinsFromAccountToModule.
-func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendCoinsFromAccountToModule", reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromAccountToModule), arg0, arg1, arg2, arg3)
 }
@@ -99,7 +99,7 @@ func (m *MockBankKeeper) SendCoinsFromModuleToAccount(arg0 types.Context, arg1 s
 }
 
 // SendCoinsFromModuleToAccount indicates an expected call of SendCoinsFromModuleToAccount.
-func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToAccount(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToAccount(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendCoinsFromModuleToAccount", reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromModuleToAccount), arg0, arg1, arg2, arg3)
 }

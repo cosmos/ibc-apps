@@ -51,7 +51,6 @@ type Keeper struct {
 
 	transferKeeper types.TransferKeeper
 	channelKeeper  types.ChannelKeeper
-	distrKeeper    types.DistributionKeeper
 	bankKeeper     types.BankKeeper
 	ics4Wrapper    porttypes.ICS4Wrapper
 
@@ -66,7 +65,6 @@ func NewKeeper(
 	key storetypes.StoreKey,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
-	distrKeeper types.DistributionKeeper,
 	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 	authority string,
@@ -76,7 +74,6 @@ func NewKeeper(
 		storeKey:       key,
 		transferKeeper: transferKeeper,
 		channelKeeper:  channelKeeper,
-		distrKeeper:    distrKeeper,
 		bankKeeper:     bankKeeper,
 		ics4Wrapper:    ics4Wrapper,
 		authority:      authority,
@@ -260,7 +257,7 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 					ctx, transfertypes.ModuleName, newToken,
 				); err != nil {
 					// NOTE: should not happen as the module account was
-					// retrieved on the step above and it has enough balace
+					// retrieved on the step above and it has enough balance
 					// to burn.
 					panic(fmt.Sprintf("cannot burn coins after a successful send from escrow account to module account: %v", err))
 				}
@@ -319,27 +316,6 @@ func (k *Keeper) ForwardTransferPacket(
 	labels []metrics.Label,
 	nonrefundable bool,
 ) error {
-	var err error
-	feeAmount := sdk.NewDecFromInt(token.Amount).Mul(k.GetFeePercentage(ctx)).RoundInt()
-	packetAmount := token.Amount.Sub(feeAmount)
-	feeCoins := sdk.Coins{sdk.NewCoin(token.Denom, feeAmount)}
-	packetCoin := sdk.NewCoin(token.Denom, packetAmount)
-
-	// pay fees
-	if feeAmount.IsPositive() {
-		hostAccAddr, err := sdk.AccAddressFromBech32(receiver)
-		if err != nil {
-			return err
-		}
-		err = k.distrKeeper.FundCommunityPool(ctx, feeCoins, hostAccAddr)
-		if err != nil {
-			k.Logger(ctx).Error("packetForwardMiddleware error funding community pool",
-				"error", err,
-			)
-			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
-		}
-	}
-
 	memo := ""
 
 	// set memo for next transfer with next from this transfer.
@@ -357,7 +333,7 @@ func (k *Keeper) ForwardTransferPacket(
 	msgTransfer := transfertypes.NewMsgTransfer(
 		metadata.Port,
 		metadata.Channel,
-		packetCoin,
+		token,
 		receiver,
 		metadata.Receiver,
 		DefaultTransferPacketTimeoutHeight,
@@ -368,7 +344,7 @@ func (k *Keeper) ForwardTransferPacket(
 	k.Logger(ctx).Debug("packetForwardMiddleware ForwardTransferPacket",
 		"port", metadata.Port, "channel", metadata.Channel,
 		"sender", receiver, "receiver", metadata.Receiver,
-		"amount", packetCoin.Amount.String(), "denom", packetCoin.Denom,
+		"amount", token.Amount.String(), "denom", token.Denom,
 	)
 
 	// send tokens to destination
@@ -380,7 +356,7 @@ func (k *Keeper) ForwardTransferPacket(
 		k.Logger(ctx).Error("packetForwardMiddleware ForwardTransferPacket error",
 			"port", metadata.Port, "channel", metadata.Channel,
 			"sender", receiver, "receiver", metadata.Receiver,
-			"amount", packetCoin.Amount.String(), "denom", packetCoin.Denom,
+			"amount", token.Amount.String(), "denom", token.Denom,
 			"error", err,
 		)
 		return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
@@ -389,7 +365,6 @@ func (k *Keeper) ForwardTransferPacket(
 	// Store the following information in keeper:
 	// key - information about forwarded packet: src_channel (parsedReceiver.Channel), src_port (parsedReceiver.Port), sequence
 	// value - information about original packet for refunding if necessary: retries, srcPacketSender, srcPacket.DestinationChannel, srcPacket.DestinationPort
-
 	if inFlightPacket == nil {
 		inFlightPacket = &types.InFlightPacket{
 			PacketData:            srcPacket.Data,

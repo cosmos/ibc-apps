@@ -1,7 +1,7 @@
 # docker build . -t pfm:local
 # docker run --rm -it pfm:local q ibc-router
 
-FROM golang:1.21-alpine3.18 as builder
+FROM golang:1.22-alpine3.20 as builder
 
 RUN set -eux; apk add --no-cache git libusb-dev linux-headers gcc musl-dev make;
 

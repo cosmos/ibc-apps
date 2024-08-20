@@ -6,8 +6,8 @@ on:
       - '.github/workflows/packet-forward-middleware.yml'
 
 env:
-    LINT_VERSION: v1.55.2
-    GO_VERSION: 1.21.0
+    LINT_VERSION: v1.56.2
+    GO_VERSION: 1.22.0
     WORKING_DIRECTORY: middleware/packet-forward-middleware
 
     DOCKER_TAG: pfm:local

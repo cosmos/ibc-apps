@@ -1,6 +1,6 @@
 package types
 
-import fmt "fmt"
+import "fmt"
 
 const (
 	// ModuleName defines the module name
@@ -9,14 +9,9 @@ const (
 	// StoreKey is the store key string for IBC transfer
 	StoreKey = ModuleName
 
-	// RouterKey is the message route for IBC transfer
-	RouterKey = ModuleName
-
 	// QuerierRoute is the querier route for IBC transfer
 	QuerierRoute = ModuleName
 )
-
-var ParamsKey = []byte{0x00}
 
 type (
 	NonrefundableKey           struct{}
