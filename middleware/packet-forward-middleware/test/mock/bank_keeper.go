@@ -5,7 +5,6 @@
 package mock
 
 import (
-	"context"
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
@@ -92,7 +91,7 @@ func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(arg0, arg1, a
 }
 
 // SendCoinsFromModuleToAccount mocks base method.
-func (m *MockBankKeeper) SendCoinsFromModuleToAccount(arg0 context.Context, arg1 string, arg2 types.AccAddress, arg3 types.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromModuleToAccount(arg0 types.Context, arg1 string, arg2 types.AccAddress, arg3 types.Coins) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromModuleToAccount", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
