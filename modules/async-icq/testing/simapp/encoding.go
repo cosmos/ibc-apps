@@ -39,7 +39,7 @@ func MakeEncodingConfig() EncodingConfig {
 	return encodingConfig
 }
 
-// MakeEncodingConfig creates a base EncodingConfig. This should not be used for anything other than
+// makeDefaultEncodingConfig creates a base EncodingConfig. This should not be used for anything other than
 // to register interfaces and amino codecs.
 func makeDefaultEncodingConfig() EncodingConfig {
 	amino := codec.NewLegacyAmino()
