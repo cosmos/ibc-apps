@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/ibc-apps/modules/async-icq/v7 v7.0.0-00010101000000-000000000000
 	github.com/cosmos/ibc-go/v7 v7.6.0
 	github.com/docker/docker v24.0.7+incompatible
-	github.com/strangelove-ventures/interchaintest/v7 v7.0.0-20231030192016-f05c98869a6f
+	github.com/strangelove-ventures/interchaintest/v7 v7.0.1-0.20231121220910-a334ab4006ae
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.26.0
 )
@@ -56,7 +56,7 @@ require (
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/coinbase/rosetta-sdk-go/types v1.0.0 // indirect
-	github.com/cometbft/cometbft v0.37.5 // indirect
+	github.com/cometbft/cometbft v0.37.10 // indirect
 	github.com/cometbft/cometbft-db v0.12.0 // indirect
 	github.com/confio/ics23/go v0.9.0 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
@@ -66,6 +66,7 @@ require (
 	github.com/cosmos/iavl v0.20.1 // indirect
 	github.com/cosmos/ibc-go/modules/capability v1.0.0-rc1 // indirect
 	github.com/cosmos/ics23/go v0.10.0 // indirect
+	github.com/cosmos/interchain-security/v3 v3.1.1-0.20231102122221-81650a84f989 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.0 // indirect
 	github.com/cosmos/rosetta-sdk-go v0.10.0 // indirect
 	github.com/creachadair/taskgroup v0.4.2 // indirect
@@ -124,6 +125,7 @@ require (
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
 	github.com/huandu/skiplist v1.2.0 // indirect
