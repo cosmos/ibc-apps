@@ -58,8 +58,7 @@ If you'd like to include software in this repo, please see [contributing](CONTRI
 |            [main](https://github.com/cosmos/ibc-apps)            |     v8     |
 | [release/v7](https://github.com/cosmos/ibc-apps/tree/release/v7) |     v7     |
 | [release/v6](https://github.com/cosmos/ibc-apps/tree/release/v6) |     v6     |
-| [release/v5](https://github.com/cosmos/ibc-apps/tree/release/v5) |     v5     |
-| [release/v4](https://github.com/cosmos/ibc-apps/tree/release/v4) |     v4     |
+
 
 ## List of Apps
 
