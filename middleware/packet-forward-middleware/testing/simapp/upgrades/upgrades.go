@@ -1,9 +1,6 @@
 package upgrades
 
 import (
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
-	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -11,6 +8,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
 )
 
 const (
@@ -18,11 +16,14 @@ const (
 )
 
 // CreateDefaultUpgradeHandler creates a simple migration upgrade handler.
-// func CreateDefaultUpgradeHandler(mm *module.Manager, cfg module.Configurator) upgradetypes.UpgradeHandler {
-// 	func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-// 		return mm.RunMigrations(ctx, cfg, fromVM)
-// 	}
-// }
+func CreateDefaultUpgradeHandler(
+	mm *module.Manager,
+	configurator module.Configurator,
+) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		return mm.RunMigrations(ctx, configurator, vm)
+	}
+}
 
 // We will have to import every one here
 func CreateV2UpgradeHandler(
@@ -32,15 +33,13 @@ func CreateV2UpgradeHandler(
 	consensusparamskeeper consensusparamskeeper.Keeper,
 	packetforwardkeeper *keeper.Keeper,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		// Migrate Tendermint consensus parameters from x/params module to a deprecated x/consensus module.
 		// The old params module is required to still be imported in your app.go in order to handle this migration.
 		baseAppLegacySS := paramskeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())
-		if err := baseapp.MigrateParams(sdk.UnwrapSDKContext(ctx), baseAppLegacySS, &consensusparamskeeper.ParamsStore); err != nil {
-			return nil, err
-		}
+		baseapp.MigrateParams(ctx, baseAppLegacySS, &consensusparamskeeper)
 
-		versionMap, err := mm.RunMigrations(ctx, cfg, fromVM)
+		versionMap, err := mm.RunMigrations(ctx, cfg, vm)
 		if err != nil {
 			return nil, err
 		}
