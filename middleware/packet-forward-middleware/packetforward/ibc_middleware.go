@@ -196,7 +196,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	metadata := m.Forward
 
 	goCtx := ctx.Context()
-	processed := getBoolFromAny(goCtx.Value(types.ProcessedKey{}))
 	nonrefundable := getBoolFromAny(goCtx.Value(types.NonrefundableKey{}))
 	disableDenomComposition := getBoolFromAny(goCtx.Value(types.DisableDenomCompositionKey{}))
 
@@ -210,16 +209,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	if err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket failed to construct override receiver", "error", err)
 		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %w", err))
-	}
-
-	// if this packet has been handled by another middleware in the stack there may be no need to call into the
-	// underlying app, otherwise the transfer module's OnRecvPacket callback could be invoked more than once
-	// which would mint/burn vouchers more than once
-	if !processed {
-		if err := im.receiveFunds(ctx, packet, data, overrideReceiver, relayer); err != nil {
-			logger.Error("packetForwardMiddleware OnRecvPacket error receiving packet", "error", err)
-			return newErrorAcknowledgement(fmt.Errorf("error receiving packet: %w", err))
-		}
 	}
 
 	// if this packet's token denom is already the base denom for some native token on this chain,
