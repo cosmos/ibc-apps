@@ -13,12 +13,9 @@ const (
 	QuerierRoute = ModuleName
 )
 
-var ParamsKey = []byte{0x00}
-
 type (
 	NonrefundableKey           struct{}
 	DisableDenomCompositionKey struct{}
-	ProcessedKey               struct{}
 )
 
 func RefundPacketKey(channelID, portID string, sequence uint64) []byte {
