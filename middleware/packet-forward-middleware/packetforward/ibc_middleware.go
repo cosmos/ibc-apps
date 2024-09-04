@@ -211,6 +211,11 @@ func (im IBCMiddleware) OnRecvPacket(
 		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %w", err))
 	}
 
+	if err := im.receiveFunds(ctx, packet, data, overrideReceiver, relayer); err != nil {
+		logger.Error("packetForwardMiddleware OnRecvPacket error receiving packet", "error", err)
+		return newErrorAcknowledgement(fmt.Errorf("error receiving packet: %w", err))
+	}
+
 	// if this packet's token denom is already the base denom for some native token on this chain,
 	// we do not need to do any further composition of the denom before forwarding the packet
 	denomOnThisChain := data.Denom
