@@ -3,7 +3,6 @@ package e2e
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -28,6 +27,7 @@ type PFMExport struct {
 	} `json:"app_state"`
 }
 
+// TestStorageLeak verifies that that the PFM module does not retain any in-flight packets after a timeout occurs
 func TestStorageLeak(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
@@ -209,9 +209,6 @@ func TestStorageLeak(t *testing.T) {
 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+50, transferTx.Packet)
 	require.NoError(t, err)
 
-	// TODO: JOEL - REMOVE
-	fmt.Println("WE JUST GOT THE ACK ON CHAIN A")
-
 	err = testutil.WaitForBlocks(ctx, 1, chainA)
 	require.NoError(t, err)
 
@@ -245,30 +242,19 @@ func TestStorageLeak(t *testing.T) {
 	// loop through chain a -> chain d
 	cosmosChains := []*cosmos.CosmosChain{chainA, chainB, chainC}
 	for i := 0; i < len(cosmosChains); i++ {
-
 		chain := cosmosChains[i]
-
-		fmt.Println("-----------------")
-		fmt.Println("-----------------")
-		fmt.Println("Chain", chain.Config().Name)
-		fmt.Println("-----------------")
-		fmt.Println("-----------------")
-
 		chain.StopAllNodes(ctx)
-		// ensure there are no inflight packets
-		stdOut, stdErr, err := chain.GetNode().ExecBin(ctx, "export", "--modules-to-export=packetfowardmiddleware")
+
+		// get exported packet forward middleware state
+		stdOut, _, err := chain.GetNode().ExecBin(ctx, "export", "--modules-to-export=packetfowardmiddleware")
 		require.NoError(t, err)
-		fmt.Println("Standard Out", string(stdOut))
-		fmt.Println("Standard Error", string(stdErr))
+
 		chain.StartAllNodes(ctx)
 
+		// validate that there are no in-flight packets
 		var result PFMExport
 		err = json.Unmarshal(stdOut, &result)
 		require.NoError(t, err)
 		require.Len(t, result.AppState.PacketForwardMiddleware.InFlightPackets, 0)
-
-		fmt.Println("-----------------")
-		fmt.Println("-----------------")
-		fmt.Println("-----------------")
 	}
 }
