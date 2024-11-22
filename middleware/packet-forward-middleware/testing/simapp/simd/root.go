@@ -251,7 +251,6 @@ func (ac appCreator) appExport(
 		homePath,
 		uint(1),
 		appOpts,
-		nil,
 	)
 
 	if height != -1 {
