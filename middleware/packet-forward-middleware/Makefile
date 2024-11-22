@@ -223,6 +223,9 @@ ictest-forward:
 ictest-timeout:
 	cd e2e && go test -race -v -timeout 15m -run TestTimeoutOnForward .
 
+ictest-storage-leak:
+	cd e2e && go test -race -v -timeout 15m -run TestStorageLeak .
+
 ictest-upgrade:
 	cd e2e && go test -race -v -timeout 15m -run TestPFMUpgrade .
 

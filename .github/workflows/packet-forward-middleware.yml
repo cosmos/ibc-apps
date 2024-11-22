@@ -80,6 +80,7 @@ jobs:
         test:
           - "ictest-forward"
           - "ictest-timeout"
+          - "ictest-storage-leak"
           - "ictest-upgrade"
           - "ictest-nonrefundable"
       fail-fast: false
