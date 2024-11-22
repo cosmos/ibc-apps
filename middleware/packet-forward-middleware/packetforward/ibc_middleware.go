@@ -363,8 +363,8 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 
 	inFlightPacket, err := im.keeper.TimeoutShouldRetry(ctx, packet)
 	if inFlightPacket != nil {
+		im.keeper.RemoveInFlightPacket(ctx, packet)
 		if err != nil {
-			im.keeper.RemoveInFlightPacket(ctx, packet)
 			// this is a forwarded packet, so override handling to avoid refund from being processed on this chain.
 			// WriteAcknowledgement with proxied ack to return success/fail to previous chain.
 			return im.keeper.WriteAcknowledgementForForwardedPacket(ctx, packet, data, inFlightPacket, newErrorAcknowledgement(err))

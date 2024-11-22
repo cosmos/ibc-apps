@@ -211,6 +211,31 @@ endif
 .PHONY: run-tests test test-all $(TEST_TARGETS)
 
 ###############################################################################
+<<<<<<< HEAD
+=======
+###                             e2e interchain test                         ###
+###############################################################################
+
+local-image:
+	docker build . -t pfm:local
+
+ictest-forward:
+	cd e2e && go test -race -v -timeout 15m -run TestPacketForwardMiddleware .
+
+ictest-timeout:
+	cd e2e && go test -race -v -timeout 15m -run TestTimeoutOnForward .
+
+ictest-storage-leak:
+	cd e2e && go test -race -v -timeout 15m -run TestStorageLeak .
+
+ictest-upgrade:
+	cd e2e && go test -race -v -timeout 15m -run TestPFMUpgrade .
+
+ictest-nonrefundable:
+	cd e2e && go test -race -v -timeout 15m -run TestNonRefundable .
+
+###############################################################################
+>>>>>>> 64c5cd5 (feat: add storage leak test (#222))
 ###                                Linting                                  ###
 ###############################################################################
 
