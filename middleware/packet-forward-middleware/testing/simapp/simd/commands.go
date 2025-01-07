@@ -6,7 +6,7 @@ import (
 	"os"
 
 	dbm "github.com/cosmos/cosmos-db"
-	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp"
+	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 

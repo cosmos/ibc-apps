@@ -2,7 +2,7 @@ go 1.21
 
 toolchain go1.22.5
 
-module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8
+module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9
 
 require (
 	cosmossdk.io/api v0.7.3
@@ -22,7 +22,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.5
 	github.com/cosmos/gogoproto v1.4.11
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
-	github.com/cosmos/ibc-go/v8 v8.1.1
+	github.com/cosmos/ibc-go/v9 v9.0.0
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.2
@@ -206,6 +206,22 @@ require (
 )
 
 replace (
+	github.com/cosmos/ibc-go/modules/capability => ../../../ibc-go-capability/modules/capability
+ 	// ibc-go @ decc8ec9ae8eeda9cf3791d45d3005a6e929a990
+	github.com/cosmos/ibc-go/v9 => ../../../ibc-go
+	// cosmos/cosmos-sdk at release/0.52.x
+	github.com/cosmos/cosmos-sdk => ../../../cosmos-sdk
+	cosmossdk.io/client/v2 => ../../../cosmos-sdk/client/v2
+	cosmossdk.io/x/feegrant => ../../../cosmos-sdk/x/feegrant
+	cosmossdk.io/x/bank => ../../../cosmos-sdk/x/bank
+	cosmossdk.io/x/evidence => ../../../cosmos-sdk/x/evidence
+	cosmossdk.io/x/upgrade => ../../../cosmos-sdk/x/upgrade
+	cosmossdk.io/x/params => ../../../cosmos-sdk/x/params
+	cosmossdk.io/x/authz => ../../../cosmos-sdk/x/authz
+	cosmossdk.io/x/consensus => ../../../cosmos-sdk/x/consensus
+	cosmossdk.io/x/group => ../../../cosmos-sdk/x/group
+	cosmossdk.io/x/slashing => ../../../cosmos-sdk/x/slashing
+
 	// cosmos keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
