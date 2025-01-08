@@ -13,8 +13,7 @@ import (
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/ibc-go/modules/capability/types"
-	types1 "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
+	types0 "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,10 +41,10 @@ func (m *MockChannelKeeper) EXPECT() *MockChannelKeeperMockRecorder {
 }
 
 // GetChannel mocks base method.
-func (m *MockChannelKeeper) GetChannel(arg0 types.Context, arg1, arg2 string) (types1.Channel, bool) {
+func (m *MockChannelKeeper) GetChannel(arg0 types.Context, arg1, arg2 string) (types0.Channel, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetChannel", arg0, arg1, arg2)
-	ret0, _ := ret[0].(types1.Channel)
+	ret0, _ := ret[0].(types0.Channel)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -86,13 +85,12 @@ func (mr *MockChannelKeeperMockRecorder) GetPacketCommitment(arg0, arg1, arg2, a
 }
 
 // LookupModuleByChannel mocks base method.
-func (m *MockChannelKeeper) LookupModuleByChannel(arg0 types.Context, arg1, arg2 string) (string, *types0.Capability, error) {
+func (m *MockChannelKeeper) LookupModuleByChannel(arg0 types.Context, arg1, arg2 string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LookupModuleByChannel", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(*types0.Capability)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // LookupModuleByChannel indicates an expected call of LookupModuleByChannel.

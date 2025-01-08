@@ -10,11 +10,10 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
-	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/ibc-go/modules/capability/types"
-	types1 "github.com/cosmos/ibc-go/v9/modules/core/02-client/types"
+	types "github.com/cosmos/ibc-go/v9/modules/core/02-client/types"
 	exported "github.com/cosmos/ibc-go/v9/modules/core/exported"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -43,7 +42,7 @@ func (m *MockICS4Wrapper) EXPECT() *MockICS4WrapperMockRecorder {
 }
 
 // GetAppVersion mocks base method.
-func (m *MockICS4Wrapper) GetAppVersion(arg0 types.Context, arg1, arg2 string) (string, bool) {
+func (m *MockICS4Wrapper) GetAppVersion(arg0 context.Context, arg1, arg2 string) (string, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAppVersion", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
@@ -58,30 +57,30 @@ func (mr *MockICS4WrapperMockRecorder) GetAppVersion(arg0, arg1, arg2 any) *gomo
 }
 
 // SendPacket mocks base method.
-func (m *MockICS4Wrapper) SendPacket(arg0 types.Context, arg1 *types0.Capability, arg2, arg3 string, arg4 types1.Height, arg5 uint64, arg6 []byte) (uint64, error) {
+func (m *MockICS4Wrapper) SendPacket(arg0 context.Context, arg1, arg2 string, arg3 types.Height, arg4 uint64, arg5 []byte) (uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendPacket", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret := m.ctrl.Call(m, "SendPacket", arg0, arg1, arg2, arg3, arg4, arg5)
 	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SendPacket indicates an expected call of SendPacket.
-func (mr *MockICS4WrapperMockRecorder) SendPacket(arg0, arg1, arg2, arg3, arg4, arg5, arg6 any) *gomock.Call {
+func (mr *MockICS4WrapperMockRecorder) SendPacket(arg0, arg1, arg2, arg3, arg4, arg5 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendPacket", reflect.TypeOf((*MockICS4Wrapper)(nil).SendPacket), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendPacket", reflect.TypeOf((*MockICS4Wrapper)(nil).SendPacket), arg0, arg1, arg2, arg3, arg4, arg5)
 }
 
 // WriteAcknowledgement mocks base method.
-func (m *MockICS4Wrapper) WriteAcknowledgement(arg0 types.Context, arg1 *types0.Capability, arg2 exported.PacketI, arg3 exported.Acknowledgement) error {
+func (m *MockICS4Wrapper) WriteAcknowledgement(arg0 context.Context, arg1 exported.PacketI, arg2 exported.Acknowledgement) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WriteAcknowledgement", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "WriteAcknowledgement", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // WriteAcknowledgement indicates an expected call of WriteAcknowledgement.
-func (mr *MockICS4WrapperMockRecorder) WriteAcknowledgement(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockICS4WrapperMockRecorder) WriteAcknowledgement(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteAcknowledgement", reflect.TypeOf((*MockICS4Wrapper)(nil).WriteAcknowledgement), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteAcknowledgement", reflect.TypeOf((*MockICS4Wrapper)(nil).WriteAcknowledgement), arg0, arg1, arg2)
 }
