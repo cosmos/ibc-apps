@@ -1,6 +1,7 @@
 package packetforward
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -53,7 +54,7 @@ func NewIBCMiddleware(
 
 // OnChanOpenInit implements the IBCModule interface.
 func (im IBCMiddleware) OnChanOpenInit(
-	ctx sdk.Context,
+	ctx context.Context,
 	order channeltypes.Order,
 	connectionHops []string,
 	portID string,
@@ -66,7 +67,7 @@ func (im IBCMiddleware) OnChanOpenInit(
 
 // OnChanOpenTry implements the IBCModule interface.
 func (im IBCMiddleware) OnChanOpenTry(
-	ctx sdk.Context,
+	ctx context.Context,
 	order channeltypes.Order,
 	connectionHops []string,
 	portID, channelID string,
@@ -78,7 +79,7 @@ func (im IBCMiddleware) OnChanOpenTry(
 
 // OnChanOpenAck implements the IBCModule interface.
 func (im IBCMiddleware) OnChanOpenAck(
-	ctx sdk.Context,
+	ctx context.Context,
 	portID, channelID string,
 	counterpartyChannelID string,
 	counterpartyVersion string,
@@ -87,17 +88,17 @@ func (im IBCMiddleware) OnChanOpenAck(
 }
 
 // OnChanOpenConfirm implements the IBCModule interface.
-func (im IBCMiddleware) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
+func (im IBCMiddleware) OnChanOpenConfirm(ctx context.Context, portID, channelID string) error {
 	return im.app.OnChanOpenConfirm(ctx, portID, channelID)
 }
 
 // OnChanCloseInit implements the IBCModule interface.
-func (im IBCMiddleware) OnChanCloseInit(ctx sdk.Context, portID, channelID string) error {
+func (im IBCMiddleware) OnChanCloseInit(ctx context.Context, portID, channelID string) error {
 	return im.app.OnChanCloseInit(ctx, portID, channelID)
 }
 
 // OnChanCloseConfirm implements the IBCModule interface.
-func (im IBCMiddleware) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string) error {
+func (im IBCMiddleware) OnChanCloseConfirm(ctx context.Context, portID, channelID string) error {
 	return im.app.OnChanCloseConfirm(ctx, portID, channelID)
 }
 
@@ -157,7 +158,8 @@ func newErrorAcknowledgement(err error) channeltypes.Acknowledgement {
 // should be handled by the swap middleware it attempts to perform a swap. If the swap is successful
 // the underlying application's OnRecvPacket callback is invoked, an ack error is returned otherwise.
 func (im IBCMiddleware) OnRecvPacket(
-	ctx sdk.Context,
+	ctx context.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
@@ -166,7 +168,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		logger.Debug(fmt.Sprintf("packetForwardMiddleware OnRecvPacket payload is not a FungibleTokenPacketData: %s", err.Error()))
-		return im.app.OnRecvPacket(ctx, packet, relayer)
+		return im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 
 	logger.Debug("packetForwardMiddleware OnRecvPacket",
@@ -181,7 +183,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	if err != nil || d["forward"] == nil {
 		// not a packet that should be forwarded
 		logger.Debug("packetForwardMiddleware OnRecvPacket forward metadata does not exist")
-		return im.app.OnRecvPacket(ctx, packet, relayer)
+		return im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 	m := &types.PacketMetadata{}
 	err = json.Unmarshal([]byte(data.Memo), m)
@@ -192,9 +194,8 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	metadata := m.Forward
 
-	goCtx := ctx.Context()
-	nonrefundable := getBoolFromAny(goCtx.Value(types.NonrefundableKey{}))
-	disableDenomComposition := getBoolFromAny(goCtx.Value(types.DisableDenomCompositionKey{}))
+	nonrefundable := getBoolFromAny(ctx.Value(types.NonrefundableKey{}))
+	disableDenomComposition := getBoolFromAny(ctx.Value(types.DisableDenomCompositionKey{}))
 
 	if err := metadata.Validate(); err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket forward metadata is invalid", "error", err)
@@ -208,7 +209,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		return newErrorAcknowledgement(fmt.Errorf("failed to construct override receiver: %w", err))
 	}
 
-	if err := im.receiveFunds(ctx, packet, data, overrideReceiver, relayer); err != nil {
+	if err := im.receiveFunds(ctx, channelVersion, packet, data, overrideReceiver, relayer); err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket error receiving packet", "error", err)
 		return newErrorAcknowledgement(fmt.Errorf("error receiving packet: %w", err))
 	}
@@ -259,7 +260,8 @@ func (im IBCMiddleware) OnRecvPacket(
 // receiveFunds receives funds from the packet into the override receiver
 // address and returns an error if the funds cannot be received.
 func (im IBCMiddleware) receiveFunds(
-	ctx sdk.Context,
+	ctx context.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
 	overrideReceiver string,
@@ -284,7 +286,7 @@ func (im IBCMiddleware) receiveFunds(
 		TimeoutTimestamp:   packet.TimeoutTimestamp,
 	}
 
-	ack := im.app.OnRecvPacket(ctx, overridePacket, relayer)
+	ack := im.app.OnRecvPacket(ctx, channelVersion, overridePacket, relayer)
 
 	if ack == nil {
 		return fmt.Errorf("ack is nil")
@@ -299,7 +301,8 @@ func (im IBCMiddleware) receiveFunds(
 
 // OnAcknowledgementPacket implements the IBCModule interface.
 func (im IBCMiddleware) OnAcknowledgementPacket(
-	ctx sdk.Context,
+	ctx context.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
@@ -312,7 +315,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 			"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
 			"error", err,
 		)
-		return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+		return im.app.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer)
 	}
 
 	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnAcknowledgementPacket",
@@ -333,11 +336,16 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 		return im.keeper.WriteAcknowledgementForForwardedPacket(ctx, packet, data, inFlightPacket, ack)
 	}
 
-	return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	return im.app.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
-func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
+func (im IBCMiddleware) OnTimeoutPacket(
+	ctx context.Context,
+	channelVersion string,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+) error {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		im.keeper.Logger(ctx).Error("packetForwardMiddleware error parsing packet data from timeout packet",
@@ -346,7 +354,7 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 			"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
 			"error", err,
 		)
-		return im.app.OnTimeoutPacket(ctx, packet, relayer)
+		return im.app.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 	}
 
 	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnTimeoutPacket",
@@ -365,18 +373,18 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 			return im.keeper.WriteAcknowledgementForForwardedPacket(ctx, packet, data, inFlightPacket, newErrorAcknowledgement(err))
 		}
 		// timeout should be retried. In order to do that, we need to handle this timeout to refund on this chain first.
-		if err := im.app.OnTimeoutPacket(ctx, packet, relayer); err != nil {
+		if err := im.app.OnTimeoutPacket(ctx, channelVersion, packet, relayer); err != nil {
 			return err
 		}
 		return im.keeper.RetryTimeout(ctx, packet.SourceChannel, packet.SourcePort, data, inFlightPacket)
 	}
 
-	return im.app.OnTimeoutPacket(ctx, packet, relayer)
+	return im.app.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 }
 
 // SendPacket implements the ICS4 Wrapper interface.
 func (im IBCMiddleware) SendPacket(
-	ctx sdk.Context,
+	ctx context.Context,
 	sourcePort string, sourceChannel string,
 	timeoutHeight clienttypes.Height,
 	timeoutTimestamp uint64,

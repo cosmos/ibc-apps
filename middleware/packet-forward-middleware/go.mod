@@ -5,12 +5,14 @@ module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9
 require (
 	cosmossdk.io/api v0.8.0
 	cosmossdk.io/client/v2 v2.10.0-beta.1
+	cosmossdk.io/collections v1.0.0
 	cosmossdk.io/core v1.0.0
 	cosmossdk.io/errors v1.0.1
 	cosmossdk.io/log v1.5.0
 	cosmossdk.io/math v1.5.0
 	cosmossdk.io/store v1.10.0-rc.1.0.20241218084712-ca559989da43
 	cosmossdk.io/tools/confix v0.1.0
+	cosmossdk.io/x/accounts v0.2.0-rc.1
 	cosmossdk.io/x/authz v0.2.0-rc.1
 	cosmossdk.io/x/bank v0.2.0-rc.1
 	cosmossdk.io/x/consensus v0.2.0-rc.1
@@ -21,6 +23,7 @@ require (
 	cosmossdk.io/x/group v0.2.0-rc.1
 	cosmossdk.io/x/mint v0.2.0-rc.1
 	cosmossdk.io/x/params v0.2.0-rc.1
+	cosmossdk.io/x/protocolpool v0.2.0-rc.1
 	cosmossdk.io/x/slashing v0.2.0-rc.1
 	cosmossdk.io/x/staking v0.2.0-rc.1
 	cosmossdk.io/x/tx v1.0.0
@@ -30,7 +33,6 @@ require (
 	github.com/cosmos/cosmos-db v1.1.1
 	github.com/cosmos/cosmos-sdk v0.53.0
 	github.com/cosmos/gogoproto v1.7.0
-	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/v9 v9.0.0-20250105144616-decc8ec9ae8e
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -53,17 +55,14 @@ require (
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	cloud.google.com/go/iam v1.1.13 // indirect
 	cloud.google.com/go/storage v1.43.0 // indirect
-	cosmossdk.io/collections v1.0.0 // indirect
 	cosmossdk.io/core/testing v0.0.1 // indirect
 	cosmossdk.io/depinject v1.1.0 // indirect
 	cosmossdk.io/schema v1.0.0 // indirect
-	cosmossdk.io/x/accounts v0.0.0-20241218110910-47409028a73d // indirect
 	cosmossdk.io/x/accounts/defaults/base v0.2.0-rc.1 // indirect
 	cosmossdk.io/x/accounts/defaults/lockup v0.2.0-rc.1 // indirect
 	cosmossdk.io/x/accounts/defaults/multisig v0.2.0-rc.1 // indirect
 	cosmossdk.io/x/epochs v0.0.0-20241218110910-47409028a73d // indirect
 	cosmossdk.io/x/nft v0.2.0-rc.1 // indirect
-	cosmossdk.io/x/protocolpool v0.2.0-rc.1 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
@@ -140,6 +139,7 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-plugin v1.6.2 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
+	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect

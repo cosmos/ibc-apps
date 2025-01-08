@@ -5,6 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	cmtbytes "github.com/cometbft/cometbft/libs/bytes"
+
 	"github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
 )
@@ -12,17 +14,16 @@ import (
 // TransferKeeper defines the expected transfer keeper
 type TransferKeeper interface {
 	Transfer(ctx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error)
-	DenomPathFromHash(ctx sdk.Context, denom string) (string, error)
-	GetTotalEscrowForDenom(ctx sdk.Context, denom string) sdk.Coin
-	SetTotalEscrowForDenom(ctx sdk.Context, coin sdk.Coin)
+	GetDenom(ctx context.Context, denomHash cmtbytes.HexBytes) (types.Denom, bool)
+	GetTotalEscrowForDenom(ctx context.Context, denom string) sdk.Coin
+	SetTotalEscrowForDenom(ctx context.Context, coin sdk.Coin)
 }
 
 // ChannelKeeper defines the expected IBC channel keeper
 type ChannelKeeper interface {
-	GetChannel(ctx sdk.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
-	GetPacketCommitment(ctx sdk.Context, portID, channelID string, sequence uint64) []byte
-	GetNextSequenceSend(ctx sdk.Context, portID, channelID string) (uint64, bool)
-	LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, error)
+	GetChannel(ctx context.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
+	GetPacketCommitment(ctx context.Context, portID, channelID string, sequence uint64) []byte
+	GetNextSequenceSend(ctx context.Context, portID, channelID string) (uint64, bool)
 }
 
 // BankKeeper defines the expected bank keeper
@@ -31,5 +32,5 @@ type BankKeeper interface {
 	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
-	BurnCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
+	BurnCoins(ctx context.Context, address []byte, amt sdk.Coins) error
 }
