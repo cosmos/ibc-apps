@@ -21,8 +21,7 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
+	cmttypes "github.com/cometbft/cometbft/api/cometbft/types/v1"
 	porttypes "github.com/cosmos/ibc-go/v9/modules/core/05-port/types"
 )
 
@@ -94,7 +93,7 @@ func newInitializer(t *testing.T) initializer {
 	db := dbm.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
+	ctx := sdk.NewContext(stateStore, cmttypes.Header{}, false, logger)
 	interfaceRegistry := cdctypes.NewInterfaceRegistry()
 	amino := codec.NewLegacyAmino()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
