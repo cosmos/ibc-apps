@@ -50,6 +50,7 @@ type Keeper struct {
 	channelKeeper  types.ChannelKeeper
 	bankKeeper     types.BankKeeper
 	ics4Wrapper    porttypes.ICS4Wrapper
+	logger         log.Logger
 
 	// the address capable of executing a MsgUpdateParams message. Typically, this
 	// should be the x/gov module account.
@@ -65,6 +66,7 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 	authority string,
+	logger log.Logger,
 ) *Keeper {
 	return &Keeper{
 		cdc:            cdc,
@@ -74,6 +76,7 @@ func NewKeeper(
 		bankKeeper:     bankKeeper,
 		ics4Wrapper:    ics4Wrapper,
 		authority:      authority,
+		logger:         logger.With("module", "x/"+ibcexported.ModuleName+"-"+types.ModuleName),
 	}
 }
 
@@ -87,38 +90,30 @@ func (k *Keeper) SetTransferKeeper(transferKeeper types.TransferKeeper) {
 	k.transferKeeper = transferKeeper
 }
 
-// Logger returns a module-specific logger.
-func (k *Keeper) Logger(ctx context.Context) log.Logger {
-	return ctx.Logger().With("module", "x/"+ibcexported.ModuleName+"-"+types.ModuleName)
-}
-
 // moveFundsToUserRecoverableAccount will move the funds from the escrow account to the user recoverable account
 // this is only used when the maximum timeouts have been reached or there is an acknowledgement error and the packet is nonrefundable,
 // i.e. an operation has occurred to make the original packet funds inaccessible to the user, e.g. a swap.
 // We cannot refund the funds back to the original chain, so we move them to an account on this chain that the user can access.
 func (k *Keeper) moveFundsToUserRecoverableAccount(
-	ctx sdk.Context,
+	ctx context.Context,
 	packet channeltypes.Packet,
 	data transfertypes.FungibleTokenPacketData,
 	inFlightPacket *types.InFlightPacket,
 ) error {
 	fullDenomPath := data.Denom
-
 	amount, ok := sdkmath.NewIntFromString(data.Amount)
 	if !ok {
 		return fmt.Errorf("failed to parse amount from packet data for forward recovery: %s", data.Amount)
 	}
-	transferHash, err := transfertypes.ParseHexHash(fullDenomPath)
-	denom, found := k.transferKeeper.G
-	denomTrace := transfertypes.ParseDenomTrace(fullDenomPath)
-	token := sdk.NewCoin(denomTrace.IBCDenom(), amount)
+	dt := parseDenomTrace(fullDenomPath)
+	token := sdk.NewCoin(dt.IBCDenom(), amount)
 
 	userAccount, err := userRecoverableAccount(inFlightPacket)
 	if err != nil {
 		return fmt.Errorf("failed to get user recoverable account: %w", err)
 	}
 
-	if !transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
+	if !senderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
 		// mint vouchers back to sender
 		if err := k.bankKeeper.MintCoins(
 			ctx, transfertypes.ModuleName, sdk.NewCoins(token),
@@ -291,7 +286,7 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 
 // unescrowToken will update the total escrow by deducting the unescrowed token
 // from the current total escrow.
-func (k *Keeper) unescrowToken(ctx sdk.Context, token sdk.Coin) {
+func (k *Keeper) unescrowToken(ctx context.Context, token sdk.Coin) {
 	currentTotalEscrow := k.transferKeeper.GetTotalEscrowForDenom(ctx, token.GetDenom())
 	newTotalEscrow := currentTotalEscrow.Sub(token)
 	k.transferKeeper.SetTotalEscrowForDenom(ctx, newTotalEscrow)
@@ -316,7 +311,7 @@ func (k *Keeper) ForwardTransferPacket(
 	if metadata.Next != nil {
 		memoBz, err := json.Marshal(metadata.Next)
 		if err != nil {
-			k.Logger(ctx).Error("packetForwardMiddleware error marshaling next as JSON",
+			k.logger.Error("packetForwardMiddleware error marshaling next as JSON",
 				"error", err,
 			)
 			return errorsmod.Wrapf(sdkerrors.ErrJSONMarshal, err.Error())

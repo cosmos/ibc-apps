@@ -440,7 +440,7 @@ func NewSimApp(
 
 	app.GovKeeper = *govKeeper.SetHooks(
 		govtypes.NewMultiGovHooks(
-			// register the governance hooks
+		// register the governance hooks
 		),
 	)
 
@@ -462,6 +462,7 @@ func NewSimApp(
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		authority,
+		logger,
 	)
 
 	// create the IBC Router
@@ -499,7 +500,7 @@ func NewSimApp(
 	transferStack = packetforward.NewIBCMiddleware(
 		transferStack,
 		app.PacketForwardKeeper,
-		0,                                                                // retries on timeout
+		0, // retries on timeout
 		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
 	)
 
