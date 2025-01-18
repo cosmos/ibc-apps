@@ -91,7 +91,7 @@ options. For example, for a version like:
 ["proto3-CosmosMsg", "JSON-CosmosMsg"]
 ```
 
-A selection method that prefered JSON would return:
+A selection method that preferred JSON would return:
 
 ```
 ["JSON-CosmosMsg"]
