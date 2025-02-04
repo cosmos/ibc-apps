@@ -97,7 +97,7 @@ func (k *Keeper) SetTransferKeeper(transferKeeper types.TransferKeeper) {
 	k.transferKeeper = transferKeeper
 }
 
-func (k *Keeper) getDenomFromString(ctx context.Context, denomStr string) (transfertypes.Denom, error) {
+func (k *Keeper) GetIBCDenom(ctx context.Context, denomStr string) (transfertypes.Denom, error) {
 	// deconstruct the token denomination into the denomination trace info
 	// to determine if the sender is the source chain
 	if strings.HasPrefix(denomStr, "ibc/") {
@@ -133,20 +133,24 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	data transfertypes.FungibleTokenPacketData,
 	inFlightPacket *types.InFlightPacket,
 ) error {
-	fullDenomPath := data.Denom
+	denom, err := k.GetIBCDenom(ctx, data.Denom)
+	if err != nil {
+		return err
+	}
+
 	amount, ok := sdkmath.NewIntFromString(data.Amount)
 	if !ok {
 		return fmt.Errorf("failed to parse amount from packet data for forward recovery: %s", data.Amount)
 	}
-	dt := parseDenomTrace(fullDenomPath)
-	token := sdk.NewCoin(dt.IBCDenom(), amount)
+
+	token := sdk.NewCoin(denom.IBCDenom(), amount)
 
 	userAccount, err := userRecoverableAccount(inFlightPacket)
 	if err != nil {
 		return fmt.Errorf("failed to get user recoverable account: %w", err)
 	}
 
-	if !senderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
+	if !denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
 		// mint vouchers back to sender
 		if err := k.bankKeeper.MintCoins(
 			ctx, transfertypes.ModuleName, sdk.NewCoins(token),
@@ -231,7 +235,7 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 			}, newAck)
 		}
 
-		denom, err := k.getDenomFromString(ctx, data.Denom)
+		denom, err := k.GetIBCDenom(ctx, data.Denom)
 		if err != nil {
 			return err
 		}
@@ -486,7 +490,7 @@ func (k *Keeper) RetryTimeout(
 		return fmt.Errorf("error parsing amount from string for packetforward retry: %s", data.Amount)
 	}
 
-	denom, err := k.getDenomFromString(ctx, data.Denom)
+	denom, err := k.GetIBCDenom(ctx, data.Denom)
 	if err != nil {
 		return err
 	}
