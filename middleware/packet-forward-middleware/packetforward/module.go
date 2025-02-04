@@ -22,7 +22,6 @@ import (
 
 var (
 	_ module.AppModule           = AppModule{}
-	_ module.AppModuleBasic      = AppModuleBasic{}
 	_ module.AppModuleSimulation = AppModule{}
 )
 
@@ -32,11 +31,6 @@ type AppModuleBasic struct{}
 // Name implements AppModuleBasic interface
 func (AppModuleBasic) Name() string {
 	return types.ModuleName
-}
-
-// RegisterLegacyAminoCodec implements AppModuleBasic interface
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	types.RegisterLegacyAminoCodec(cdc)
 }
 
 // RegisterInterfaces registers module concrete types into protobuf Any.

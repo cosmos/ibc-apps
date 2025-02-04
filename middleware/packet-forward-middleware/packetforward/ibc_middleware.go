@@ -102,6 +102,7 @@ func (im IBCMiddleware) OnChanCloseConfirm(ctx context.Context, portID, channelI
 	return im.app.OnChanCloseConfirm(ctx, portID, channelID)
 }
 
+// TODO: Refactor this to use new transfer denoms
 func getDenomForThisChain(port, channel, counterpartyPort, counterpartyChannel, denom string) string {
 	counterpartyPrefix := transfertypes.GetDenomPrefix(counterpartyPort, counterpartyChannel)
 	if strings.HasPrefix(denom, counterpartyPrefix) {
@@ -163,7 +164,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	logger := im.keeper.Logger(ctx)
+	logger := im.keeper.Logger()
 
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
@@ -309,7 +310,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 ) error {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		im.keeper.Logger(ctx).Error("packetForwardMiddleware error parsing packet data from ack packet",
+		im.keeper.Logger().Error("packetForwardMiddleware error parsing packet data from ack packet",
 			"sequence", packet.Sequence,
 			"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 			"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
@@ -318,7 +319,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 		return im.app.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer)
 	}
 
-	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnAcknowledgementPacket",
+	im.keeper.Logger().Debug("packetForwardMiddleware OnAcknowledgementPacket",
 		"sequence", packet.Sequence,
 		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
@@ -348,7 +349,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 ) error {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		im.keeper.Logger(ctx).Error("packetForwardMiddleware error parsing packet data from timeout packet",
+		im.keeper.Logger().Error("packetForwardMiddleware error parsing packet data from timeout packet",
 			"sequence", packet.Sequence,
 			"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 			"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
@@ -357,7 +358,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 		return im.app.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 	}
 
-	im.keeper.Logger(ctx).Debug("packetForwardMiddleware OnTimeoutPacket",
+	im.keeper.Logger().Debug("packetForwardMiddleware OnTimeoutPacket",
 		"sequence", packet.Sequence,
 		"src-channel", packet.SourceChannel, "src-port", packet.SourcePort,
 		"dst-channel", packet.DestinationChannel, "dst-port", packet.DestinationPort,
@@ -395,7 +396,7 @@ func (im IBCMiddleware) SendPacket(
 
 // WriteAcknowledgement implements the ICS4 Wrapper interface.
 func (im IBCMiddleware) WriteAcknowledgement(
-	ctx sdk.Context,
+	ctx context.Context,
 	packet ibcexported.PacketI,
 	ack ibcexported.Acknowledgement,
 ) error {
@@ -403,7 +404,7 @@ func (im IBCMiddleware) WriteAcknowledgement(
 }
 
 func (im IBCMiddleware) GetAppVersion(
-	ctx sdk.Context,
+	ctx context.Context,
 	portID,
 	channelID string,
 ) (string, bool) {

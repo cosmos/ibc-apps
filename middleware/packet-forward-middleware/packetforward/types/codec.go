@@ -10,7 +10,6 @@ import (
 var amino = codec.NewLegacyAmino()
 
 func init() {
-	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
 	sdk.RegisterLegacyAminoCodec(amino)
 
@@ -18,10 +17,6 @@ func init() {
 	// so that this can later be used to properly serialize MsgGrant and MsgExec
 	// instances.
 	// RegisterLegacyAminoCodec(authzcodec.Amino) // TODO(bez): Investigate this.
-}
-
-// RegisterLegacyAminoCodec registers concrete types on the LegacyAmino codec
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 func RegisterInterfaces(registry types.InterfaceRegistry) {
