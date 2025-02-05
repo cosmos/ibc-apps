@@ -110,9 +110,9 @@ func TestUnnecessaryLoop(t *testing.T) {
 	userA, userB := users[0], users[1]
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
-	firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
+	firstHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	firstHopIBCDenom := firstHopDenom.IBCDenom()
+
 	firstHopEscrowAccount := transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID).String()
 
 	zeroBal := math.ZeroInt()

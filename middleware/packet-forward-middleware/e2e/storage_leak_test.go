@@ -135,14 +135,11 @@ func TestStorageLeak(t *testing.T) {
 	userA, userB, userC := users[0], users[1], users[2]
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
-	secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
+	firstHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	secondHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
 
-	firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
-
-	firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
-	secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
+	firstHopIBCDenom := firstHopDenom.IBCDenom()
+	secondHopIBCDenom := secondHopDenom.IBCDenom()
 
 	firstHopEscrowAccount := transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID).String()
 	secondHopEscrowAccount := transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID).String()

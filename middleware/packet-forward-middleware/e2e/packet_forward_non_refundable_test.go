@@ -174,14 +174,12 @@ func TestNonRefundable(t *testing.T) {
 	)
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, configA.Denom)
-	secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
 
-	firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
+	firstHopDenom := transfertypes.NewDenom(configA.Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	secondHopDenom := transfertypes.NewDenom(configA.Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
 
-	firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
-	secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
+	firstHopIBCDenom := firstHopDenom.IBCDenom()
+	secondHopIBCDenom := secondHopDenom.IBCDenom()
 
 	firstHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configA.Bech32Prefix, transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID))
 	secondHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configB.Bech32Prefix, transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID))
@@ -427,14 +425,11 @@ func TestNonRefundable(t *testing.T) {
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
 	})
 
-	revFirstHopDenom := transfertypes.GetPrefixedDenom(bcChan.PortID, bcChan.ChannelID, configC.Denom)
-	revSecondHopDenom := transfertypes.GetPrefixedDenom(abChan.PortID, abChan.ChannelID, revFirstHopDenom)
+	revFirstHopDenom := transfertypes.NewDenom(configC.Denom, transfertypes.NewHop(bcChan.PortID, bcChan.ChannelID))
+	revSecondHopDenom := transfertypes.NewDenom(configC.Denom, transfertypes.NewHop(bcChan.PortID, bcChan.ChannelID), transfertypes.NewHop(abChan.PortID, abChan.ChannelID))
 
-	revFirstHopDenomTrace := transfertypes.ParseDenomTrace(revFirstHopDenom)
-	revSecondHopDenomTrace := transfertypes.ParseDenomTrace(revSecondHopDenom)
-
-	revFirstHopIBCDenom := revFirstHopDenomTrace.IBCDenom()
-	revSecondHopIBCDenom := revSecondHopDenomTrace.IBCDenom()
+	revFirstHopIBCDenom := revFirstHopDenom.IBCDenom()
+	revSecondHopIBCDenom := revSecondHopDenom.IBCDenom()
 
 	revFirstHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configC.Bech32Prefix, transfertypes.GetEscrowAddress(cbChan.PortID, cbChan.ChannelID))
 	revSecondHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configB.Bech32Prefix, transfertypes.GetEscrowAddress(baChan.PortID, baChan.ChannelID))

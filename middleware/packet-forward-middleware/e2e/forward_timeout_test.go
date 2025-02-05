@@ -143,14 +143,6 @@ func TestTimeoutOnForward(t *testing.T) {
 	userA, userB, userC, userD := users[0], users[1], users[2], users[3]
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	// firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
-	// secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
-	// thirdHopDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, secondHopDenom)
-
-	// firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	// secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
-	// thirdHopDenomTrace := transfertypes.ParseDenomTrace(thirdHopDenom)
-
 	firstHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
 	secondHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
 	thirdHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(dcChan.PortID, dcChan.ChannelID))
