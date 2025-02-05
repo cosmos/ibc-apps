@@ -33,10 +33,9 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 	bankKeeperMock := mock.NewMockBankKeeper(ctl)
 	ibcModuleMock := mock.NewMockIBCModule(ctl)
 	ics4WrapperMock := mock.NewMockICS4Wrapper(ctl)
-	// TODO: create mock auth keeper
-	// authKeeperMock := mock.NewMockAuthKeeper(ctl)
+	authKeeperMock := mock.NewMockAuthKeeper(ctl)
 
-	packetforwardKeeper := initializer.packetforwardKeeper(transferKeeperMock, channelKeeperMock, bankKeeperMock, ics4WrapperMock)
+	packetforwardKeeper := initializer.packetforwardKeeper(transferKeeperMock, channelKeeperMock, bankKeeperMock, authKeeperMock, ics4WrapperMock)
 
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
 
