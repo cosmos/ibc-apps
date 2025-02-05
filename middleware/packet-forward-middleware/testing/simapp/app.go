@@ -1,9 +1,6 @@
 package simapp
 
 import (
-	appmodulev2 "cosmossdk.io/core/appmodule/v2"
-	"cosmossdk.io/x/accounts"
-	"cosmossdk.io/x/slashing"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,10 +8,14 @@ import (
 	"os"
 	"path/filepath"
 
+	appmodulev2 "cosmossdk.io/core/appmodule/v2"
+	corestore "cosmossdk.io/core/store"
+	"cosmossdk.io/x/accounts"
+	"cosmossdk.io/x/slashing"
+
 	cmtcrypto "github.com/cometbft/cometbft/crypto"
 	cmted25519 "github.com/cometbft/cometbft/crypto/ed25519"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
@@ -211,7 +212,7 @@ func init() {
 // NewSimApp returns a reference to an initialized SimApp.
 func NewSimApp(
 	logger log.Logger,
-	db dbm.DB,
+	db corestore.KVStoreWithBatch,
 	traceStore io.Writer,
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
