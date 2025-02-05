@@ -250,7 +250,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		// Send packet back from Chain D->Chain C->Chain B->Chain A
 		transfer := ibc.WalletAmount{
 			Address: userC.FormattedAddress(),
-			Denom:   thirdHopIBCDenom,
+			Denom:   thirdHopDenom.Path(),
 			Amount:  transferAmount,
 		}
 
