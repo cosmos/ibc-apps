@@ -130,6 +130,12 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v9/modules/core/keeper"
 	solomachine "github.com/cosmos/ibc-go/v9/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v9/modules/light-clients/07-tendermint"
+
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward"
+	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp/upgrades"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp/x/dummyware"
 )
 
 const appName = "SimApp"
@@ -192,9 +198,10 @@ type SimApp struct {
 	EpochsKeeper          *epochskeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 
-	IBCKeeper      *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	IBCFeeKeeper   ibcfeekeeper.Keeper
-	TransferKeeper ibctransferkeeper.Keeper
+	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	IBCFeeKeeper        ibcfeekeeper.Keeper
+	TransferKeeper      ibctransferkeeper.Keeper
+	PacketForwardKeeper *packetforwardkeeper.Keeper
 
 	// the module manager
 	ModuleManager *module.Manager
@@ -307,7 +314,7 @@ func NewSimApp(
 		authzkeeper.StoreKey, nftkeeper.StoreKey, group.StoreKey, pooltypes.StoreKey,
 		accounts.StoreKey, epochstypes.StoreKey,
 		paramstypes.StoreKey,
-		ibcexported.StoreKey, ibctransfertypes.StoreKey, ibcfeetypes.StoreKey,
+		ibcexported.StoreKey, ibctransfertypes.StoreKey, ibcfeetypes.StoreKey, packetforwardtypes.StoreKey,
 	)
 
 	// register streaming services
@@ -485,6 +492,19 @@ func NewSimApp(
 		),
 	)
 
+	// Create the packet forward middleware keeper
+	app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
+		appCodec,
+		app.keys[packetforwardtypes.StoreKey],
+		nil, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
+		app.IBCKeeper.ChannelKeeper,
+		app.BankKeeper,
+		app.AuthKeeper,
+		app.IBCKeeper.ChannelKeeper, // TODO(ICS4Wrapper): this is incorrect wiring as existed before. This should replaed with the feeKeeper to ensure fee is not bypassed
+		govModuleAddr,
+		logger,
+	)
+
 	// IBC Fee Module keeper
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec,
@@ -513,6 +533,9 @@ func NewSimApp(
 		govModuleAddr,
 	)
 
+	// set the transfer keeper in pfm
+	app.PacketForwardKeeper.SetTransferKeeper(app.TransferKeeper)
+
 	// Create Transfer Stack
 	// SendPacket, since it is originating from the application to core IBC:
 	// transferKeeper.SendPacket -> fee.SendPacket -> channel.SendPacket
@@ -528,6 +551,14 @@ func NewSimApp(
 	var transferStack porttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = ibcfee.NewIBCMiddleware(transferStack, app.IBCFeeKeeper)
+	transferStack = packetforward.NewIBCMiddleware(transferStack, app.PacketForwardKeeper,
+		0, // retries on timeout
+		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
+	)
+
+	if os.Getenv("NON_REFUNDABLE_TEST") != "" {
+		transferStack = dummyware.NewIBCMiddleware(transferStack)
+	}
 
 	// Add transfer stack to IBC Router
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
@@ -571,9 +602,10 @@ func NewSimApp(
 		epochstypes.ModuleName:    epochs.NewAppModule(appCodec, app.EpochsKeeper),
 
 		// IBC modules
-		ibcexported.ModuleName:      ibc.NewAppModule(appCodec, app.IBCKeeper),
-		ibctransfertypes.ModuleName: transfer.NewAppModule(appCodec, app.TransferKeeper),
-		ibcfeetypes.ModuleName:      ibcfee.NewAppModule(appCodec, app.IBCFeeKeeper),
+		ibcexported.ModuleName:        ibc.NewAppModule(appCodec, app.IBCKeeper),
+		ibctransfertypes.ModuleName:   transfer.NewAppModule(appCodec, app.TransferKeeper),
+		ibcfeetypes.ModuleName:        ibcfee.NewAppModule(appCodec, app.IBCFeeKeeper),
+		packetforwardtypes.ModuleName: packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 
 		// IBC light clients
 		ibctm.ModuleName:       ibctm.NewAppModule(tmLightClientModule),
@@ -600,6 +632,7 @@ func NewSimApp(
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibcexported.ModuleName,
+		packetforwardtypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		genutiltypes.ModuleName,
 		authz.ModuleName,
@@ -610,6 +643,7 @@ func NewSimApp(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibcexported.ModuleName,
+		packetforwardtypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
@@ -636,6 +670,7 @@ func NewSimApp(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		authz.ModuleName,
+		packetforwardtypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
 		nft.ModuleName,
@@ -660,7 +695,7 @@ func NewSimApp(
 
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
 	// Make sure it's called after `app.ModuleManager` and `app.configurator` are set.
-	// app.RegisterUpgradeHandlers()
+	app.RegisterUpgradeHandlers()
 
 	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.ModuleManager.Modules))
 
@@ -950,8 +985,38 @@ func (app *SimApp) RegisterTendermintService(clientCtx client.Context) {
 	)
 }
 
+// RegisterNodeServices registers the application's gRPC node service.
 func (app *SimApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
+}
+
+// SetupUpgradeStoreLoaders sets all necessary store loaders required by upgrades.
+func (app *SimApp) SetupUpgradeStoreLoaders() {
+	// upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	// if err != nil {
+	// 	tmos.Exit(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	// }
+
+	// // Future: if we want to fix the module name, we can do it here.
+	// if upgradeInfo.Name == upgrades.V2 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	// 	storeUpgrades := storetypes.StoreUpgrades{
+	// 		Renamed: []storetypes.StoreRename{{
+	// 			OldKey: "packetfoward", // previous misspelling (TODO: old key should be packetfowardmiddleware ??)
+	// 			NewKey: packetforwardtypes.ModuleName,
+	// 		}},
+	// 	}
+
+	// 	// configure store loader that checks if version == upgradeHeight and applies store upgrades
+	// 	app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	// }
+}
+
+// RegisterUpgradeHandlers registers the application's upgrade handlers using the UpgradeKeeper.
+func (app *SimApp) RegisterUpgradeHandlers() {
+	app.UpgradeKeeper.SetUpgradeHandler(
+		upgrades.V2,
+		upgrades.CreateV2UpgradeHandler(app.ModuleManager, app.configurator, app.ParamsKeeper, app.ConsensusParamsKeeper, app.PacketForwardKeeper),
+	)
 }
 
 // ValidatorKeyProvider returns a function that generates a validator key
