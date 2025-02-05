@@ -1,8 +1,9 @@
 package types
 
 import (
+	coreregistry "cosmossdk.io/core/registry"
+
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -19,5 +20,5 @@ func init() {
 	// RegisterLegacyAminoCodec(authzcodec.Amino) // TODO(bez): Investigate this.
 }
 
-func RegisterInterfaces(registry types.InterfaceRegistry) {
+func RegisterInterfaces(registry coreregistry.InterfaceRegistrar) {
 }
