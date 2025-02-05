@@ -115,7 +115,7 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
-	initRootCmd(rootCmd, tempApp.GetModuleManager())
+	initRootCmd(rootCmd, tempApp.ModuleManager)
 
 	autoCliOpts := tempApp.AutoCliOpts()
 	autoCliOpts.AddressCodec = initClientCtx.AddressCodec
