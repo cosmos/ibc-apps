@@ -52,6 +52,7 @@ type Keeper struct {
 	transferKeeper types.TransferKeeper
 	channelKeeper  types.ChannelKeeper
 	bankKeeper     types.BankKeeper
+	authKeeper     types.AuthKeeper
 	ics4Wrapper    porttypes.ICS4Wrapper
 	logger         log.Logger
 
@@ -67,6 +68,7 @@ func NewKeeper(
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
+	authKeeper types.AuthKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 	authority string,
 	logger log.Logger,
@@ -77,6 +79,7 @@ func NewKeeper(
 		transferKeeper: transferKeeper,
 		channelKeeper:  channelKeeper,
 		bankKeeper:     bankKeeper,
+		authKeeper:     authKeeper,
 		ics4Wrapper:    ics4Wrapper,
 		authority:      authority,
 		logger:         logger.With("module", "x/"+ibcexported.ModuleName+"-"+types.ModuleName),
@@ -97,6 +100,9 @@ func (k *Keeper) SetTransferKeeper(transferKeeper types.TransferKeeper) {
 	k.transferKeeper = transferKeeper
 }
 
+// GetIBCDenom returns a transfertypes.Denom from a denom string in the form of either
+// - ibc/<hash>
+// - <base denom>
 func (k *Keeper) GetIBCDenom(ctx context.Context, denomStr string) (transfertypes.Denom, error) {
 	// deconstruct the token denomination into the denomination trace info
 	// to determine if the sender is the source chain
@@ -271,9 +277,8 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 					return fmt.Errorf("failed to send coins from escrow to module account for burn: %w", err)
 				}
 
-				// TODO: bake in auth keeper
 				if err := k.bankKeeper.BurnCoins(
-					ctx, []byte("transferModuleAddress"), newToken,
+					ctx, k.authKeeper.GetModuleAddress(transfertypes.ModuleName), newToken,
 				); err != nil {
 					// NOTE: should not happen as the module account was
 					// retrieved on the step above and it has enough balance

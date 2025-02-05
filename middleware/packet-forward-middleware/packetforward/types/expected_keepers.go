@@ -34,3 +34,7 @@ type BankKeeper interface {
 	MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx context.Context, address []byte, amt sdk.Coins) error
 }
+
+type AuthKeeper interface {
+	GetModuleAddress(name string) sdk.AccAddress
+}

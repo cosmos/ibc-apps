@@ -460,6 +460,7 @@ func NewSimApp(
 		nil, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
 		app.IBCKeeper.ChannelKeeper,
 		app.BankKeeper,
+		app.AuthKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		authority,
 		logger,

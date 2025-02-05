@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
@@ -102,23 +101,16 @@ func (im IBCMiddleware) OnChanCloseConfirm(ctx context.Context, portID, channelI
 	return im.app.OnChanCloseConfirm(ctx, portID, channelID)
 }
 
-// TODO: Refactor this to use new transfer denoms
-func getDenomForThisChain(port, channel, counterpartyPort, counterpartyChannel, denom string) string {
-	counterpartyPrefix := transfertypes.GetDenomPrefix(counterpartyPort, counterpartyChannel)
-	if strings.HasPrefix(denom, counterpartyPrefix) {
+func getDenomForThisChain(port, channel, counterpartyPort, counterpartyChannel string, denom transfertypes.Denom) transfertypes.Denom {
+	if denom.HasPrefix(counterpartyPort, counterpartyChannel) {
 		// unwind denom
-		unwoundDenom := denom[len(counterpartyPrefix):]
-		denomTrace := transfertypes.ParseDenomTrace(unwoundDenom)
-		if denomTrace.Path == "" {
-			// denom is now unwound back to native denom
-			return unwoundDenom
-		}
-		// denom is still IBC denom
-		return denomTrace.IBCDenom()
+		denom.Trace = denom.Trace[1:]
+		return denom
 	}
-	// append port and channel from this chain to denom
-	prefixedDenom := transfertypes.GetDenomPrefix(port, channel) + denom
-	return transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
+
+	// prepend port and channel from this chain to denom
+	denom.Trace = append([]transfertypes.Hop{transfertypes.NewHop(port, channel)}, denom.Trace...)
+	return denom
 }
 
 // getBoolFromAny returns the bool value is any is a valid bool, otherwise false.
@@ -217,12 +209,17 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	// if this packet's token denom is already the base denom for some native token on this chain,
 	// we do not need to do any further composition of the denom before forwarding the packet
-	denomOnThisChain := data.Denom
+
+	denom, err := im.keeper.GetIBCDenom(ctx, data.Denom)
+	if err != nil {
+		return newErrorAcknowledgement(fmt.Errorf("error getting denom: %w", err))
+	}
+
 	if !disableDenomComposition {
-		denomOnThisChain = getDenomForThisChain(
+		denom = getDenomForThisChain(
 			packet.DestinationPort, packet.DestinationChannel,
 			packet.SourcePort, packet.SourceChannel,
-			data.Denom,
+			denom,
 		)
 	}
 
@@ -232,7 +229,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		return newErrorAcknowledgement(fmt.Errorf("error parsing amount for forward: %s", data.Amount))
 	}
 
-	token := sdk.NewCoin(denomOnThisChain, amountInt)
+	token := sdk.NewCoin(denom.IBCDenom(), amountInt)
 
 	timeout := time.Duration(metadata.Timeout)
 
