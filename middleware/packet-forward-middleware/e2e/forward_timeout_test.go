@@ -143,17 +143,21 @@ func TestTimeoutOnForward(t *testing.T) {
 	userA, userB, userC, userD := users[0], users[1], users[2], users[3]
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
-	secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
-	thirdHopDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, secondHopDenom)
+	// firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
+	// secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
+	// thirdHopDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, secondHopDenom)
 
-	firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
-	thirdHopDenomTrace := transfertypes.ParseDenomTrace(thirdHopDenom)
+	// firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
+	// secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
+	// thirdHopDenomTrace := transfertypes.ParseDenomTrace(thirdHopDenom)
 
-	firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
-	secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
-	thirdHopIBCDenom := thirdHopDenomTrace.IBCDenom()
+	firstHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	secondHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
+	thirdHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(dcChan.PortID, dcChan.ChannelID))
+
+	firstHopIBCDenom := firstHopDenom.IBCDenom()
+	secondHopIBCDenom := secondHopDenom.IBCDenom()
+	thirdHopIBCDenom := thirdHopDenom.IBCDenom()
 
 	firstHopEscrowAccount := transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID).String()
 	secondHopEscrowAccount := transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID).String()
@@ -341,7 +345,7 @@ func TestTimeoutOnForward(t *testing.T) {
 	// Compose IBC tx that will attempt to go from ChainD -> ChainC -> ChainB -> ChainA but timeout between ChainB->ChainA
 	transfer = ibc.WalletAmount{
 		Address: userC.FormattedAddress(),
-		Denom:   thirdHopDenom,
+		Denom:   thirdHopDenom.Path(),
 		Amount:  transferAmount,
 	}
 
@@ -417,7 +421,7 @@ func TestTimeoutOnForward(t *testing.T) {
 	// Compose IBC tx that will go from ChainD -> ChainC -> ChainB -> ChainA and succeed.
 	transfer = ibc.WalletAmount{
 		Address: userC.FormattedAddress(),
-		Denom:   thirdHopDenom,
+		Denom:   thirdHopDenom.Path(),
 		Amount:  transferAmount,
 	}
 

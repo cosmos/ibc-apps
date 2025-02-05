@@ -159,17 +159,25 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	userA, userB, userC, userD := users[0], users[1], users[2], users[3]
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
-	secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
-	thirdHopDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, secondHopDenom)
+	// firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
+	// secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
+	// thirdHopDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, secondHopDenom)
 
-	firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
-	thirdHopDenomTrace := transfertypes.ParseDenomTrace(thirdHopDenom)
+	// firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
+	// secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
+	// thirdHopDenomTrace := transfertypes.ParseDenomTrace(thirdHopDenom)
 
-	firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
-	secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
-	thirdHopIBCDenom := thirdHopDenomTrace.IBCDenom()
+	firstHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	secondHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
+	thirdHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(dcChan.PortID, dcChan.ChannelID))
+
+	firstHopIBCDenom := firstHopDenom.IBCDenom()
+	secondHopIBCDenom := secondHopDenom.IBCDenom()
+	thirdHopIBCDenom := thirdHopDenom.IBCDenom()
+
+	// firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
+	// secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
+	// thirdHopIBCDenom := thirdHopDenomTrace.IBCDenom()
 
 	firstHopEscrowAccount := sdk.MustBech32ifyAddressBytes(chainA.Config().Bech32Prefix, transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID))
 	secondHopEscrowAccount := sdk.MustBech32ifyAddressBytes(chainB.Config().Bech32Prefix, transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID))
@@ -520,17 +528,21 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		// this lets us test the burn from escrow account on chain C and the escrow to escrow transfer on chain B.
 
 		// Compose the prefixed denoms and ibc denom for asserting balances
-		baDenom := transfertypes.GetPrefixedDenom(abChan.PortID, abChan.ChannelID, chainB.Config().Denom)
-		bcDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, chainB.Config().Denom)
-		cdDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, bcDenom)
+		// baDenom := transfertypes.GetPrefixedDenom(abChan.PortID, abChan.ChannelID, chainB.Config().Denom)
+		// bcDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, chainB.Config().Denom)
+		// cdDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, bcDenom)
 
-		baDenomTrace := transfertypes.ParseDenomTrace(baDenom)
-		bcDenomTrace := transfertypes.ParseDenomTrace(bcDenom)
-		cdDenomTrace := transfertypes.ParseDenomTrace(cdDenom)
+		// baDenomTrace := transfertypes.ParseDenomTrace(baDenom)
+		// bcDenomTrace := transfertypes.ParseDenomTrace(bcDenom)
+		// cdDenomTrace := transfertypes.ParseDenomTrace(cdDenom)
 
-		baIBCDenom := baDenomTrace.IBCDenom()
-		bcIBCDenom := bcDenomTrace.IBCDenom()
-		cdIBCDenom := cdDenomTrace.IBCDenom()
+		baDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(abChan.PortID, abChan.ChannelID))
+		bcDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
+		cdDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(dcChan.PortID, dcChan.ChannelID))
+
+		baIBCDenom := baDenom.IBCDenom()
+		bcIBCDenom := bcDenom.IBCDenom()
+		cdIBCDenom := cdDenom.IBCDenom()
 
 		transfer := ibc.WalletAmount{
 			Address: userA.FormattedAddress(),
@@ -640,7 +652,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		userABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err, "failed to get user a balance")
 
-		userBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopDenom)
+		userBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopDenom.Path())
 		require.NoError(t, err, "failed to get user a balance")
 
 		transfer := ibc.WalletAmount{
