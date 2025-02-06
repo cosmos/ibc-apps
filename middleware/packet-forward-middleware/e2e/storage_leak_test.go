@@ -136,7 +136,7 @@ func TestStorageLeak(t *testing.T) {
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
 	firstHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
-	secondHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
+	secondHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
 
 	firstHopIBCDenom := firstHopDenom.IBCDenom()
 	secondHopIBCDenom := secondHopDenom.IBCDenom()

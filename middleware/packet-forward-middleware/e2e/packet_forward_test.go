@@ -241,7 +241,6 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
-		t.Logf("third hop denom: %s", thirdHopIBCDenom)
 		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 		require.NoError(t, err)
 
@@ -251,429 +250,430 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.Equal(t, transferAmount.Int64(), chainDBalance.Int64())
 	})
 
-	// t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
-	// 	// Send packet back from Chain D->Chain C->Chain B->Chain A
-	// 	transfer := ibc.WalletAmount{
-	// 		Address: userC.FormattedAddress(),
-	// 		Denom:   thirdHopDenom.IBCDenom(),
-	// 		Amount:  transferAmount,
-	// 	}
-
-	// 	secondHopMetadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: userA.FormattedAddress(),
-	// 			Channel:  baChan.ChannelID,
-	// 			Port:     baChan.PortID,
-	// 		},
-	// 	}
-
-	// 	nextBz, err := json.Marshal(secondHopMetadata)
-	// 	require.NoError(t, err)
-
-	// 	next := string(nextBz)
-
-	// 	firstHopMetadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: userB.FormattedAddress(),
-	// 			Channel:  cbChan.ChannelID,
-	// 			Port:     cbChan.PortID,
-	// 			Next:     &next,
-	// 		},
-	// 	}
-
-	// 	memo, err := json.Marshal(firstHopMetadata)
-	// 	require.NoError(t, err)
-
-	// 	chainDHeight, err := chainD.Height(ctx)
-	// 	require.NoError(t, err)
-
-	// 	transferTx, err := chainD.SendIBCTransfer(ctx, dcChan.ChannelID, userD.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-	// 	require.NoError(t, err)
-	// 	_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+30, transferTx.Packet)
-	// 	require.NoError(t, err)
-	// 	err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-	// 	require.NoError(t, err)
-
-	// 	// assert balances for user controlled wallets
-	// 	chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, chainDBalance.Equal(zeroBal))
-	// 	require.True(t, chainCBalance.Equal(zeroBal))
-	// 	require.True(t, chainBBalance.Equal(zeroBal))
-	// 	require.True(t, chainABalance.Equal(initBal))
-
-	// 	// assert balances for IBC escrow accounts
-	// 	firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	// 	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	// 	require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
-	// })
-
-	// t.Run("forward ack error refund", func(t *testing.T) {
-	// 	// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
-	// 	// This should succeed in the first hop and fail to make the second hop; funds should then be refunded to Chain A.
-	// 	transfer := ibc.WalletAmount{
-	// 		Address: userB.FormattedAddress(),
-	// 		Denom:   chainA.Config().Denom,
-	// 		Amount:  transferAmount,
-	// 	}
-
-	// 	metadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: "xyz1t8eh66t2w5k67kwurmn5gqhtq6d2ja0vp7jmmq", // malformed receiver address on Chain C
-	// 			Channel:  bcChan.ChannelID,
-	// 			Port:     bcChan.PortID,
-	// 		},
-	// 	}
-
-	// 	memo, err := json.Marshal(metadata)
-	// 	require.NoError(t, err)
-
-	// 	chainAHeight, err := chainA.Height(ctx)
-	// 	require.NoError(t, err)
-
-	// 	transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-	// 	require.NoError(t, err)
-
-	// 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-	// 	require.NoError(t, err)
-	// 	err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-	// 	require.NoError(t, err)
-
-	// 	// assert balances for user controlled wallets
-	// 	chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, chainABalance.Equal(initBal))
-	// 	require.True(t, chainBBalance.Equal(zeroBal))
-	// 	require.True(t, chainCBalance.Equal(zeroBal))
-
-	// 	// assert balances for IBC escrow accounts
-	// 	firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	// 	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	// })
-	// t.Run("forward timeout refund", func(t *testing.T) {
-	// 	// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
-	// 	transfer := ibc.WalletAmount{
-	// 		Address: userB.FormattedAddress(),
-	// 		Denom:   chainA.Config().Denom,
-	// 		Amount:  transferAmount,
-	// 	}
-
-	// 	retries := uint8(2)
-	// 	metadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: userC.FormattedAddress(),
-	// 			Channel:  bcChan.ChannelID,
-	// 			Port:     bcChan.PortID,
-	// 			Retries:  &retries,
-	// 			Timeout:  1 * time.Second,
-	// 		},
-	// 	}
-
-	// 	memo, err := json.Marshal(metadata)
-	// 	require.NoError(t, err)
-
-	// 	chainAHeight, err := chainA.Height(ctx)
-	// 	require.NoError(t, err)
-
-	// 	transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-	// 	require.NoError(t, err)
-	// 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-	// 	require.NoError(t, err)
-	// 	err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-	// 	require.NoError(t, err)
-
-	// 	// assert balances for user controlled wallets
-	// 	chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, chainABalance.Equal(initBal))
-	// 	require.True(t, chainBBalance.Equal(zeroBal))
-	// 	require.True(t, chainCBalance.Equal(zeroBal))
-
-	// 	firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	// 	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	// })
-
-	// t.Run("multi-hop ack error refund", func(t *testing.T) {
-	// 	// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C->Chain D
-	// 	// This should succeed in the first hop and second hop, then fail to make the third hop.
-	// 	// Funds should be refunded to Chain B and then to Chain A via acknowledgements with errors.
-	// 	transfer := ibc.WalletAmount{
-	// 		Address: userB.FormattedAddress(),
-	// 		Denom:   chainA.Config().Denom,
-	// 		Amount:  transferAmount,
-	// 	}
-
-	// 	secondHopMetadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: "xyz1t8eh66t2w5k67kwurmn5gqhtq6d2ja0vp7jmmq", // malformed receiver address on chain D
-	// 			Channel:  cdChan.ChannelID,
-	// 			Port:     cdChan.PortID,
-	// 		},
-	// 	}
-
-	// 	nextBz, err := json.Marshal(secondHopMetadata)
-	// 	require.NoError(t, err)
-
-	// 	next := string(nextBz)
-
-	// 	firstHopMetadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: userC.FormattedAddress(),
-	// 			Channel:  bcChan.ChannelID,
-	// 			Port:     bcChan.PortID,
-	// 			Next:     &next,
-	// 		},
-	// 	}
-
-	// 	memo, err := json.Marshal(firstHopMetadata)
-	// 	require.NoError(t, err)
-
-	// 	chainAHeight, err := chainA.Height(ctx)
-	// 	require.NoError(t, err)
-
-	// 	transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-	// 	require.NoError(t, err)
-	// 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
-	// 	require.NoError(t, err)
-	// 	err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-	// 	require.NoError(t, err)
-
-	// 	// assert balances for user controlled wallets
-	// 	chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, chainABalance.Equal(initBal))
-	// 	require.True(t, chainBBalance.Equal(zeroBal))
-	// 	require.True(t, chainCBalance.Equal(zeroBal))
-	// 	require.True(t, chainDBalance.Equal(zeroBal))
-
-	// 	// assert balances for IBC escrow accounts
-	// 	firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	// 	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	// 	require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
-	// })
-
-	// t.Run("multi-hop through native chain ack error refund", func(t *testing.T) {
-	// 	// send normal IBC transfer from B->A to get funds in IBC denom, then do multihop A->B(native)->C->D
-	// 	// this lets us test the burn from escrow account on chain C and the escrow to escrow transfer on chain B.
-
-	// 	// Compose the prefixed denoms and ibc denom for asserting balances
-	// 	baDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(abChan.PortID, abChan.ChannelID))
-	// 	bcDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
-	// 	cdDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(dcChan.PortID, dcChan.ChannelID))
-
-	// 	baIBCDenom := baDenom.IBCDenom()
-	// 	bcIBCDenom := bcDenom.IBCDenom()
-	// 	cdIBCDenom := cdDenom.IBCDenom()
-
-	// 	transfer := ibc.WalletAmount{
-	// 		Address: userA.FormattedAddress(),
-	// 		Denom:   chainB.Config().Denom,
-	// 		Amount:  transferAmount,
-	// 	}
-
-	// 	chainBHeight, err := chainB.Height(ctx)
-	// 	require.NoError(t, err)
-
-	// 	transferTx, err := chainB.SendIBCTransfer(ctx, baChan.ChannelID, userB.KeyName(), transfer, ibc.TransferOptions{})
-	// 	require.NoError(t, err)
-	// 	_, err = testutil.PollForAck(ctx, chainB, chainBHeight, chainBHeight+10, transferTx.Packet)
-	// 	require.NoError(t, err)
-	// 	err = testutil.WaitForBlocks(ctx, waitBlocks, chainB)
-	// 	require.NoError(t, err)
-
-	// 	// assert balance for user controlled wallet
-	// 	chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), baIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	baEscrowBalance, err := chainB.GetBalance(ctx, transfertypes.GetEscrowAddress(baChan.PortID, baChan.ChannelID).String(), chainB.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, chainABalance.Equal(transferAmount))
-	// 	require.True(t, baEscrowBalance.Equal(transferAmount))
-
-	// 	// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C->Chain D
-	// 	// This should succeed in the first hop and second hop, then fail to make the third hop.
-	// 	// Funds should be refunded to Chain B and then to Chain A via acknowledgements with errors.
-	// 	transfer = ibc.WalletAmount{
-	// 		Address: userB.FormattedAddress(),
-	// 		Denom:   baIBCDenom,
-	// 		Amount:  transferAmount,
-	// 	}
-
-	// 	secondHopMetadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: "xyz1t8eh66t2w5k67kwurmn5gqhtq6d2ja0vp7jmmq", // malformed receiver address on chain D
-	// 			Channel:  cdChan.ChannelID,
-	// 			Port:     cdChan.PortID,
-	// 		},
-	// 	}
-
-	// 	nextBz, err := json.Marshal(secondHopMetadata)
-	// 	require.NoError(t, err)
-
-	// 	next := string(nextBz)
-
-	// 	firstHopMetadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: userC.FormattedAddress(),
-	// 			Channel:  bcChan.ChannelID,
-	// 			Port:     bcChan.PortID,
-	// 			Next:     &next,
-	// 		},
-	// 	}
-
-	// 	memo, err := json.Marshal(firstHopMetadata)
-	// 	require.NoError(t, err)
-
-	// 	chainAHeight, err := chainA.Height(ctx)
-	// 	require.NoError(t, err)
-
-	// 	transferTx, err = chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-	// 	require.NoError(t, err)
-	// 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
-	// 	require.NoError(t, err)
-	// 	err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-	// 	require.NoError(t, err)
-
-	// 	// assert balances for user controlled wallets
-	// 	chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), cdIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), bcIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), chainB.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	chainABalance, err = chainA.GetBalance(ctx, userA.FormattedAddress(), baIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, chainABalance.Equal(transferAmount))
-	// 	require.True(t, chainBBalance.Equal(initBal.Sub(transferAmount)))
-	// 	require.True(t, chainCBalance.Equal(zeroBal))
-	// 	require.True(t, chainDBalance.Equal(zeroBal))
-
-	// 	// assert balances for IBC escrow accounts
-	// 	cdEscrowBalance, err := chainC.GetBalance(ctx, transfertypes.GetEscrowAddress(cdChan.PortID, cdChan.ChannelID).String(), bcIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	bcEscrowBalance, err := chainB.GetBalance(ctx, transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID).String(), chainB.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	baEscrowBalance, err = chainB.GetBalance(ctx, transfertypes.GetEscrowAddress(baChan.PortID, baChan.ChannelID).String(), chainB.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, baEscrowBalance.Equal(transferAmount))
-	// 	require.True(t, bcEscrowBalance.Equal(zeroBal))
-	// 	require.True(t, cdEscrowBalance.Equal(zeroBal))
-	// })
-
-	// t.Run("forward a->b->a", func(t *testing.T) {
-	// 	// Send packet from Chain A->Chain B->Chain A
-	// 	userABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-	// 	require.NoError(t, err, "failed to get user a balance")
-
-	// 	userBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopDenom.Path())
-	// 	require.NoError(t, err, "failed to get user a balance")
-
-	// 	transfer := ibc.WalletAmount{
-	// 		Address: userB.FormattedAddress(),
-	// 		Denom:   chainA.Config().Denom,
-	// 		Amount:  transferAmount,
-	// 	}
-
-	// 	firstHopMetadata := &PacketMetadata{
-	// 		Forward: &ForwardMetadata{
-	// 			Receiver: userA.FormattedAddress(),
-	// 			Channel:  baChan.ChannelID,
-	// 			Port:     baChan.PortID,
-	// 		},
-	// 	}
-
-	// 	memo, err := json.Marshal(firstHopMetadata)
-	// 	require.NoError(t, err)
-
-	// 	chainAHeight, err := chainA.Height(ctx)
-	// 	require.NoError(t, err)
-
-	// 	transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-	// 	require.NoError(t, err)
-	// 	_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
-	// 	require.NoError(t, err)
-	// 	err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
-	// 	require.NoError(t, err)
-
-	// 	chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
-	// 	require.NoError(t, err)
-
-	// 	chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
-	// 	require.NoError(t, err)
-
-	// 	require.True(t, chainABalance.Equal(userABalance))
-	// 	require.True(t, chainBBalance.Equal(userBBalance))
-	// })
+	t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
+		// Send packet back from Chain D->Chain C->Chain B->Chain A
+		transfer := ibc.WalletAmount{
+			Address: userC.FormattedAddress(),
+			Denom:   thirdHopDenom.IBCDenom(),
+			Amount:  transferAmount,
+		}
+
+		secondHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userA.FormattedAddress(),
+				Channel:  baChan.ChannelID,
+				Port:     baChan.PortID,
+			},
+		}
+
+		nextBz, err := json.Marshal(secondHopMetadata)
+		require.NoError(t, err)
+
+		next := string(nextBz)
+
+		firstHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userB.FormattedAddress(),
+				Channel:  cbChan.ChannelID,
+				Port:     cbChan.PortID,
+				Next:     &next,
+			},
+		}
+
+		memo, err := json.Marshal(firstHopMetadata)
+		require.NoError(t, err)
+
+		chainDHeight, err := chainD.Height(ctx)
+		require.NoError(t, err)
+
+		transferTx, err := chainD.SendIBCTransfer(ctx, dcChan.ChannelID, userD.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+30, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+
+		// assert balances for user controlled wallets
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
+		require.NoError(t, err)
+
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
+
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
+
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
+
+		require.Equal(t, zeroBal.Int64(), chainDBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), chainCBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), chainBBalance.Int64())
+		require.Equal(t, initBal.Int64(), chainABalance.Int64())
+
+		// assert balances for IBC escrow accounts
+		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
+
+		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
+
+		thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
+		require.NoError(t, err)
+
+		require.Equal(t, zeroBal.Int64(), firstHopEscrowBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), secondHopEscrowBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), thirdHopEscrowBalance.Int64())
+	})
+
+	t.Run("forward ack error refund", func(t *testing.T) {
+		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
+		// This should succeed in the first hop and fail to make the second hop; funds should then be refunded to Chain A.
+		transfer := ibc.WalletAmount{
+			Address: userB.FormattedAddress(),
+			Denom:   chainA.Config().Denom,
+			Amount:  transferAmount,
+		}
+
+		metadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: "xyz1t8eh66t2w5k67kwurmn5gqhtq6d2ja0vp7jmmq", // malformed receiver address on Chain C
+				Channel:  bcChan.ChannelID,
+				Port:     bcChan.PortID,
+			},
+		}
+
+		memo, err := json.Marshal(metadata)
+		require.NoError(t, err)
+
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
+
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+
+		// assert balances for user controlled wallets
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
+
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
+
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
+
+		require.Equal(t, initBal.Int64(), chainABalance.Int64())
+		require.Equal(t, zeroBal.Int64(), chainBBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), chainCBalance.Int64())
+
+		// assert balances for IBC escrow accounts
+		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
+
+		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
+
+		require.Equal(t, zeroBal.Int64(), firstHopEscrowBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), secondHopEscrowBalance.Int64())
+	})
+
+	t.Run("forward timeout refund", func(t *testing.T) {
+		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
+		transfer := ibc.WalletAmount{
+			Address: userB.FormattedAddress(),
+			Denom:   chainA.Config().Denom,
+			Amount:  transferAmount,
+		}
+
+		retries := uint8(2)
+		metadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userC.FormattedAddress(),
+				Channel:  bcChan.ChannelID,
+				Port:     bcChan.PortID,
+				Retries:  &retries,
+				Timeout:  1 * time.Second,
+			},
+		}
+
+		memo, err := json.Marshal(metadata)
+		require.NoError(t, err)
+
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
+
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+
+		// assert balances for user controlled wallets
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
+
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
+
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
+
+		require.True(t, chainABalance.Equal(initBal))
+		require.True(t, chainBBalance.Equal(zeroBal))
+		require.True(t, chainCBalance.Equal(zeroBal))
+
+		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
+
+		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
+
+		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
+		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+	})
+
+	t.Run("multi-hop ack error refund", func(t *testing.T) {
+		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C->Chain D
+		// This should succeed in the first hop and second hop, then fail to make the third hop.
+		// Funds should be refunded to Chain B and then to Chain A via acknowledgements with errors.
+		transfer := ibc.WalletAmount{
+			Address: userB.FormattedAddress(),
+			Denom:   chainA.Config().Denom,
+			Amount:  transferAmount,
+		}
+
+		secondHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: "xyz1t8eh66t2w5k67kwurmn5gqhtq6d2ja0vp7jmmq", // malformed receiver address on chain D
+				Channel:  cdChan.ChannelID,
+				Port:     cdChan.PortID,
+			},
+		}
+
+		nextBz, err := json.Marshal(secondHopMetadata)
+		require.NoError(t, err)
+
+		next := string(nextBz)
+
+		firstHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userC.FormattedAddress(),
+				Channel:  bcChan.ChannelID,
+				Port:     bcChan.PortID,
+				Next:     &next,
+			},
+		}
+
+		memo, err := json.Marshal(firstHopMetadata)
+		require.NoError(t, err)
+
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
+
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+
+		// assert balances for user controlled wallets
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
+		require.NoError(t, err)
+
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
+
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
+
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
+
+		require.True(t, chainABalance.Equal(initBal))
+		require.True(t, chainBBalance.Equal(zeroBal))
+		require.True(t, chainCBalance.Equal(zeroBal))
+		require.True(t, chainDBalance.Equal(zeroBal))
+
+		// assert balances for IBC escrow accounts
+		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
+
+		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
+
+		thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
+		require.NoError(t, err)
+
+		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
+		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+		require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
+	})
+
+	t.Run("multi-hop through native chain ack error refund", func(t *testing.T) {
+		// send normal IBC transfer from B->A to get funds in IBC denom, then do multihop A->B(native)->C->D
+		// this lets us test the burn from escrow account on chain C and the escrow to escrow transfer on chain B.
+
+		// Compose the prefixed denoms and ibc denom for asserting balances
+		baDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(abChan.PortID, abChan.ChannelID))
+		bcDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
+		cdDenom := transfertypes.NewDenom(chainB.Config().Denom, transfertypes.NewHop(dcChan.PortID, dcChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID))
+
+		baIBCDenom := baDenom.IBCDenom()
+		bcIBCDenom := bcDenom.IBCDenom()
+		cdIBCDenom := cdDenom.IBCDenom()
+
+		transfer := ibc.WalletAmount{
+			Address: userA.FormattedAddress(),
+			Denom:   chainB.Config().Denom,
+			Amount:  transferAmount,
+		}
+
+		chainBHeight, err := chainB.Height(ctx)
+		require.NoError(t, err)
+
+		transferTx, err := chainB.SendIBCTransfer(ctx, baChan.ChannelID, userB.KeyName(), transfer, ibc.TransferOptions{})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainB, chainBHeight, chainBHeight+10, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainB)
+		require.NoError(t, err)
+
+		// assert balance for user controlled wallet
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), baIBCDenom)
+		require.NoError(t, err)
+
+		baEscrowBalance, err := chainB.GetBalance(ctx, transfertypes.GetEscrowAddress(baChan.PortID, baChan.ChannelID).String(), chainB.Config().Denom)
+		require.NoError(t, err)
+
+		require.True(t, chainABalance.Equal(transferAmount))
+		require.True(t, baEscrowBalance.Equal(transferAmount))
+
+		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C->Chain D
+		// This should succeed in the first hop and second hop, then fail to make the third hop.
+		// Funds should be refunded to Chain B and then to Chain A via acknowledgements with errors.
+		transfer = ibc.WalletAmount{
+			Address: userB.FormattedAddress(),
+			Denom:   baIBCDenom,
+			Amount:  transferAmount,
+		}
+
+		secondHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: "xyz1t8eh66t2w5k67kwurmn5gqhtq6d2ja0vp7jmmq", // malformed receiver address on chain D
+				Channel:  cdChan.ChannelID,
+				Port:     cdChan.PortID,
+			},
+		}
+
+		nextBz, err := json.Marshal(secondHopMetadata)
+		require.NoError(t, err)
+
+		next := string(nextBz)
+
+		firstHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userC.FormattedAddress(),
+				Channel:  bcChan.ChannelID,
+				Port:     bcChan.PortID,
+				Next:     &next,
+			},
+		}
+
+		memo, err := json.Marshal(firstHopMetadata)
+		require.NoError(t, err)
+
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
+
+		transferTx, err = chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+
+		// assert balances for user controlled wallets
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), cdIBCDenom)
+		require.NoError(t, err)
+
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), bcIBCDenom)
+		require.NoError(t, err)
+
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), chainB.Config().Denom)
+		require.NoError(t, err)
+
+		chainABalance, err = chainA.GetBalance(ctx, userA.FormattedAddress(), baIBCDenom)
+		require.NoError(t, err)
+
+		require.True(t, chainABalance.Equal(transferAmount))
+		require.True(t, chainBBalance.Equal(initBal.Sub(transferAmount)))
+		require.True(t, chainCBalance.Equal(zeroBal))
+		require.True(t, chainDBalance.Equal(zeroBal))
+
+		// assert balances for IBC escrow accounts
+		cdEscrowBalance, err := chainC.GetBalance(ctx, transfertypes.GetEscrowAddress(cdChan.PortID, cdChan.ChannelID).String(), bcIBCDenom)
+		require.NoError(t, err)
+
+		bcEscrowBalance, err := chainB.GetBalance(ctx, transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID).String(), chainB.Config().Denom)
+		require.NoError(t, err)
+
+		baEscrowBalance, err = chainB.GetBalance(ctx, transfertypes.GetEscrowAddress(baChan.PortID, baChan.ChannelID).String(), chainB.Config().Denom)
+		require.NoError(t, err)
+
+		require.True(t, baEscrowBalance.Equal(transferAmount))
+		require.True(t, bcEscrowBalance.Equal(zeroBal))
+		require.True(t, cdEscrowBalance.Equal(zeroBal))
+	})
+
+	t.Run("forward a->b->a", func(t *testing.T) {
+		// Send packet from Chain A->Chain B->Chain A
+		userABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err, "failed to get user a balance")
+
+		userBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopDenom.Path())
+		require.NoError(t, err, "failed to get user a balance")
+
+		transfer := ibc.WalletAmount{
+			Address: userB.FormattedAddress(),
+			Denom:   chainA.Config().Denom,
+			Amount:  transferAmount,
+		}
+
+		firstHopMetadata := &PacketMetadata{
+			Forward: &ForwardMetadata{
+				Receiver: userA.FormattedAddress(),
+				Channel:  baChan.ChannelID,
+				Port:     baChan.PortID,
+			},
+		}
+
+		memo, err := json.Marshal(firstHopMetadata)
+		require.NoError(t, err)
+
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
+
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		require.NoError(t, err)
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
+		require.NoError(t, err)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
+
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
+
+		require.True(t, chainABalance.Equal(userABalance))
+		require.True(t, chainBBalance.Equal(userBBalance))
+	})
 }

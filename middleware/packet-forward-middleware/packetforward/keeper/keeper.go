@@ -2,17 +2,13 @@ package keeper
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
 	"github.com/hashicorp/go-metrics"
-
-	cmttypes "github.com/cometbft/cometbft/types"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -100,35 +96,6 @@ func (k *Keeper) SetTransferKeeper(transferKeeper types.TransferKeeper) {
 	k.transferKeeper = transferKeeper
 }
 
-// GetIBCDenom returns a transfertypes.Denom from a denom string in the form of either
-// - ibc/<hash>
-// - <base denom>
-func (k *Keeper) GetIBCDenom(ctx context.Context, denomStr string) (transfertypes.Denom, error) {
-	// deconstruct the token denomination into the denomination trace info
-	// to determine if the sender is the source chain
-	if strings.HasPrefix(denomStr, "ibc/") {
-		// trim the denomination prefix, by default "ibc/"
-		hashStr := denomStr[len("ibc/"):]
-		hash, err := hex.DecodeString(hashStr)
-		if err != nil {
-			return transfertypes.Denom{}, err
-		}
-
-		if err := cmttypes.ValidateHash(hash); err != nil {
-			return transfertypes.Denom{}, err
-		}
-
-		denom, found := k.transferKeeper.GetDenom(ctx, hash)
-		if !found {
-			return transfertypes.Denom{}, fmt.Errorf("failed to find denom for hash: %s", hash)
-		}
-
-		return denom, nil
-	}
-
-	return transfertypes.NewDenom(denomStr), nil
-}
-
 // moveFundsToUserRecoverableAccount will move the funds from the escrow account to the user recoverable account
 // this is only used when the maximum timeouts have been reached or there is an acknowledgement error and the packet is nonrefundable,
 // i.e. an operation has occurred to make the original packet funds inaccessible to the user, e.g. a swap.
@@ -139,10 +106,6 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	data transfertypes.FungibleTokenPacketData,
 	inFlightPacket *types.InFlightPacket,
 ) error {
-	// denom, err := k.GetIBCDenom(ctx, data.Denom)
-	// if err != nil {
-	// 	return err
-	// }
 	denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 	amount, ok := sdkmath.NewIntFromString(data.Amount)
@@ -157,7 +120,8 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 		return fmt.Errorf("failed to get user recoverable account: %w", err)
 	}
 
-	if !denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
+	// TODO: check this
+	if denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
 		// mint vouchers back to sender
 		if err := k.bankKeeper.MintCoins(
 			ctx, transfertypes.ModuleName, sdk.NewCoins(token),
@@ -242,11 +206,6 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 			}, newAck)
 		}
 
-		// denom, err := k.GetIBCDenom(ctx, data.Denom)
-		// if err != nil {
-		// 	return err
-		// }
-
 		denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 		amount, ok := sdkmath.NewIntFromString(data.Amount)
@@ -261,11 +220,12 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 
 		newToken := sdk.NewCoins(token)
 
-		if denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
+		// TODO: document this or explain the reasoning around denom prefixing here
+		if !denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
 			// funds were moved to escrow account for transfer, so they need to either:
 			// - move to the other escrow account, in the case of native denom
 			// - burn
-			if denom.HasPrefix(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId) {
+			if !denom.HasPrefix(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId) {
 				// transfer funds from escrow account for forwarded packet to escrow account going back for refund.
 				if err := k.bankKeeper.SendCoins(
 					ctx, escrowAddress, refundEscrowAddress, newToken,
@@ -497,11 +457,6 @@ func (k *Keeper) RetryTimeout(
 		)
 		return fmt.Errorf("error parsing amount from string for packetforward retry: %s", data.Amount)
 	}
-
-	// denom, err := k.GetIBCDenom(ctx, data.Denom)
-	// if err != nil {
-	// 	return err
-	// }
 
 	denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
