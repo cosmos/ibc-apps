@@ -109,7 +109,8 @@ func getDenomForThisChain(port, channel, counterpartyPort, counterpartyChannel s
 	}
 
 	// prepend port and channel from this chain to denom
-	denom.Trace = append([]transfertypes.Hop{transfertypes.NewHop(port, channel)}, denom.Trace...)
+	// denom.Trace = append([]transfertypes.Hop{transfertypes.NewHop(port, channel)}, denom.Trace...)
+	denom.Trace = append(denom.Trace, transfertypes.NewHop(port, channel))
 	return denom
 }
 
@@ -210,18 +211,22 @@ func (im IBCMiddleware) OnRecvPacket(
 	// if this packet's token denom is already the base denom for some native token on this chain,
 	// we do not need to do any further composition of the denom before forwarding the packet
 
-	denom, err := im.keeper.GetIBCDenom(ctx, data.Denom)
-	if err != nil {
-		return newErrorAcknowledgement(fmt.Errorf("error getting denom: %w", err))
-	}
+	logger.Info("ibc packet data denom HERE!", "data.Denom", data.Denom)
+
+	denom := transfertypes.ExtractDenomFromPath(data.Denom)
+
+	logger.Info("(before) dump IBC denom info", "denomBase", denom.Base, "denomTrace", denom.Trace)
 
 	if !disableDenomComposition {
+		logger.Info("disableDenomComposition here ----")
 		denom = getDenomForThisChain(
 			packet.DestinationPort, packet.DestinationChannel,
 			packet.SourcePort, packet.SourceChannel,
 			denom,
 		)
 	}
+
+	logger.Info("(after) dump IBC denom info", "denomBase", denom.Base, "denomTrace", denom.Trace)
 
 	amountInt, ok := sdkmath.NewIntFromString(data.Amount)
 	if !ok {

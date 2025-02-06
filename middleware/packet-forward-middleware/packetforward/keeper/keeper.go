@@ -139,10 +139,11 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	data transfertypes.FungibleTokenPacketData,
 	inFlightPacket *types.InFlightPacket,
 ) error {
-	denom, err := k.GetIBCDenom(ctx, data.Denom)
-	if err != nil {
-		return err
-	}
+	// denom, err := k.GetIBCDenom(ctx, data.Denom)
+	// if err != nil {
+	// 	return err
+	// }
+	denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 	amount, ok := sdkmath.NewIntFromString(data.Amount)
 	if !ok {
@@ -241,10 +242,12 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 			}, newAck)
 		}
 
-		denom, err := k.GetIBCDenom(ctx, data.Denom)
-		if err != nil {
-			return err
-		}
+		// denom, err := k.GetIBCDenom(ctx, data.Denom)
+		// if err != nil {
+		// 	return err
+		// }
+
+		denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 		amount, ok := sdkmath.NewIntFromString(data.Amount)
 		if !ok {
@@ -495,10 +498,12 @@ func (k *Keeper) RetryTimeout(
 		return fmt.Errorf("error parsing amount from string for packetforward retry: %s", data.Amount)
 	}
 
-	denom, err := k.GetIBCDenom(ctx, data.Denom)
-	if err != nil {
-		return err
-	}
+	// denom, err := k.GetIBCDenom(ctx, data.Denom)
+	// if err != nil {
+	// 	return err
+	// }
+
+	denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 	token := sdk.NewCoin(denom.IBCDenom(), amount)
 
