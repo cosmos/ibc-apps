@@ -101,16 +101,18 @@ func (im IBCMiddleware) OnChanCloseConfirm(ctx context.Context, portID, channelI
 	return im.app.OnChanCloseConfirm(ctx, portID, channelID)
 }
 
-func getDenomForThisChain(port, channel, counterpartyPort, counterpartyChannel string, denom transfertypes.Denom) transfertypes.Denom {
-	if denom.HasPrefix(counterpartyPort, counterpartyChannel) {
-		// unwind denom
+func getDenomForThisChain(dstPort, dstChannel, srcPort, srcChannel string, denom transfertypes.Denom) transfertypes.Denom {
+	if denom.HasPrefix(srcPort, srcChannel) {
+		// unwind denom, trim the first hop from trace path.
+		// e.g. "transfer/channel-1/transfer/channel-0/utoken" -> "transfer/channel-0/utoken"
 		denom.Trace = denom.Trace[1:]
 		return denom
 	}
 
-	// prepend port and channel from this chain to denom
-	// denom.Trace = append([]transfertypes.Hop{transfertypes.NewHop(port, channel)}, denom.Trace...)
-	denom.Trace = append(denom.Trace, transfertypes.NewHop(port, channel))
+	// prepend port and channel from this chain to denom as the leftmost denom in token denom path is most recent.
+	// e.g. where port/channel is transfer/channel-1 then:
+	// "transfer/channel-0/utoken" -> "transfer/channel-1/transfer/channel-0/utoken"
+	denom.Trace = append([]transfertypes.Hop{transfertypes.NewHop(dstPort, dstChannel)}, denom.Trace...)
 	return denom
 }
 
@@ -210,12 +212,7 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	// if this packet's token denom is already the base denom for some native token on this chain,
 	// we do not need to do any further composition of the denom before forwarding the packet
-
-	logger.Info("ibc packet data denom HERE!", "data.Denom", data.Denom)
-
 	denom := transfertypes.ExtractDenomFromPath(data.Denom)
-
-	logger.Info("(before) dump IBC denom info", "denomBase", denom.Base, "denomTrace", denom.Trace)
 
 	if !disableDenomComposition {
 		logger.Info("disableDenomComposition here ----")
@@ -225,8 +222,6 @@ func (im IBCMiddleware) OnRecvPacket(
 			denom,
 		)
 	}
-
-	logger.Info("(after) dump IBC denom info", "denomBase", denom.Base, "denomTrace", denom.Trace)
 
 	amountInt, ok := sdkmath.NewIntFromString(data.Amount)
 	if !ok {
