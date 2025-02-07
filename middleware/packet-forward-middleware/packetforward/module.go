@@ -3,14 +3,13 @@ package packetforward
 import (
 	"encoding/json"
 	"fmt"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/exported"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-
-	coreregistry "cosmossdk.io/core/registry"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -23,6 +22,7 @@ import (
 
 var (
 	_ module.AppModule           = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
 	_ module.AppModuleSimulation = AppModule{}
 )
 
@@ -34,9 +34,14 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
+// RegisterLegacyAminoCodec implements AppModuleBasic interface
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	types.RegisterLegacyAminoCodec(cdc)
+}
+
 // RegisterInterfaces registers module concrete types into protobuf Any.
-func (AppModule) RegisterInterfaces(registry coreregistry.InterfaceRegistrar) {
-	types.RegisterInterfaces(registry)
+func (AppModuleBasic) RegisterInterfaces(r codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(r)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the ibc

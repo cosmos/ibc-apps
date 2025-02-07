@@ -2,18 +2,18 @@ package upgrades
 
 import (
 	"context"
+	"cosmossdk.io/core/appmodule"
 
-	appmodule "cosmossdk.io/core/appmodule"
-	consensusparamskeeper "cosmossdk.io/x/consensus/keeper"
-	paramskeeper "cosmossdk.io/x/params/keeper"
-	paramstypes "cosmossdk.io/x/params/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
+
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
+	consensusparamskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 const (

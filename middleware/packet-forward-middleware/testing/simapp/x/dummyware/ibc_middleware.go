@@ -2,6 +2,7 @@ package dummyware
 
 import (
 	"context"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
 
@@ -29,32 +30,34 @@ func NewIBCMiddleware(app porttypes.IBCModule) IBCMiddleware {
 
 // OnChanOpenInit implements the IBCModule interface.
 func (im IBCMiddleware) OnChanOpenInit(
-	ctx context.Context,
+	ctx sdk.Context,
 	order channeltypes.Order,
 	connectionHops []string,
 	portID string,
 	channelID string,
+	chanCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
-	return im.app.OnChanOpenInit(ctx, order, connectionHops, portID, channelID, counterparty, version)
+	return im.app.OnChanOpenInit(ctx, order, connectionHops, portID, channelID, chanCap, counterparty, version)
 }
 
 // OnChanOpenTry implements the IBCModule interface.
 func (im IBCMiddleware) OnChanOpenTry(
-	ctx context.Context,
+	ctx sdk.Context,
 	order channeltypes.Order,
 	connectionHops []string,
 	portID, channelID string,
+	chanCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (version string, err error) {
-	return im.app.OnChanOpenTry(ctx, order, connectionHops, portID, channelID, counterparty, counterpartyVersion)
+	return im.app.OnChanOpenTry(ctx, order, connectionHops, portID, channelID, chanCap, counterparty, counterpartyVersion)
 }
 
 // OnChanOpenAck implements the IBCModule interface.
 func (im IBCMiddleware) OnChanOpenAck(
-	ctx context.Context,
+	ctx sdk.Context,
 	portID, channelID string,
 	counterpartyChannelID string,
 	counterpartyVersion string,
@@ -63,38 +66,39 @@ func (im IBCMiddleware) OnChanOpenAck(
 }
 
 // OnChanOpenConfirm implements the IBCModule interface.
-func (im IBCMiddleware) OnChanOpenConfirm(ctx context.Context, portID, channelID string) error {
+func (im IBCMiddleware) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
 	return im.app.OnChanOpenConfirm(ctx, portID, channelID)
 }
 
 // OnChanCloseInit implements the IBCModule interface.
-func (im IBCMiddleware) OnChanCloseInit(ctx context.Context, portID, channelID string) error {
+func (im IBCMiddleware) OnChanCloseInit(ctx sdk.Context, portID, channelID string) error {
 	return im.app.OnChanCloseInit(ctx, portID, channelID)
 }
 
 // OnChanCloseConfirm implements the IBCModule interface.
-func (im IBCMiddleware) OnChanCloseConfirm(ctx context.Context, portID, channelID string) error {
+func (im IBCMiddleware) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string) error {
 	return im.app.OnChanCloseConfirm(ctx, portID, channelID)
 }
 
 // OnRecvPacket sets the non-refundable context value to true so that on a failed forward funds will not
 // be refunded from the intermediate chain.
 func (im IBCMiddleware) OnRecvPacket(
-	ctx context.Context,
+	ctx sdk.Context,
 	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
 	// Compose our context with values that will be used to pass through to the forward middleware
-	ctxWithFlags := context.WithValue(ctx, forwardtypes.NonrefundableKey{}, true)
+	ctxWithFlags := context.WithValue(ctx.Context(), forwardtypes.NonrefundableKey{}, true)
+	wrappedCtx := ctx.WithContext(ctxWithFlags)
 
 	// Call into underlying app to receive funds on this chain
-	return im.app.OnRecvPacket(ctxWithFlags, channelVersion, packet, relayer)
+	return im.app.OnRecvPacket(wrappedCtx, channelVersion, packet, relayer)
 }
 
 // OnAcknowledgementPacket implements the IBCModule interface.
 func (im IBCMiddleware) OnAcknowledgementPacket(
-	ctx context.Context,
+	ctx sdk.Context,
 	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
@@ -104,6 +108,6 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 }
 
 // OnTimeoutPacket implements the IBCModule interface.
-func (im IBCMiddleware) OnTimeoutPacket(ctx context.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) error {
+func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	return im.app.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 }

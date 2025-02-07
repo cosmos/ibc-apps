@@ -14,7 +14,7 @@ require (
 	cosmossdk.io/math v1.3.0
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/cosmos/cosmos-sdk v0.50.9
-	github.com/cosmos/gogoproto v1.7.0
+	github.com/cosmos/gogoproto v1.7.0 // indirect
 	github.com/cosmos/ibc-go/v9 v9.0.2
 	github.com/docker/docker v24.0.7+incompatible
 	// https://github.com/strangelove-ventures/interchaintest/pull/933
