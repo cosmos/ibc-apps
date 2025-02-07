@@ -120,8 +120,7 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 		return fmt.Errorf("failed to get user recoverable account: %w", err)
 	}
 
-	// TODO: check this
-	if denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
+	if !senderIsSource(denom, packet.SourcePort, packet.SourceChannel) {
 		// mint vouchers back to sender
 		if err := k.bankKeeper.MintCoins(
 			ctx, transfertypes.ModuleName, sdk.NewCoins(token),
@@ -220,12 +219,11 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 
 		newToken := sdk.NewCoins(token)
 
-		// TODO: document this or explain the reasoning around denom prefixing here
-		if !denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
+		if senderIsSource(denom, packet.SourcePort, packet.SourceChannel) {
 			// funds were moved to escrow account for transfer, so they need to either:
 			// - move to the other escrow account, in the case of native denom
 			// - burn
-			if !denom.HasPrefix(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId) {
+			if senderIsSource(denom, inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId) {
 				// transfer funds from escrow account for forwarded packet to escrow account going back for refund.
 				if err := k.bankKeeper.SendCoins(
 					ctx, escrowAddress, refundEscrowAddress, newToken,
@@ -538,4 +536,15 @@ func (k *Keeper) GetAppVersion(
 	channelID string,
 ) (string, bool) {
 	return k.ics4Wrapper.GetAppVersion(ctx, portID, channelID)
+}
+
+// senderIsSource returns true if the given sourcePortID and sourceChannelID are the source of the denom.
+func senderIsSource(denom transfertypes.Denom, sourcePortID, sourceChannelID string) bool {
+	// when a denom is received, it will have had the source portID and channelID prepended to the trace of the denom.
+	// this means that when a denom has this prefix it is the receiving chain. If it is the source chain, the
+	// prefix will not yet have been appended.
+	// i.e.
+	// - if a denom is prefixed with the given sourcePortID and sourceChannelID the receiving chain is source.
+	// - if a denom is not prefixed with the given sourcePortID and sourceChannelID the sending chain is source.
+	return !denom.HasPrefix(sourcePortID, sourceChannelID)
 }
