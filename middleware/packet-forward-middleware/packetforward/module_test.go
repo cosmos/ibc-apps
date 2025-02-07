@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/test"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/test"
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -16,8 +16,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
 )
 
 var (
@@ -29,6 +29,7 @@ var (
 	testSourceChannel      = "channel-10"
 	testDestinationPort    = "transfer"
 	testDestinationChannel = "channel-11"
+	channelVersion         = "ics20-1"
 
 	senderAddr        = "cosmos1wnlew8ss0sqclfalvj6jkcyvnwq79fd74qxxue"
 	hostAddr          = "cosmos1vzxkv3lxccnttr9rs0002s93sgw72h7ghukuhs"
@@ -42,8 +43,7 @@ var (
 )
 
 func makeIBCDenom(port, channel, denom string) string {
-	prefixedDenom := transfertypes.GetDenomPrefix(port, channel) + denom
-	return transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
+	return transfertypes.NewDenom(denom, transfertypes.NewHop(port, channel)).IBCDenom()
 }
 
 func emptyPacket() channeltypes.Packet {
@@ -126,11 +126,11 @@ func TestOnRecvPacket_EmptyPacket(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packet, senderAccAddr).
 			Return(channeltypes.NewResultAcknowledgement([]byte(""))),
 	)
 
-	ack := forwardMiddleware.OnRecvPacket(ctx, packet, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packet, senderAccAddr)
 	require.True(t, ack.Success())
 
 	expectedAck := &channeltypes.Acknowledgement{}
@@ -153,11 +153,11 @@ func TestOnRecvPacket_InvalidReceiver(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packet, senderAccAddr).
 			Return(channeltypes.NewResultAcknowledgement([]byte("test"))),
 	)
 
-	ack := forwardMiddleware.OnRecvPacket(ctx, packet, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packet, senderAccAddr)
 	require.True(t, ack.Success())
 
 	expectedAck := &channeltypes.Acknowledgement{}
@@ -179,11 +179,11 @@ func TestOnRecvPacket_NoForward(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packet, senderAccAddr).
 			Return(channeltypes.NewResultAcknowledgement([]byte("test"))),
 	)
 
-	ack := forwardMiddleware.OnRecvPacket(ctx, packet, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packet, senderAccAddr)
 	require.True(t, ack.Success())
 
 	expectedAck := &channeltypes.Acknowledgement{}
@@ -206,11 +206,11 @@ func TestOnRecvPacket_NoMemo(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packet, senderAccAddr).
 			Return(channeltypes.NewResultAcknowledgement([]byte("test"))),
 	)
 
-	ack := forwardMiddleware.OnRecvPacket(ctx, packet, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packet, senderAccAddr)
 	require.True(t, ack.Success())
 
 	expectedAck := &channeltypes.Acknowledgement{}
@@ -233,11 +233,11 @@ func TestOnRecvPacket_RecvPacketFailed(t *testing.T) {
 	// Expected mocks
 	gomock.InOrder(
 		// We return a failed OnRecvPacket
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packet, senderAccAddr).
 			Return(channeltypes.NewErrorAcknowledgement(fmt.Errorf("test"))),
 	)
 
-	ack := forwardMiddleware.OnRecvPacket(ctx, packet, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packet, senderAccAddr)
 	require.False(t, ack.Success())
 
 	expectedAck := &channeltypes.Acknowledgement{}
@@ -272,7 +272,7 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetModifiedSender, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packetModifiedSender, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -280,25 +280,26 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 			transfertypes.NewMsgTransfer(
 				port,
 				channel,
-				testCoin,
+				sdk.NewCoins(testCoin),
 				intermediateAddr,
 				destAddr,
 				keeper.DefaultTransferPacketTimeoutHeight,
 				uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
 				"",
+				nil,
 			),
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr).
 			Return(nil),
 	)
 
 	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
-	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
 	// ack returned from chain C
-	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr)
+	err = forwardMiddleware.OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr)
 	require.NoError(t, err)
 }
 
@@ -333,7 +334,7 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetModifiedSender, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packetModifiedSender, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -341,25 +342,26 @@ func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
 			transfertypes.NewMsgTransfer(
 				port,
 				channel,
-				testCoin,
+				sdk.NewCoins(testCoin),
 				intermediateAddr,
 				destAddr,
 				keeper.DefaultTransferPacketTimeoutHeight,
 				uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
 				"",
+				nil,
 			),
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr).
 			Return(nil),
 	)
 
 	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
-	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
 	// ack returned from chain C
-	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr)
+	err = forwardMiddleware.OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr)
 	require.NoError(t, err)
 }
 
@@ -407,24 +409,26 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 	msgTransfer1 := transfertypes.NewMsgTransfer(
 		port,
 		channel,
-		testCoin,
+		sdk.NewCoins(testCoin),
 		intermediateAddr,
 		hostAddr2,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
 		string(memo1),
+		nil,
 	)
 
 	// no memo on final forward
 	msgTransfer2 := transfertypes.NewMsgTransfer(
 		port,
 		channel2,
-		testCoin,
+		sdk.NewCoins(testCoin),
 		intermediateAddr2,
 		destAddr,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
 		"",
+		nil,
 	)
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
@@ -432,7 +436,7 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetModifiedSender, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packetModifiedSender, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -440,7 +444,7 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 			msgTransfer1,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2ModifiedSender, senderAccAddr2).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packet2ModifiedSender, senderAccAddr2).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -448,27 +452,27 @@ func TestOnRecvPacket_ForwardMultihopStringNext(t *testing.T) {
 			msgTransfer2,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr2).
+		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr2).
 			Return(nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, packet2, successAck, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, channelVersion, packet2, successAck, senderAccAddr).
 			Return(nil),
 	)
 
 	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
-	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
 	// chain C with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
-	ack = forwardMiddleware.OnRecvPacket(ctx, packet2, senderAccAddr2)
+	ack = forwardMiddleware.OnRecvPacket(ctx, channelVersion, packet2, senderAccAddr2)
 	require.Nil(t, ack)
 
 	// ack returned from chain D to chain C
-	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr2)
+	err = forwardMiddleware.OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr2)
 	require.NoError(t, err)
 
 	// ack returned from chain C to chain B
-	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packet2, successAck, senderAccAddr)
+	err = forwardMiddleware.OnAcknowledgementPacket(ctx, channelVersion, packet2, successAck, senderAccAddr)
 	require.NoError(t, err)
 }
 
@@ -519,24 +523,26 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 	msgTransfer1 := transfertypes.NewMsgTransfer(
 		port,
 		channel,
-		testCoin,
+		sdk.NewCoins(testCoin),
 		intermediateAddr,
 		hostAddr2,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
 		string(memo1),
+		nil,
 	)
 
 	// no memo on final forward
 	msgTransfer2 := transfertypes.NewMsgTransfer(
 		port,
 		channel2,
-		testCoin,
+		sdk.NewCoins(testCoin),
 		intermediateAddr2,
 		destAddr,
 		keeper.DefaultTransferPacketTimeoutHeight,
 		uint64(ctx.BlockTime().UnixNano())+uint64(keeper.DefaultForwardTransferPacketTimeoutTimestamp.Nanoseconds()),
 		"",
+		nil,
 	)
 
 	acknowledgement := channeltypes.NewResultAcknowledgement([]byte("test"))
@@ -544,7 +550,7 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 
 	// Expected mocks
 	gomock.InOrder(
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packetModifiedSender, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packetModifiedSender, senderAccAddr).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -552,7 +558,7 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 			msgTransfer1,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, packet2ModifiedSender, senderAccAddr2).
+		setup.Mocks.IBCModuleMock.EXPECT().OnRecvPacket(ctx, channelVersion, packet2ModifiedSender, senderAccAddr2).
 			Return(acknowledgement),
 
 		setup.Mocks.TransferKeeperMock.EXPECT().Transfer(
@@ -560,26 +566,26 @@ func TestOnRecvPacket_ForwardMultihopJSONNext(t *testing.T) {
 			msgTransfer2,
 		).Return(&transfertypes.MsgTransferResponse{Sequence: 0}, nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr2).
+		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr2).
 			Return(nil),
 
-		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, packet2, successAck, senderAccAddr).
+		setup.Mocks.IBCModuleMock.EXPECT().OnAcknowledgementPacket(ctx, channelVersion, packet2, successAck, senderAccAddr).
 			Return(nil),
 	)
 
 	// chain B with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
-	ack := forwardMiddleware.OnRecvPacket(ctx, packetOrig, senderAccAddr)
+	ack := forwardMiddleware.OnRecvPacket(ctx, channelVersion, packetOrig, senderAccAddr)
 	require.Nil(t, ack)
 
 	// chain C with packetforward module receives packet and forwards. ack should be nil so that it is not written yet.
-	ack = forwardMiddleware.OnRecvPacket(ctx, packet2, senderAccAddr2)
+	ack = forwardMiddleware.OnRecvPacket(ctx, channelVersion, packet2, senderAccAddr2)
 	require.Nil(t, ack)
 
 	// ack returned from chain D to chain C
-	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packetFwd, successAck, senderAccAddr2)
+	err = forwardMiddleware.OnAcknowledgementPacket(ctx, channelVersion, packetFwd, successAck, senderAccAddr2)
 	require.NoError(t, err)
 
 	// ack returned from chain C to chain B
-	err = forwardMiddleware.OnAcknowledgementPacket(ctx, packet2, successAck, senderAccAddr)
+	err = forwardMiddleware.OnAcknowledgementPacket(ctx, channelVersion, packet2, successAck, senderAccAddr)
 	require.NoError(t, err)
 }

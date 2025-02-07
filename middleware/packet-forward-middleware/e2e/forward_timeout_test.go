@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	chantypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
+	chantypes "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -143,17 +143,13 @@ func TestTimeoutOnForward(t *testing.T) {
 	userA, userB, userC, userD := users[0], users[1], users[2], users[3]
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, chainA.Config().Denom)
-	secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
-	thirdHopDenom := transfertypes.GetPrefixedDenom(dcChan.PortID, dcChan.ChannelID, secondHopDenom)
+	firstHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	secondHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	thirdHopDenom := transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop(dcChan.PortID, dcChan.ChannelID), transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
 
-	firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
-	thirdHopDenomTrace := transfertypes.ParseDenomTrace(thirdHopDenom)
-
-	firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
-	secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
-	thirdHopIBCDenom := thirdHopDenomTrace.IBCDenom()
+	firstHopIBCDenom := firstHopDenom.IBCDenom()
+	secondHopIBCDenom := secondHopDenom.IBCDenom()
+	thirdHopIBCDenom := thirdHopDenom.IBCDenom()
 
 	firstHopEscrowAccount := transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID).String()
 	secondHopEscrowAccount := transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID).String()
@@ -249,10 +245,10 @@ func TestTimeoutOnForward(t *testing.T) {
 	chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, chainABalance.Equal(initBal))
-	require.True(t, chainBBalance.Equal(zeroBal))
-	require.True(t, chainCBalance.Equal(zeroBal))
-	require.True(t, chainDBalance.Equal(zeroBal))
+	require.Equalf(t, initBal.Int64(), chainABalance.Int64(), "expected chain A balance %d, got %d", initBal.Int64(), chainABalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainBBalance.Int64(), "expected chain B balance %d, got %d", zeroBal.Int64(), chainBBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainCBalance.Int64(), "expected chain C balance %d, got %d", zeroBal.Int64(), chainCBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainDBalance.Int64(), "expected chain D balance %d, got %d", zeroBal.Int64(), chainDBalance.Int64())
 
 	firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 	require.NoError(t, err)
@@ -263,9 +259,9 @@ func TestTimeoutOnForward(t *testing.T) {
 	thirdHopEscrowBalance, err := chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
+	require.Equalf(t, zeroBal.Int64(), firstHopEscrowBalance.Int64(), "expected first hop escrow balance %d, got %d", zeroBal.Int64(), firstHopEscrowBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), secondHopEscrowBalance.Int64(), "expected second hop escrow balance %d, got %d", zeroBal.Int64(), secondHopEscrowBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), thirdHopEscrowBalance.Int64(), "expected third hop escrow balance %d, got %d", zeroBal.Int64(), thirdHopEscrowBalance.Int64())
 
 	// Send IBC transfer from ChainA -> ChainB -> ChainC -> ChainD that will succeed
 	secondHopMetadata = &PacketMetadata{
@@ -320,10 +316,10 @@ func TestTimeoutOnForward(t *testing.T) {
 	chainDBalance, err = chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
-	require.True(t, chainBBalance.Equal(zeroBal))
-	require.True(t, chainCBalance.Equal(zeroBal))
-	require.True(t, chainDBalance.Equal(transferAmount))
+	require.Equalf(t, initBal.Sub(transferAmount).Int64(), chainABalance.Int64(), "expected chain A balance %d, got %d", initBal.Sub(transferAmount).Int64(), chainABalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainBBalance.Int64(), "expected chain B balance %d, got %d", zeroBal.Int64(), chainBBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainCBalance.Int64(), "expected chain C balance %d, got %d", zeroBal.Int64(), chainCBalance.Int64())
+	require.Equalf(t, transferAmount.Int64(), chainDBalance.Int64(), "expected chain D balance %d, got %d", transferAmount.Int64(), chainDBalance.Int64())
 
 	firstHopEscrowBalance, err = chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 	require.NoError(t, err)
@@ -334,14 +330,14 @@ func TestTimeoutOnForward(t *testing.T) {
 	thirdHopEscrowBalance, err = chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, firstHopEscrowBalance.Equal(transferAmount))
-	require.True(t, secondHopEscrowBalance.Equal(transferAmount))
-	require.True(t, thirdHopEscrowBalance.Equal(transferAmount))
+	require.Equalf(t, transferAmount.Int64(), firstHopEscrowBalance.Int64(), "expected first hop escrow balance %d, got %d", transferAmount.Int64(), firstHopEscrowBalance.Int64())
+	require.Equalf(t, transferAmount.Int64(), secondHopEscrowBalance.Int64(), "expected second hop escrow balance %d, got %d", transferAmount.Int64(), secondHopEscrowBalance.Int64())
+	require.Equalf(t, transferAmount.Int64(), thirdHopEscrowBalance.Int64(), "expected third hop escrow balance %d, got %d", transferAmount.Int64(), thirdHopEscrowBalance.Int64())
 
 	// Compose IBC tx that will attempt to go from ChainD -> ChainC -> ChainB -> ChainA but timeout between ChainB->ChainA
 	transfer = ibc.WalletAmount{
 		Address: userC.FormattedAddress(),
-		Denom:   thirdHopDenom,
+		Denom:   thirdHopDenom.Path(),
 		Amount:  transferAmount,
 	}
 
@@ -394,10 +390,10 @@ func TestTimeoutOnForward(t *testing.T) {
 	chainDBalance, err = chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
-	require.True(t, chainBBalance.Equal(zeroBal))
-	require.True(t, chainCBalance.Equal(zeroBal))
-	require.True(t, chainDBalance.Equal(transferAmount))
+	require.Equalf(t, initBal.Sub(transferAmount).Int64(), chainABalance.Int64(), "expected chain A balance %d, got %d", initBal.Sub(transferAmount).Int64(), chainABalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainBBalance.Int64(), "expected chain B balance %d, got %d", zeroBal.Int64(), chainBBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainCBalance.Int64(), "expected chain C balance %d, got %d", zeroBal.Int64(), chainCBalance.Int64())
+	require.Equalf(t, transferAmount.Int64(), chainDBalance.Int64(), "expected chain D balance %d, got %d", transferAmount.Int64(), chainDBalance.Int64())
 
 	firstHopEscrowBalance, err = chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 	require.NoError(t, err)
@@ -408,16 +404,16 @@ func TestTimeoutOnForward(t *testing.T) {
 	thirdHopEscrowBalance, err = chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, firstHopEscrowBalance.Equal(transferAmount))
-	require.True(t, secondHopEscrowBalance.Equal(transferAmount))
-	require.True(t, thirdHopEscrowBalance.Equal(transferAmount))
+	require.Equalf(t, transferAmount.Int64(), firstHopEscrowBalance.Int64(), "expected first hop escrow balance %d, got %d", transferAmount.Int64(), firstHopEscrowBalance.Int64())
+	require.Equalf(t, transferAmount.Int64(), secondHopEscrowBalance.Int64(), "expected second hop escrow balance %d, got %d", transferAmount.Int64(), secondHopEscrowBalance.Int64())
+	require.Equalf(t, transferAmount.Int64(), thirdHopEscrowBalance.Int64(), "expected third hop escrow balance %d, got %d", transferAmount.Int64(), thirdHopEscrowBalance.Int64())
 
 	// ---
 
 	// Compose IBC tx that will go from ChainD -> ChainC -> ChainB -> ChainA and succeed.
 	transfer = ibc.WalletAmount{
 		Address: userC.FormattedAddress(),
-		Denom:   thirdHopDenom,
+		Denom:   thirdHopDenom.Path(),
 		Amount:  transferAmount,
 	}
 
@@ -469,10 +465,10 @@ func TestTimeoutOnForward(t *testing.T) {
 	chainDBalance, err = chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, chainABalance.Equal(initBal))
-	require.True(t, chainBBalance.Equal(zeroBal))
-	require.True(t, chainCBalance.Equal(zeroBal))
-	require.True(t, chainDBalance.Equal(zeroBal))
+	require.Equalf(t, initBal.Int64(), chainABalance.Int64(), "expected chain A balance %d, got %d", initBal.Int64(), chainABalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainBBalance.Int64(), "expected chain B balance %d, got %d", zeroBal.Int64(), chainBBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainCBalance.Int64(), "expected chain C balance %d, got %d", zeroBal.Int64(), chainCBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainDBalance.Int64(), "expected chain D balance %d, got %d", zeroBal.Int64(), chainDBalance.Int64())
 
 	firstHopEscrowBalance, err = chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 	require.NoError(t, err)
@@ -483,9 +479,9 @@ func TestTimeoutOnForward(t *testing.T) {
 	thirdHopEscrowBalance, err = chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
+	require.Equalf(t, zeroBal.Int64(), firstHopEscrowBalance.Int64(), "expected first hop escrow balance %d, got %d", zeroBal.Int64(), firstHopEscrowBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), secondHopEscrowBalance.Int64(), "expected second hop escrow balance %d, got %d", zeroBal.Int64(), secondHopEscrowBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), thirdHopEscrowBalance.Int64(), "expected third hop escrow balance %d, got %d", zeroBal.Int64(), thirdHopEscrowBalance.Int64())
 
 	// ----- 2
 
@@ -533,10 +529,10 @@ func TestTimeoutOnForward(t *testing.T) {
 	chainDBalance, err = chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, chainABalance.Equal(initBal))
-	require.True(t, chainBBalance.Equal(zeroBal))
-	require.True(t, chainCBalance.Equal(zeroBal))
-	require.True(t, chainDBalance.Equal(zeroBal))
+	require.Equalf(t, initBal.Int64(), chainABalance.Int64(), "expected chain A balance %d, got %d", initBal.Int64(), chainABalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainBBalance.Int64(), "expected chain B balance %d, got %d", zeroBal.Int64(), chainBBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainCBalance.Int64(), "expected chain C balance %d, got %d", zeroBal.Int64(), chainCBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainDBalance.Int64(), "expected chain D balance %d, got %d", zeroBal.Int64(), chainDBalance.Int64())
 
 	firstHopEscrowBalance, err = chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 	require.NoError(t, err)
@@ -547,7 +543,7 @@ func TestTimeoutOnForward(t *testing.T) {
 	thirdHopEscrowBalance, err = chainC.GetBalance(ctx, thirdHopEscrowAccount, secondHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
+	require.Equalf(t, zeroBal.Int64(), firstHopEscrowBalance.Int64(), "expected first hop escrow balance %d, got %d", zeroBal.Int64(), firstHopEscrowBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), secondHopEscrowBalance.Int64(), "expected second hop escrow balance %d, got %d", zeroBal.Int64(), secondHopEscrowBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), thirdHopEscrowBalance.Int64(), "expected third hop escrow balance %d, got %d", zeroBal.Int64(), thirdHopEscrowBalance.Int64())
 }

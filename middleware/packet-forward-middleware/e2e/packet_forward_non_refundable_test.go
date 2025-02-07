@@ -10,7 +10,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -174,14 +174,11 @@ func TestNonRefundable(t *testing.T) {
 	)
 
 	// Compose the prefixed denoms and ibc denom for asserting balances
-	firstHopDenom := transfertypes.GetPrefixedDenom(baChan.PortID, baChan.ChannelID, configA.Denom)
-	secondHopDenom := transfertypes.GetPrefixedDenom(cbChan.PortID, cbChan.ChannelID, firstHopDenom)
 
-	firstHopDenomTrace := transfertypes.ParseDenomTrace(firstHopDenom)
-	secondHopDenomTrace := transfertypes.ParseDenomTrace(secondHopDenom)
-
-	firstHopIBCDenom := firstHopDenomTrace.IBCDenom()
-	secondHopIBCDenom := secondHopDenomTrace.IBCDenom()
+	firstHopDenom := transfertypes.NewDenom(configA.Denom, transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	secondHopDenom := transfertypes.NewDenom(configA.Denom, transfertypes.NewHop(cbChan.PortID, cbChan.ChannelID), transfertypes.NewHop(baChan.PortID, baChan.ChannelID))
+	firstHopIBCDenom := firstHopDenom.IBCDenom()
+	secondHopIBCDenom := secondHopDenom.IBCDenom()
 
 	firstHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configA.Bech32Prefix, transfertypes.GetEscrowAddress(abChan.PortID, abChan.ChannelID))
 	secondHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configB.Bech32Prefix, transfertypes.GetEscrowAddress(bcChan.PortID, bcChan.ChannelID))
@@ -350,9 +347,9 @@ func TestNonRefundable(t *testing.T) {
 		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
-		require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
-		require.True(t, chainBBalance.Equal(transferAmount))
-		require.True(t, chainCBalance.Equal(zeroBal))
+		require.Equal(t, initBal.Sub(transferAmount).Int64(), chainABalance.Int64())
+		require.Equal(t, transferAmount.Int64(), chainBBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), chainCBalance.Int64())
 
 		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 		require.NoError(t, err)
@@ -362,8 +359,8 @@ func TestNonRefundable(t *testing.T) {
 
 		expectedFirstHopEscrowAmount = expectedFirstHopEscrowAmount.Add(transferAmount)
 
-		require.True(t, firstHopEscrowBalance.Equal(expectedFirstHopEscrowAmount))
-		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+		require.Equal(t, expectedFirstHopEscrowAmount.Int64(), firstHopEscrowBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), secondHopEscrowBalance.Int64())
 	})
 
 	t.Run("forward timeout refund - invalid receiver account on B", func(t *testing.T) {
@@ -411,9 +408,9 @@ func TestNonRefundable(t *testing.T) {
 		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
-		require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
-		require.True(t, chainBBalance.Equal(transferAmount))
-		require.True(t, chainCBalance.Equal(zeroBal))
+		require.Equal(t, initBal.Sub(transferAmount).Int64(), chainABalance.Int64())
+		require.Equal(t, transferAmount.Int64(), chainBBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), chainCBalance.Int64())
 
 		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 		require.NoError(t, err)
@@ -423,18 +420,15 @@ func TestNonRefundable(t *testing.T) {
 
 		expectedFirstHopEscrowAmount = expectedFirstHopEscrowAmount.Add(transferAmount)
 
-		require.True(t, firstHopEscrowBalance.Equal(expectedFirstHopEscrowAmount))
-		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+		require.Equal(t, expectedFirstHopEscrowAmount.Int64(), firstHopEscrowBalance.Int64())
+		require.Equal(t, zeroBal.Int64(), secondHopEscrowBalance.Int64())
 	})
 
-	revFirstHopDenom := transfertypes.GetPrefixedDenom(bcChan.PortID, bcChan.ChannelID, configC.Denom)
-	revSecondHopDenom := transfertypes.GetPrefixedDenom(abChan.PortID, abChan.ChannelID, revFirstHopDenom)
+	revFirstHopDenom := transfertypes.NewDenom(configC.Denom, transfertypes.NewHop(bcChan.PortID, bcChan.ChannelID))
+	revSecondHopDenom := transfertypes.NewDenom(configC.Denom, transfertypes.NewHop(bcChan.PortID, bcChan.ChannelID), transfertypes.NewHop(abChan.PortID, abChan.ChannelID))
 
-	revFirstHopDenomTrace := transfertypes.ParseDenomTrace(revFirstHopDenom)
-	revSecondHopDenomTrace := transfertypes.ParseDenomTrace(revSecondHopDenom)
-
-	revFirstHopIBCDenom := revFirstHopDenomTrace.IBCDenom()
-	revSecondHopIBCDenom := revSecondHopDenomTrace.IBCDenom()
+	revFirstHopIBCDenom := revFirstHopDenom.IBCDenom()
+	revSecondHopIBCDenom := revSecondHopDenom.IBCDenom()
 
 	revFirstHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configC.Bech32Prefix, transfertypes.GetEscrowAddress(cbChan.PortID, cbChan.ChannelID))
 	revSecondHopEscrowAccount := sdk.MustBech32ifyAddressBytes(configB.Bech32Prefix, transfertypes.GetEscrowAddress(baChan.PortID, baChan.ChannelID))
@@ -523,8 +517,8 @@ func TestNonRefundable(t *testing.T) {
 	revSecondHopEscrowBalance, err := chainB.GetBalance(ctx, revSecondHopEscrowAccount, revFirstHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount))
-	require.True(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount))
+	require.Equal(t, expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64())
+	require.Equal(t, expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64())
 
 	t.Run("rev forward ack error refund - invalid receiver account on B", func(t *testing.T) {
 		userA := mintVoucherUsersA[0]
@@ -580,8 +574,8 @@ func TestNonRefundable(t *testing.T) {
 
 		expectedRevSecondHopEscrowAmount = expectedRevSecondHopEscrowAmount.Sub(transferAmount)
 
-		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
-		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
+		require.Equalf(t, expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64(), "expected %d, got %d", expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64())
+		require.Equalf(t, expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64(), "expected %d, got %d", expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64())
 	})
 
 	t.Run("rev forward ack error refund - valid receiver account on B", func(t *testing.T) {
@@ -635,8 +629,11 @@ func TestNonRefundable(t *testing.T) {
 
 		expectedRevSecondHopEscrowAmount = expectedRevSecondHopEscrowAmount.Sub(transferAmount)
 
-		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
-		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
+		require.Equalf(t, expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64(),
+			"expected %d, got %d", expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64())
+
+		require.Equalf(t, expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64(),
+			"expected %d, got %d", expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64())
 	})
 
 	t.Run("rev forward timeout refund - valid receiver account on B", func(t *testing.T) {
@@ -697,8 +694,11 @@ func TestNonRefundable(t *testing.T) {
 
 		expectedRevSecondHopEscrowAmount = expectedRevSecondHopEscrowAmount.Sub(transferAmount)
 
-		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
-		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
+		require.Equalf(t, expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64(),
+			"expected %d, got %d", expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64())
+
+		require.Equalf(t, expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64(),
+			"expected %d, got %d", expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64())
 	})
 
 	t.Run("rev forward timeout refund - invalid receiver account on B", func(t *testing.T) {
@@ -746,9 +746,14 @@ func TestNonRefundable(t *testing.T) {
 		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), configC.Denom)
 		require.NoError(t, err)
 
-		require.Truef(t, chainABalance.Equal(zeroBal), "chain a balance, expected %s, got %s", zeroBal, chainABalance)
-		require.Truef(t, chainBBalance.Equal(transferAmount), "chain b balance, expected %s, got %s", transferAmount, chainBBalance)
-		require.Truef(t, chainCBalance.Equal(zeroBal), "chain c balance, expected %s, got %s", zeroBal, chainCBalance)
+		require.Equalf(t, zeroBal.Int64(), chainABalance.Int64(),
+			"chain a balance, expected %d, got %d", zeroBal.Int64(), chainABalance.Int64())
+
+		require.Equalf(t, transferAmount.Int64(), chainBBalance.Int64(),
+			"chain b balance, expected %d, got %d", transferAmount.Int64(), chainBBalance.Int64())
+
+		require.Equalf(t, zeroBal.Int64(), chainCBalance.Int64(),
+			"chain c balance, expected %d, got %d", zeroBal.Int64(), chainCBalance.Int64())
 
 		revFirstHopEscrowBalance, err := chainC.GetBalance(ctx, revFirstHopEscrowAccount, configC.Denom)
 		require.NoError(t, err)
@@ -758,7 +763,10 @@ func TestNonRefundable(t *testing.T) {
 
 		expectedRevSecondHopEscrowAmount = expectedRevSecondHopEscrowAmount.Sub(transferAmount)
 
-		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
-		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
+		require.Equalf(t, expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64(),
+			"expected %d, got %d", expectedRevFirstHopEscrowAmount.Int64(), revFirstHopEscrowBalance.Int64())
+
+		require.Equalf(t, expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64(),
+			"expected %d, got %d", expectedRevSecondHopEscrowAmount.Int64(), revSecondHopEscrowBalance.Int64())
 	})
 }

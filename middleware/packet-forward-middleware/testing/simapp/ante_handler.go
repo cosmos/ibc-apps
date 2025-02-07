@@ -1,37 +1,43 @@
 package simapp
 
 import (
-	"cosmossdk.io/errors"
+	"errors"
+
+	circuitante "cosmossdk.io/x/circuit/ante"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
-	"github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibcante "github.com/cosmos/ibc-go/v9/modules/core/ante"
+	"github.com/cosmos/ibc-go/v9/modules/core/keeper"
 )
 
-// HandlerOptions extend the SDK's AnteHandler options by requiring the IBC keeper.
+// HandlerOptions are the options required for constructing a default SDK AnteHandler.
 type HandlerOptions struct {
 	ante.HandlerOptions
-
-	IBCKeeper *keeper.Keeper
+	CircuitKeeper circuitante.CircuitBreaker
+	IBCKeeper     *keeper.Keeper
 }
 
-// NewAnteHandler creates a new ante handler
+// NewAnteHandler returns an AnteHandler that checks and increments sequence
+// numbers, checks signatures & account numbers, and deducts fees from the first
+// signer.
 func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
-		return nil, errors.Wrap(sdkerrors.ErrLogic, "account keeper is required for AnteHandler")
+		return nil, errors.New("account keeper is required for ante builder")
 	}
+
 	if options.BankKeeper == nil {
-		return nil, errors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for AnteHandler")
+		return nil, errors.New("bank keeper is required for ante builder")
 	}
+
 	if options.SignModeHandler == nil {
-		return nil, errors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for AnteHandler")
+		return nil, errors.New("sign mode handler is required for ante builder")
 	}
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+		circuitante.NewCircuitBreakerDecorator(options.CircuitKeeper),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),

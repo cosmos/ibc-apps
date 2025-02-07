@@ -146,8 +146,8 @@ mocks: $(MOCKS_DIR)
 	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/packetforward/types TransferKeeper
 	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/packetforward/types BankKeeper
 	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/packetforward/types ChannelKeeper
-	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v8/modules/core/05-port/types ICS4Wrapper
-	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v8/modules/core/05-port/types IBCModule
+	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v9/modules/core/05-port/types ICS4Wrapper
+	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v9/modules/core/05-port/types IBCModule
 
 .PHONY: mocks
 
@@ -259,7 +259,7 @@ containerProtoGen=cosmos-sdk-proto-gen-$(containerProtoVer)
 containerProtoGenSwagger=cosmos-sdk-proto-gen-swagger-$(containerProtoVer)
 containerProtoFmt=cosmos-sdk-proto-fmt-$(containerProtoVer)
 
-protoVer=0.13.1
+protoVer=0.14.0
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
 protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
 

@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

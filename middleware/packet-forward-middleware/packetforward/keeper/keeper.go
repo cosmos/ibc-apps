@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
+
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
 	"github.com/hashicorp/go-metrics"
 
 	errorsmod "cosmossdk.io/errors"
@@ -22,12 +22,12 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	coretypes "github.com/cosmos/ibc-go/v8/modules/core/types"
+	transfertypes "github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v9/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v9/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v9/modules/core/exported"
+	coremetrics "github.com/cosmos/ibc-go/v9/modules/core/metrics"
 )
 
 var (
@@ -38,7 +38,7 @@ var (
 	}
 
 	// DefaultForwardTransferPacketTimeoutTimestamp is the timeout timestamp following IBC defaults
-	DefaultForwardTransferPacketTimeoutTimestamp = time.Duration(transfertypes.DefaultRelativePacketTimeoutTimestamp) * time.Nanosecond
+	DefaultForwardTransferPacketTimeoutTimestamp = time.Duration(10 * time.Minute)
 )
 
 // Keeper defines the packet forward middleware keeper
@@ -102,21 +102,21 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	data transfertypes.FungibleTokenPacketData,
 	inFlightPacket *types.InFlightPacket,
 ) error {
-	fullDenomPath := data.Denom
+	denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 	amount, ok := sdkmath.NewIntFromString(data.Amount)
 	if !ok {
 		return fmt.Errorf("failed to parse amount from packet data for forward recovery: %s", data.Amount)
 	}
-	denomTrace := transfertypes.ParseDenomTrace(fullDenomPath)
-	token := sdk.NewCoin(denomTrace.IBCDenom(), amount)
+
+	token := sdk.NewCoin(denom.IBCDenom(), amount)
 
 	userAccount, err := userRecoverableAccount(inFlightPacket)
 	if err != nil {
 		return fmt.Errorf("failed to get user recoverable account: %w", err)
 	}
 
-	if !transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
+	if !senderIsSource(denom, packet.SourcePort, packet.SourceChannel) {
 		// mint vouchers back to sender
 		if err := k.bankKeeper.MintCoins(
 			ctx, transfertypes.ModuleName, sdk.NewCoins(token),
@@ -207,35 +207,25 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 			}, newAck)
 		}
 
-		fullDenomPath := data.Denom
-
-		// deconstruct the token denomination into the denomination trace info
-		// to determine if the sender is the source chain
-		if strings.HasPrefix(data.Denom, "ibc/") {
-			fullDenomPath, err = k.transferKeeper.DenomPathFromHash(ctx, data.Denom)
-			if err != nil {
-				return err
-			}
-		}
+		denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 		amount, ok := sdkmath.NewIntFromString(data.Amount)
 		if !ok {
 			return fmt.Errorf("failed to parse amount from packet data for forward refund: %s", data.Amount)
 		}
 
-		denomTrace := transfertypes.ParseDenomTrace(fullDenomPath)
-		token := sdk.NewCoin(denomTrace.IBCDenom(), amount)
+		token := sdk.NewCoin(denom.IBCDenom(), amount)
 
 		escrowAddress := transfertypes.GetEscrowAddress(packet.SourcePort, packet.SourceChannel)
 		refundEscrowAddress := transfertypes.GetEscrowAddress(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId)
 
 		newToken := sdk.NewCoins(token)
 
-		if transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
+		if senderIsSource(denom, packet.SourcePort, packet.SourceChannel) {
 			// funds were moved to escrow account for transfer, so they need to either:
 			// - move to the other escrow account, in the case of native denom
 			// - burn
-			if transfertypes.SenderChainIsSource(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId, fullDenomPath) {
+			if senderIsSource(denom, inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId) {
 				// transfer funds from escrow account for forwarded packet to escrow account going back for refund.
 				if err := k.bankKeeper.SendCoins(
 					ctx, escrowAddress, refundEscrowAddress, newToken,
@@ -327,15 +317,17 @@ func (k *Keeper) ForwardTransferPacket(
 		memo = string(memoBz)
 	}
 
+	// TODO: consider validateBasic?
 	msgTransfer := transfertypes.NewMsgTransfer(
 		metadata.Port,
 		metadata.Channel,
-		token,
+		sdk.NewCoins(token),
 		receiver,
 		metadata.Receiver,
 		DefaultTransferPacketTimeoutHeight,
-		uint64(ctx.BlockTime().UnixNano())+uint64(timeout.Nanoseconds()),
+		uint64(sdk.UnwrapSDKContext(ctx).BlockTime().UnixNano())+uint64(timeout.Nanoseconds()),
 		memo,
+		nil,
 	)
 
 	k.Logger(ctx).Debug("packetForwardMiddleware ForwardTransferPacket",
@@ -393,7 +385,7 @@ func (k *Keeper) ForwardTransferPacket(
 			telemetry.SetGaugeWithLabels(
 				[]string{"tx", "msg", "ibc", "transfer"},
 				float32(token.Amount.Int64()),
-				[]metrics.Label{telemetry.NewLabel(coretypes.LabelDenom, token.Denom)},
+				[]metrics.Label{telemetry.NewLabel(coremetrics.LabelDenom, token.Denom)},
 			)
 		}
 
@@ -469,9 +461,9 @@ func (k *Keeper) RetryTimeout(
 		return fmt.Errorf("error parsing amount from string for packetforward retry: %s", data.Amount)
 	}
 
-	denom := transfertypes.ParseDenomTrace(data.Denom).IBCDenom()
+	denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
-	token := sdk.NewCoin(denom, amount)
+	token := sdk.NewCoin(denom.IBCDenom(), amount)
 
 	// srcPacket and srcPacketSender are empty because inFlightPacket is non-nil.
 	return k.ForwardTransferPacket(
@@ -555,4 +547,15 @@ func (k *Keeper) GetAppVersion(
 // LookupModuleByChannel wraps ChannelKeeper LookupModuleByChannel function.
 func (k *Keeper) LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, *capabilitytypes.Capability, error) {
 	return k.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
+}
+
+// senderIsSource returns true if the given sourcePortID and sourceChannelID are the source of the denom.
+func senderIsSource(denom transfertypes.Denom, sourcePortID, sourceChannelID string) bool {
+	// when a denom is received, it will have had the source portID and channelID prepended to the trace of the denom.
+	// this means that when a denom has this prefix it is the receiving chain. If it is the source chain, the
+	// prefix will not yet have been appended.
+	// i.e.
+	// - if a denom is prefixed with the given sourcePortID and sourceChannelID the receiving chain is source.
+	// - if a denom is not prefixed with the given sourcePortID and sourceChannelID the sending chain is source.
+	return !denom.HasPrefix(sourcePortID, sourceChannelID)
 }

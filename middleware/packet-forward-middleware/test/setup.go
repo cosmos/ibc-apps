@@ -5,10 +5,10 @@ import (
 	"time"
 
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/test/mock"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/test/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -21,9 +21,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
+	porttypes "github.com/cosmos/ibc-go/v9/modules/core/05-port/types"
 )
 
 func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
@@ -94,7 +94,7 @@ func newInitializer(t *testing.T) initializer {
 	db := dbm.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 
-	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
+	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, logger)
 	interfaceRegistry := cdctypes.NewInterfaceRegistry()
 	amino := codec.NewLegacyAmino()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
@@ -118,7 +118,6 @@ func (i initializer) packetforwardKeeper(
 	i.StateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, i.DB)
 
 	govModuleAddress := "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn"
-
 	packetforwardKeeper := keeper.NewKeeper(
 		i.Marshaler,
 		storeKey,
