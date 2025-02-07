@@ -41,7 +41,6 @@ require (
 	github.com/go-kit/kit v0.13.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	nhooyr.io/websocket v1.8.11 // indirect
 )
 
