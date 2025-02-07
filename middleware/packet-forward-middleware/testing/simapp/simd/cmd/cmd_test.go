@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp/simd/cmd"
 	"github.com/stretchr/testify/require"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp/simd/cmd"
 )
 
 func TestInitCmd(t *testing.T) {

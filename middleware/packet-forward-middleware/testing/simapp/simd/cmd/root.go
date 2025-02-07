@@ -6,6 +6,8 @@ import (
 	"os"
 
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp/params"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -38,9 +40,6 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
 	cmtcfg "github.com/cometbft/cometbft/config"
-
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp/params"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the

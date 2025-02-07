@@ -3,7 +3,7 @@ package packetforward
 import (
 	"encoding/json"
 	"fmt"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/exported"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"

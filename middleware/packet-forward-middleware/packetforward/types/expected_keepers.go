@@ -2,10 +2,10 @@ package types
 
 import (
 	"context"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
 )
@@ -13,7 +13,6 @@ import (
 // TransferKeeper defines the expected transfer keeper
 type TransferKeeper interface {
 	Transfer(ctx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error)
-	//GetDenom(ctx sdk.Context, denomHash cmtbytes.HexBytes) (types.Denom, bool)
 	GetTotalEscrowForDenom(ctx sdk.Context, denom string) sdk.Coin
 	SetTotalEscrowForDenom(ctx sdk.Context, coin sdk.Coin)
 }

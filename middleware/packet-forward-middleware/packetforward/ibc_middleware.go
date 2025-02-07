@@ -3,8 +3,8 @@ package packetforward
 import (
 	"encoding/json"
 	"fmt"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"time"
+
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
@@ -17,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/address"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v9/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
