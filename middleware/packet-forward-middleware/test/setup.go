@@ -21,6 +21,8 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	porttypes "github.com/cosmos/ibc-go/v9/modules/core/05-port/types"
 )
 
@@ -33,9 +35,8 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 	bankKeeperMock := mock.NewMockBankKeeper(ctl)
 	ibcModuleMock := mock.NewMockIBCModule(ctl)
 	ics4WrapperMock := mock.NewMockICS4Wrapper(ctl)
-	authKeeperMock := mock.NewMockAuthKeeper(ctl)
 
-	packetforwardKeeper := initializer.packetforwardKeeper(transferKeeperMock, channelKeeperMock, bankKeeperMock, authKeeperMock, ics4WrapperMock)
+	packetforwardKeeper := initializer.packetforwardKeeper(transferKeeperMock, channelKeeperMock, bankKeeperMock, ics4WrapperMock)
 
 	require.NoError(t, initializer.StateStore.LoadLatestVersion())
 
@@ -93,7 +94,7 @@ func newInitializer(t *testing.T) initializer {
 	db := dbm.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 
-	ctx := sdk.NewContext(stateStore, false, logger)
+	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, logger)
 	interfaceRegistry := cdctypes.NewInterfaceRegistry()
 	amino := codec.NewLegacyAmino()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
@@ -111,7 +112,6 @@ func (i initializer) packetforwardKeeper(
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
-	authKeeper types.AuthKeeper,
 	ics4Wrapper porttypes.ICS4Wrapper,
 ) *keeper.Keeper {
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
@@ -124,10 +124,8 @@ func (i initializer) packetforwardKeeper(
 		transferKeeper,
 		channelKeeper,
 		bankKeeper,
-		authKeeper,
 		ics4Wrapper,
 		govModuleAddress,
-		i.Ctx.Logger(),
 	)
 
 	return packetforwardKeeper

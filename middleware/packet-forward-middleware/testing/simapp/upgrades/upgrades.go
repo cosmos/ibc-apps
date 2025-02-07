@@ -2,7 +2,6 @@ package upgrades
 
 import (
 	"context"
-	"cosmossdk.io/core/appmodule"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
 
@@ -35,7 +34,7 @@ func CreateV2UpgradeHandler(
 	consensusparamskeeper consensusparamskeeper.Keeper,
 	packetforwardkeeper *keeper.Keeper,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx context.Context, _ upgradetypes.Plan, fromVM appmodule.VersionMap) (appmodule.VersionMap, error) {
+	return func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		// Migrate Tendermint consensus parameters from x/params module to a deprecated x/consensus module.
 		// The old params module is required to still be imported in your app.go in order to handle this migration.
 		baseAppLegacySS := paramskeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable())

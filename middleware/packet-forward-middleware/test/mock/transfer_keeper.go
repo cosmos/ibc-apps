@@ -13,7 +13,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	bytes "github.com/cometbft/cometbft/libs/bytes"
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/ibc-go/v9/modules/apps/transfer/types"
 	gomock "go.uber.org/mock/gomock"
@@ -42,23 +41,8 @@ func (m *MockTransferKeeper) EXPECT() *MockTransferKeeperMockRecorder {
 	return m.recorder
 }
 
-// GetDenom mocks base method.
-func (m *MockTransferKeeper) GetDenom(arg0 context.Context, arg1 bytes.HexBytes) (types0.Denom, bool) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDenom", arg0, arg1)
-	ret0, _ := ret[0].(types0.Denom)
-	ret1, _ := ret[1].(bool)
-	return ret0, ret1
-}
-
-// GetDenom indicates an expected call of GetDenom.
-func (mr *MockTransferKeeperMockRecorder) GetDenom(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDenom", reflect.TypeOf((*MockTransferKeeper)(nil).GetDenom), arg0, arg1)
-}
-
 // GetTotalEscrowForDenom mocks base method.
-func (m *MockTransferKeeper) GetTotalEscrowForDenom(arg0 context.Context, arg1 string) types.Coin {
+func (m *MockTransferKeeper) GetTotalEscrowForDenom(arg0 types.Context, arg1 string) types.Coin {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTotalEscrowForDenom", arg0, arg1)
 	ret0, _ := ret[0].(types.Coin)
@@ -72,7 +56,7 @@ func (mr *MockTransferKeeperMockRecorder) GetTotalEscrowForDenom(arg0, arg1 any)
 }
 
 // SetTotalEscrowForDenom mocks base method.
-func (m *MockTransferKeeper) SetTotalEscrowForDenom(arg0 context.Context, arg1 types.Coin) {
+func (m *MockTransferKeeper) SetTotalEscrowForDenom(arg0 types.Context, arg1 types.Coin) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetTotalEscrowForDenom", arg0, arg1)
 }

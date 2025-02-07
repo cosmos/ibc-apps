@@ -10,11 +10,11 @@
 package mock
 
 import (
-	context "context"
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
+	types0 "github.com/cosmos/ibc-go/modules/capability/types"
+	types1 "github.com/cosmos/ibc-go/v9/modules/core/04-channel/types"
 	exported "github.com/cosmos/ibc-go/v9/modules/core/exported"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -43,7 +43,7 @@ func (m *MockIBCModule) EXPECT() *MockIBCModuleMockRecorder {
 }
 
 // OnAcknowledgementPacket mocks base method.
-func (m *MockIBCModule) OnAcknowledgementPacket(arg0 context.Context, arg1 string, arg2 types0.Packet, arg3 []byte, arg4 types.AccAddress) error {
+func (m *MockIBCModule) OnAcknowledgementPacket(arg0 types.Context, arg1 string, arg2 types1.Packet, arg3 []byte, arg4 types.AccAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnAcknowledgementPacket", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
@@ -57,7 +57,7 @@ func (mr *MockIBCModuleMockRecorder) OnAcknowledgementPacket(arg0, arg1, arg2, a
 }
 
 // OnChanCloseConfirm mocks base method.
-func (m *MockIBCModule) OnChanCloseConfirm(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockIBCModule) OnChanCloseConfirm(arg0 types.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnChanCloseConfirm", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -71,7 +71,7 @@ func (mr *MockIBCModuleMockRecorder) OnChanCloseConfirm(arg0, arg1, arg2 any) *g
 }
 
 // OnChanCloseInit mocks base method.
-func (m *MockIBCModule) OnChanCloseInit(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockIBCModule) OnChanCloseInit(arg0 types.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnChanCloseInit", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -85,7 +85,7 @@ func (mr *MockIBCModuleMockRecorder) OnChanCloseInit(arg0, arg1, arg2 any) *gomo
 }
 
 // OnChanOpenAck mocks base method.
-func (m *MockIBCModule) OnChanOpenAck(arg0 context.Context, arg1, arg2, arg3, arg4 string) error {
+func (m *MockIBCModule) OnChanOpenAck(arg0 types.Context, arg1, arg2, arg3, arg4 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnChanOpenAck", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
@@ -99,7 +99,7 @@ func (mr *MockIBCModuleMockRecorder) OnChanOpenAck(arg0, arg1, arg2, arg3, arg4 
 }
 
 // OnChanOpenConfirm mocks base method.
-func (m *MockIBCModule) OnChanOpenConfirm(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockIBCModule) OnChanOpenConfirm(arg0 types.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnChanOpenConfirm", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -113,37 +113,37 @@ func (mr *MockIBCModuleMockRecorder) OnChanOpenConfirm(arg0, arg1, arg2 any) *go
 }
 
 // OnChanOpenInit mocks base method.
-func (m *MockIBCModule) OnChanOpenInit(arg0 context.Context, arg1 types0.Order, arg2 []string, arg3, arg4 string, arg5 types0.Counterparty, arg6 string) (string, error) {
+func (m *MockIBCModule) OnChanOpenInit(arg0 types.Context, arg1 types1.Order, arg2 []string, arg3, arg4 string, arg5 *types0.Capability, arg6 types1.Counterparty, arg7 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OnChanOpenInit", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret := m.ctrl.Call(m, "OnChanOpenInit", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // OnChanOpenInit indicates an expected call of OnChanOpenInit.
-func (mr *MockIBCModuleMockRecorder) OnChanOpenInit(arg0, arg1, arg2, arg3, arg4, arg5, arg6 any) *gomock.Call {
+func (mr *MockIBCModuleMockRecorder) OnChanOpenInit(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnChanOpenInit", reflect.TypeOf((*MockIBCModule)(nil).OnChanOpenInit), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnChanOpenInit", reflect.TypeOf((*MockIBCModule)(nil).OnChanOpenInit), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 }
 
 // OnChanOpenTry mocks base method.
-func (m *MockIBCModule) OnChanOpenTry(arg0 context.Context, arg1 types0.Order, arg2 []string, arg3, arg4 string, arg5 types0.Counterparty, arg6 string) (string, error) {
+func (m *MockIBCModule) OnChanOpenTry(arg0 types.Context, arg1 types1.Order, arg2 []string, arg3, arg4 string, arg5 *types0.Capability, arg6 types1.Counterparty, arg7 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OnChanOpenTry", arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	ret := m.ctrl.Call(m, "OnChanOpenTry", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // OnChanOpenTry indicates an expected call of OnChanOpenTry.
-func (mr *MockIBCModuleMockRecorder) OnChanOpenTry(arg0, arg1, arg2, arg3, arg4, arg5, arg6 any) *gomock.Call {
+func (mr *MockIBCModuleMockRecorder) OnChanOpenTry(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnChanOpenTry", reflect.TypeOf((*MockIBCModule)(nil).OnChanOpenTry), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnChanOpenTry", reflect.TypeOf((*MockIBCModule)(nil).OnChanOpenTry), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 }
 
 // OnRecvPacket mocks base method.
-func (m *MockIBCModule) OnRecvPacket(arg0 context.Context, arg1 string, arg2 types0.Packet, arg3 types.AccAddress) exported.Acknowledgement {
+func (m *MockIBCModule) OnRecvPacket(arg0 types.Context, arg1 string, arg2 types1.Packet, arg3 types.AccAddress) exported.Acknowledgement {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnRecvPacket", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(exported.Acknowledgement)
@@ -157,7 +157,7 @@ func (mr *MockIBCModuleMockRecorder) OnRecvPacket(arg0, arg1, arg2, arg3 any) *g
 }
 
 // OnTimeoutPacket mocks base method.
-func (m *MockIBCModule) OnTimeoutPacket(arg0 context.Context, arg1 string, arg2 types0.Packet, arg3 types.AccAddress) error {
+func (m *MockIBCModule) OnTimeoutPacket(arg0 types.Context, arg1 string, arg2 types1.Packet, arg3 types.AccAddress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OnTimeoutPacket", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
