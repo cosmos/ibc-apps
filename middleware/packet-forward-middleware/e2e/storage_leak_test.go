@@ -219,9 +219,9 @@ func TestStorageLeak(t *testing.T) {
 	chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, chainABalance.Equal(initBal))
-	require.True(t, chainBBalance.Equal(zeroBal))
-	require.True(t, chainCBalance.Equal(zeroBal))
+	require.Equalf(t, initBal.Int64(), chainABalance.Int64(), "expected chain A balance %d, got %d", initBal.Int64(), chainABalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainBBalance.Int64(), "expected chain B balance %d, got %d", zeroBal.Int64(), chainBBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), chainCBalance.Int64(), "expected chain C balance %d, got %d", zeroBal.Int64(), chainCBalance.Int64())
 
 	firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 	require.NoError(t, err)
@@ -229,8 +229,8 @@ func TestStorageLeak(t *testing.T) {
 	secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
 	require.NoError(t, err)
 
-	require.True(t, firstHopEscrowBalance.Equal(zeroBal))
-	require.True(t, secondHopEscrowBalance.Equal(zeroBal))
+	require.Equalf(t, zeroBal.Int64(), firstHopEscrowBalance.Int64(), "expected first hop escrow balance %d, got %d", zeroBal.Int64(), firstHopEscrowBalance.Int64())
+	require.Equalf(t, zeroBal.Int64(), secondHopEscrowBalance.Int64(), "expected second hop escrow balance %d, got %d", zeroBal.Int64(), secondHopEscrowBalance.Int64())
 
 	// Wait for blocks
 	err = testutil.WaitForBlocks(ctx, 10, chainA, chainB, chainC)
@@ -240,14 +240,15 @@ func TestStorageLeak(t *testing.T) {
 	cosmosChains := []*cosmos.CosmosChain{chainA, chainB, chainC}
 	for i := 0; i < len(cosmosChains); i++ {
 		chain := cosmosChains[i]
-		chain.StopAllNodes(ctx)
+		err := chain.StopAllNodes(ctx)
+		require.NoError(t, err, "failed to stop chain %s", chain.Config().ChainID)
 
 		// get exported packet forward middleware state
-		stdOut, _, err := chain.GetNode().ExecBin(ctx, "export", "--modules-to-export=packetfowardmiddleware")
+		stdOut, _, err := chain.GetNode().ExecBin(ctx, "genesis", "export", "--modules-to-export=packetfowardmiddleware")
 		require.NoError(t, err)
 
-		chain.StartAllNodes(ctx)
-
+		err = chain.StartAllNodes(ctx)
+		require.NoError(t, err, "failed to start chain %s", chain.Config().ChainID)
 		// validate that there are no in-flight packets
 		var result PFMExport
 		err = json.Unmarshal(stdOut, &result)
