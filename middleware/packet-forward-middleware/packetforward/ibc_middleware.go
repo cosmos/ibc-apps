@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
 	"github.com/hashicorp/go-metrics"
@@ -219,7 +218,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	denom := transfertypes.ExtractDenomFromPath(data.Denom)
 
 	if !disableDenomComposition {
-		logger.Info("disableDenomComposition here ----")
 		denom = getDenomForThisChain(
 			packet.DestinationPort, packet.DestinationChannel,
 			packet.SourcePort, packet.SourceChannel,
