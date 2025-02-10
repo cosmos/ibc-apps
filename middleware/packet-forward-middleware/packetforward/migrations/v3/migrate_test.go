@@ -135,6 +135,7 @@ func TestMigrate(t *testing.T) {
 				Return(channels).
 				Times(1)
 
+			// 2. Aggregate the bank balances to calculate the expected total escrowed
 			for _, escrowChannel := range escrowChannels {
 				expectedBalance := tt.bankBalances[escrowChannel]
 
@@ -149,7 +150,7 @@ func TestMigrate(t *testing.T) {
 				expectedTotalEscrowed = expectedTotalEscrowed.Add(expectedBalance...)
 			}
 
-			// 2. Update the escrow state in the transfer keeper, for each denom
+			// 3. Update the escrow state in the transfer keeper, for each denom
 			// from the aggregated escrow balances.
 			for _, escrowCoin := range expectedTotalEscrowed {
 				transferKeeper.EXPECT().
