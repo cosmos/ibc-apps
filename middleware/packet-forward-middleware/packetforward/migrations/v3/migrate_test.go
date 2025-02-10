@@ -9,6 +9,7 @@ import (
 	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/migrations/v3"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/test/mock"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -32,16 +33,11 @@ func TestMigrate(t *testing.T) {
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 
-	// Expected mock calls
-	// 1. Iterate over all IBC transfer channels
-	// 2. For each channel, get the escrow address and corresponding bank balance
-	// 3. Update the escrow amount in transfer keeper state
-
 	// Test addresses
-	escrowAddresses := []string{
-		transfertypes.GetEscrowAddress("transfer", "channel-0").String(),
-		transfertypes.GetEscrowAddress("transfer", "channel-1").String(),
-		transfertypes.GetEscrowAddress("transfer", "channel-2").String(),
+	escrowChannels := []string{
+		"channel-0",
+		"channel-1",
+		"channel-2",
 	}
 
 	// Test various scenarios of ibc transfer module escrow state that match
@@ -64,7 +60,7 @@ func TestMigrate(t *testing.T) {
 				"meow": sdk.NewInt64Coin("meow", 100),
 			},
 			bankBalances: map[string]sdk.Coins{
-				escrowAddresses[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
+				escrowChannels[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
 			},
 		},
 		{
@@ -74,8 +70,8 @@ func TestMigrate(t *testing.T) {
 				"woof": sdk.NewInt64Coin("woof", 200),
 			},
 			bankBalances: map[string]sdk.Coins{
-				escrowAddresses[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
-				escrowAddresses[1]: sdk.NewCoins(sdk.NewInt64Coin("woof", 200)),
+				escrowChannels[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
+				escrowChannels[1]: sdk.NewCoins(sdk.NewInt64Coin("woof", 200)),
 			},
 		},
 		{
@@ -84,7 +80,7 @@ func TestMigrate(t *testing.T) {
 				"meow": sdk.NewInt64Coin("meow", 80),
 			},
 			bankBalances: map[string]sdk.Coins{
-				escrowAddresses[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
+				escrowChannels[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
 			},
 		},
 		{
@@ -94,8 +90,8 @@ func TestMigrate(t *testing.T) {
 				"woof": sdk.NewInt64Coin("woof", 180),
 			},
 			bankBalances: map[string]sdk.Coins{
-				escrowAddresses[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
-				escrowAddresses[1]: sdk.NewCoins(sdk.NewInt64Coin("woof", 200)),
+				escrowChannels[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
+				escrowChannels[1]: sdk.NewCoins(sdk.NewInt64Coin("woof", 200)),
 			},
 		},
 		{
@@ -104,7 +100,7 @@ func TestMigrate(t *testing.T) {
 				"meow": sdk.NewInt64Coin("meow", 120),
 			},
 			bankBalances: map[string]sdk.Coins{
-				escrowAddresses[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
+				escrowChannels[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
 			},
 		},
 		{
@@ -114,8 +110,8 @@ func TestMigrate(t *testing.T) {
 				"woof": sdk.NewInt64Coin("woof", 230),
 			},
 			bankBalances: map[string]sdk.Coins{
-				escrowAddresses[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
-				escrowAddresses[1]: sdk.NewCoins(sdk.NewInt64Coin("woof", 200)),
+				escrowChannels[0]: sdk.NewCoins(sdk.NewInt64Coin("meow", 100)),
+				escrowChannels[1]: sdk.NewCoins(sdk.NewInt64Coin("woof", 200)),
 			},
 		},
 	}
@@ -126,11 +122,26 @@ func TestMigrate(t *testing.T) {
 
 			// Initialize mock calls
 			// 1. Fetch each escrow bank balances for the EXPECTED state values.
-			for _, escrowAddress := range escrowAddresses {
-				expectedBalance := tt.bankBalances[escrowAddress]
+
+			portID := "transfer"
+			channels := []channeltypes.IdentifiedChannel{}
+			for _, channel := range escrowChannels {
+				channels = append(channels, channeltypes.NewIdentifiedChannel(portID, channel, channeltypes.Channel{}))
+			}
+
+			transferKeeper.EXPECT().GetPort(ctx).Return(portID).Times(1)
+			channelKeeper.EXPECT().
+				GetTransferChannels(ctx, portID).
+				Return(channels).
+				Times(1)
+
+			for _, escrowChannel := range escrowChannels {
+				expectedBalance := tt.bankBalances[escrowChannel]
+
+				escrowAddress := transfertypes.GetEscrowAddress(portID, escrowChannel)
 
 				bankKeeper.EXPECT().
-					GetAllBalances(ctx, sdk.AccAddress(escrowAddress)).
+					GetAllBalances(ctx, escrowAddress).
 					Return(expectedBalance).
 					Times(1)
 
@@ -141,6 +152,11 @@ func TestMigrate(t *testing.T) {
 			// 2. Update the escrow state in the transfer keeper, for each denom
 			// from the aggregated escrow balances.
 			for _, escrowCoin := range expectedTotalEscrowed {
+				transferKeeper.EXPECT().
+					GetTotalEscrowForDenom(ctx, escrowCoin.Denom).
+					Return(sdk.Coin{}).
+					Times(1)
+
 				transferKeeper.EXPECT().
 					SetTotalEscrowForDenom(
 						ctx,

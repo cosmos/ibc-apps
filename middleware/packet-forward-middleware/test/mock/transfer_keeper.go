@@ -56,6 +56,20 @@ func (mr *MockTransferKeeperMockRecorder) DenomPathFromHash(arg0, arg1 any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DenomPathFromHash", reflect.TypeOf((*MockTransferKeeper)(nil).DenomPathFromHash), arg0, arg1)
 }
 
+// GetPort mocks base method.
+func (m *MockTransferKeeper) GetPort(arg0 context.Context) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPort", arg0)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetPort indicates an expected call of GetPort.
+func (mr *MockTransferKeeperMockRecorder) GetPort(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPort", reflect.TypeOf((*MockTransferKeeper)(nil).GetPort), arg0)
+}
+
 // GetTotalEscrowForDenom mocks base method.
 func (m *MockTransferKeeper) GetTotalEscrowForDenom(arg0 types.Context, arg1 string) types.Coin {
 	m.ctrl.T.Helper()

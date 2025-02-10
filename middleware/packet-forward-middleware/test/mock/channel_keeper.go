@@ -10,6 +10,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
@@ -83,6 +84,20 @@ func (m *MockChannelKeeper) GetPacketCommitment(arg0 types.Context, arg1, arg2 s
 func (mr *MockChannelKeeperMockRecorder) GetPacketCommitment(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPacketCommitment", reflect.TypeOf((*MockChannelKeeper)(nil).GetPacketCommitment), arg0, arg1, arg2, arg3)
+}
+
+// GetTransferChannels mocks base method.
+func (m *MockChannelKeeper) GetTransferChannels(arg0 context.Context, arg1 string) []types1.IdentifiedChannel {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTransferChannels", arg0, arg1)
+	ret0, _ := ret[0].([]types1.IdentifiedChannel)
+	return ret0
+}
+
+// GetTransferChannels indicates an expected call of GetTransferChannels.
+func (mr *MockChannelKeeperMockRecorder) GetTransferChannels(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTransferChannels", reflect.TypeOf((*MockChannelKeeper)(nil).GetTransferChannels), arg0, arg1)
 }
 
 // LookupModuleByChannel mocks base method.
