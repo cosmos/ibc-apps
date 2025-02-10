@@ -21,7 +21,7 @@ func Migrate(
 
 	// 1. Iterate over all IBC transfer channels
 	portID := transferKeeper.GetPort(ctx)
-	transferChannels := channelKeeper.GetTransferChannels(ctx, portID)
+	transferChannels := channelKeeper.GetAllChannelsWithPortPrefix(ctx, portID)
 	for _, channel := range transferChannels {
 		// 2. For each channel, get the escrow address and corresponding bank balance
 		escrowAddress := transfertypes.GetEscrowAddress(portID, channel.ChannelId)

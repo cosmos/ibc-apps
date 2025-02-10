@@ -57,7 +57,7 @@ func (mr *MockTransferKeeperMockRecorder) DenomPathFromHash(arg0, arg1 any) *gom
 }
 
 // GetPort mocks base method.
-func (m *MockTransferKeeper) GetPort(arg0 context.Context) string {
+func (m *MockTransferKeeper) GetPort(arg0 types.Context) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPort", arg0)
 	ret0, _ := ret[0].(string)

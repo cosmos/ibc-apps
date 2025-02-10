@@ -131,7 +131,7 @@ func TestMigrate(t *testing.T) {
 
 			transferKeeper.EXPECT().GetPort(ctx).Return(portID).Times(1)
 			channelKeeper.EXPECT().
-				GetTransferChannels(ctx, portID).
+				GetAllChannelsWithPortPrefix(ctx, portID).
 				Return(channels).
 				Times(1)
 

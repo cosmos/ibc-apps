@@ -18,7 +18,7 @@ type TransferKeeper interface {
 	SetTotalEscrowForDenom(ctx sdk.Context, coin sdk.Coin)
 
 	// Only used for v3 migration
-	GetPort(ctx context.Context) string
+	GetPort(ctx sdk.Context) string
 }
 
 // ChannelKeeper defines the expected IBC channel keeper
@@ -29,7 +29,7 @@ type ChannelKeeper interface {
 	LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, *capabilitytypes.Capability, error)
 
 	// Only used for v3 migration
-	GetTransferChannels(ctx context.Context, portID string) []channeltypes.IdentifiedChannel
+	GetAllChannelsWithPortPrefix(ctx sdk.Context, portPrefix string) []channeltypes.IdentifiedChannel
 }
 
 // BankKeeper defines the expected bank keeper
