@@ -54,6 +54,20 @@ func (mr *MockBankKeeperMockRecorder) BurnCoins(arg0, arg1, arg2 any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BurnCoins", reflect.TypeOf((*MockBankKeeper)(nil).BurnCoins), arg0, arg1, arg2)
 }
 
+// GetAllBalances mocks base method.
+func (m *MockBankKeeper) GetAllBalances(arg0 context.Context, arg1 types.AccAddress) types.Coins {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllBalances", arg0, arg1)
+	ret0, _ := ret[0].(types.Coins)
+	return ret0
+}
+
+// GetAllBalances indicates an expected call of GetAllBalances.
+func (mr *MockBankKeeperMockRecorder) GetAllBalances(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllBalances", reflect.TypeOf((*MockBankKeeper)(nil).GetAllBalances), arg0, arg1)
+}
+
 // MintCoins mocks base method.
 func (m *MockBankKeeper) MintCoins(arg0 context.Context, arg1 string, arg2 types.Coins) error {
 	m.ctrl.T.Helper()

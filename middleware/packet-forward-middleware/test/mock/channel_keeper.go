@@ -41,6 +41,20 @@ func (m *MockChannelKeeper) EXPECT() *MockChannelKeeperMockRecorder {
 	return m.recorder
 }
 
+// GetAllChannelsWithPortPrefix mocks base method.
+func (m *MockChannelKeeper) GetAllChannelsWithPortPrefix(arg0 types.Context, arg1 string) []types1.IdentifiedChannel {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllChannelsWithPortPrefix", arg0, arg1)
+	ret0, _ := ret[0].([]types1.IdentifiedChannel)
+	return ret0
+}
+
+// GetAllChannelsWithPortPrefix indicates an expected call of GetAllChannelsWithPortPrefix.
+func (mr *MockChannelKeeperMockRecorder) GetAllChannelsWithPortPrefix(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllChannelsWithPortPrefix", reflect.TypeOf((*MockChannelKeeper)(nil).GetAllChannelsWithPortPrefix), arg0, arg1)
+}
+
 // GetChannel mocks base method.
 func (m *MockChannelKeeper) GetChannel(arg0 types.Context, arg1, arg2 string) (types1.Channel, bool) {
 	m.ctrl.T.Helper()

@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ env.LINT_VERSION }}
           working-directory: ${{ env.WORKING_DIRECTORY }}
@@ -64,7 +64,7 @@ jobs:
           outputs: type=docker,dest=${{ env.TAR_PATH }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.IMAGE_NAME }}
           path: ${{ env.TAR_PATH }}
@@ -94,7 +94,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download Tarball Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.IMAGE_NAME }}
           path: /tmp
@@ -102,7 +102,7 @@ jobs:
       - name: Load Docker Image
         run: |
           docker image load -i ${{ env.TAR_PATH }}
-          docker image load -i testing/previous_images/pfm_7_0_1.tar
+          docker image load -i testing/previous_images/pfm_8_1_0.tar
           docker image ls -a
 
       - name: Run Test
