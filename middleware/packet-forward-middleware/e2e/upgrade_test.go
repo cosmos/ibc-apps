@@ -28,7 +28,7 @@ const (
 	chainName   = "simapp"
 	upgradeName = "v3" // escrow state and balance re-sync upgrade
 
-	haltHeightDelta    = uint64(9) // will propose upgrade this many blocks in the future
+	haltHeightDelta    = uint64(30) // will propose upgrade this many blocks in the future
 	blocksAfterUpgrade = uint64(7)
 
 	VotingPeriod     = "15s"
@@ -37,7 +37,7 @@ const (
 
 var (
 	// baseChain is the current version of the chain that will be upgraded from
-	// docker image load -i ../prev_builds/pfm_7_0_1.tar
+	// docker image load -i ../prev_builds/pfm_8_1_0.tar
 	baseChain = ibc.DockerImage{
 		Repository: "pfm",
 		Version:    "v8.1.0",
@@ -387,7 +387,7 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	require.Truef(
 		t,
 		baEscrowBalance.Equal(totalEscrowAfter.Amount.Amount),
-		"after upgrade: expected B->A escrow amount %s to equal reported B total escrow %s",
+		"after upgrade: expected B->A escrow amount %s to equal reported B total escrow %s in bank",
 		baEscrowBalance.String(), totalEscrowAfter.Amount.Amount.String(),
 	)
 
@@ -462,9 +462,12 @@ func ValidatorVoting(t *testing.T, ctx context.Context, chain *cosmos.CosmosChai
 	// this should timeout due to chain halt at upgrade height.
 	_ = testutil.WaitForBlocks(timeoutCtx, int(haltHeight-height), chain)
 
+	// Wait another 10 seconds after chain should have halted to ensure it is halted
+	time.Sleep(time.Second * 10)
+
 	height, err = chain.Height(ctx)
 	require.NoError(t, err, "error fetching height after chain should have halted")
 
 	// make sure that chain is halted
-	require.Equal(t, haltHeight, height, "height is not equal to halt height")
+	require.Equal(t, haltHeight, height, "height is not equal to halt height, chain did not halt")
 }
