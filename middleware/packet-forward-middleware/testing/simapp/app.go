@@ -620,13 +620,17 @@ func NewSimApp(
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 
+	// NOTE: upgrade module is required to be prioritized
+	app.mm.SetOrderPreBlockers(
+		upgradetypes.ModuleName,
+	)
+
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	// NOTE: capability module's beginblocker must come before any modules using capabilities (e.g. IBC)
 	app.mm.SetOrderBeginBlockers(
-		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
 		distrtypes.ModuleName,

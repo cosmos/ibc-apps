@@ -28,7 +28,7 @@ const (
 	chainName   = "simapp"
 	upgradeName = "v3" // escrow state and balance re-sync upgrade
 
-	haltHeightDelta    = uint64(30) // will propose upgrade this many blocks in the future
+	haltHeightDelta    = uint64(9) // will propose upgrade this many blocks in the future
 	blocksAfterUpgrade = uint64(7)
 
 	VotingPeriod     = "15s"
