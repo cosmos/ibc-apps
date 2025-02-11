@@ -53,7 +53,7 @@ func CreateV3UpgradeHandler(
 	mm *module.Manager,
 	cfg module.Configurator,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		versionMap, err := mm.RunMigrations(ctx, cfg, fromVM)
 		if err != nil {
 			return nil, err
