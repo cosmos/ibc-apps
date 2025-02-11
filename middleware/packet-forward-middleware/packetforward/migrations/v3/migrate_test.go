@@ -94,6 +94,9 @@ func TestMigrate(t *testing.T) {
 				escrowChannels[1]: sdk.NewCoins(sdk.NewInt64Coin("woof", 200)),
 			},
 		},
+		// Escrow module state shouldn't be overbalanced, but we test it here
+		// to ensure the migration correctly updates the escrow state even in
+		// this case.
 		{
 			name: "overbalanced escrow state - single channel",
 			giveTransferEscrowState: map[string]sdk.Coin{
