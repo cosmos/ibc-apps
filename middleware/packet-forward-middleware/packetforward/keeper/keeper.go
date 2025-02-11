@@ -258,11 +258,9 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 					// to burn.
 					panic(fmt.Sprintf("cannot burn coins after a successful send from escrow account to module account: %v", err))
 				}
-			}
 
-			// We move funds from the escrowAddress in both cases,
-			// update the total escrow amount for the denom.
-			k.unescrowToken(ctx, token)
+				k.unescrowToken(ctx, token)
+			}
 		} else {
 			// Funds in the escrow account were burned,
 			// so on a timeout or acknowledgement error we need to mint the funds back to the escrow account.

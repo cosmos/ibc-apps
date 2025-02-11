@@ -3,6 +3,7 @@ package e2e
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type PacketMetadata struct {
@@ -633,6 +636,19 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.True(t, baEscrowBalance.Equal(transferAmount))
 		require.True(t, bcEscrowBalance.Equal(zeroBal))
 		require.True(t, cdEscrowBalance.Equal(zeroBal))
+
+		conn, err := grpc.Dial(chainB.GetHostGRPCAddress(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		require.NoError(t, err)
+		defer conn.Close()
+
+		queryClient := transfertypes.NewQueryClient(conn)
+
+		req := &transfertypes.QueryTotalEscrowForDenomRequest{Denom: chainB.Config().Denom}
+		res, err := queryClient.TotalEscrowForDenom(ctx, req)
+		require.NoError(t, err)
+
+		// assert reported total escrow balance does not change
+		require.True(t, baEscrowBalance.Equal(res.Amount.Amount), fmt.Sprintf("expected B->A escrow amount %s to equal reported B total escrow %s", baEscrowBalance.String(), res.Amount.Amount.String()))
 	})
 
 	t.Run("forward a->b->a", func(t *testing.T) {
