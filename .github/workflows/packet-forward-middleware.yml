@@ -102,7 +102,7 @@ jobs:
       - name: Load Docker Image
         run: |
           docker image load -i ${{ env.TAR_PATH }}
-          docker image load -i testing/previous_images/pfm_7_0_1.tar
+          docker image load -i testing/previous_images/pfm_7_2_0.tar
           docker image ls -a
 
       - name: Run Test
