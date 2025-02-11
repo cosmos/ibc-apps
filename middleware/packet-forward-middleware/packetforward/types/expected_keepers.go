@@ -16,6 +16,9 @@ type TransferKeeper interface {
 	DenomPathFromHash(ctx sdk.Context, denom string) (string, error)
 	GetTotalEscrowForDenom(ctx sdk.Context, denom string) sdk.Coin
 	SetTotalEscrowForDenom(ctx sdk.Context, coin sdk.Coin)
+
+	// Only used for v3 migration
+	GetPort(ctx sdk.Context) string
 }
 
 // ChannelKeeper defines the expected IBC channel keeper
@@ -24,6 +27,9 @@ type ChannelKeeper interface {
 	GetPacketCommitment(ctx sdk.Context, portID, channelID string, sequence uint64) []byte
 	GetNextSequenceSend(ctx sdk.Context, portID, channelID string) (uint64, bool)
 	LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, *capabilitytypes.Capability, error)
+
+	// Only used for v3 migration
+	GetAllChannelsWithPortPrefix(ctx sdk.Context, portPrefix string) []channeltypes.IdentifiedChannel
 }
 
 // BankKeeper defines the expected bank keeper
@@ -33,4 +39,7 @@ type BankKeeper interface {
 	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
+
+	// Only used for v3 migration
+	GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins
 }
