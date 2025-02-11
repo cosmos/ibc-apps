@@ -13,6 +13,7 @@ import (
 
 const (
 	V2 = "v2"
+	V3 = "v3"
 )
 
 // CreateDefaultUpgradeHandler creates a simple migration upgrade handler.
@@ -40,6 +41,20 @@ func CreateV2UpgradeHandler(
 		baseapp.MigrateParams(ctx, baseAppLegacySS, &consensusparamskeeper)
 
 		versionMap, err := mm.RunMigrations(ctx, cfg, vm)
+		if err != nil {
+			return nil, err
+		}
+
+		return versionMap, err
+	}
+}
+
+func CreateV3UpgradeHandler(
+	mm *module.Manager,
+	cfg module.Configurator,
+) upgradetypes.UpgradeHandler {
+	return func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+		versionMap, err := mm.RunMigrations(ctx, cfg, fromVM)
 		if err != nil {
 			return nil, err
 		}
