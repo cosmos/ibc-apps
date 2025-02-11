@@ -49,7 +49,7 @@ func (mr *MockBankKeeperMockRecorder) BurnCoins(arg0, arg1, arg2 any) *gomock.Ca
 }
 
 // GetAllBalances mocks base method.
-func (m *MockBankKeeper) GetAllBalances(arg0 context.Context, arg1 types.AccAddress) types.Coins {
+func (m *MockBankKeeper) GetAllBalances(arg0 types.Context, arg1 types.AccAddress) types.Coins {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllBalances", arg0, arg1)
 	ret0, _ := ret[0].(types.Coins)

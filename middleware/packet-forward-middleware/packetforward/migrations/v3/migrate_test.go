@@ -3,18 +3,18 @@ package v3_test
 import (
 	"testing"
 
-	"cosmossdk.io/log"
-	"cosmossdk.io/store"
-	"cosmossdk.io/store/metrics"
-	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/migrations/v3"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/test/mock"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	"github.com/cometbft/cometbft/libs/log"
+
+	"github.com/cosmos/cosmos-sdk/store"
+	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/migrations/v3"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/test/mock"
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	dbm "github.com/cometbft/cometbft-db"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	dbm "github.com/cosmos/cosmos-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -25,11 +25,11 @@ func TestMigrate(t *testing.T) {
 	bankKeeper := mock.NewMockBankKeeper(ctrl)
 	transferKeeper := mock.NewMockTransferKeeper(ctrl)
 
-	logger := log.NewTestLogger(t)
+	logger := log.NewNopLogger()
 	logger.Debug("initializing test setup")
 
 	db := dbm.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	stateStore := store.NewCommitMultiStore(db)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 

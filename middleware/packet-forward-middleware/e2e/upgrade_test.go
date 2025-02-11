@@ -7,28 +7,17 @@ import (
 	"testing"
 	"time"
 
-<<<<<<< HEAD
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-=======
 	"cosmossdk.io/math"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
->>>>>>> 515bdca (fix: don't unescrow tokens that are moved between escrow accounts (#230))
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	cosmosproto "github.com/cosmos/gogoproto/proto"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/docker/docker/client"
-<<<<<<< HEAD
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v7/relayer"
+	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
-=======
-	"github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	"github.com/strangelove-ventures/interchaintest/v8/relayer"
-	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
-	"github.com/strangelove-ventures/interchaintest/v8/testutil"
->>>>>>> 515bdca (fix: don't unescrow tokens that are moved between escrow accounts (#230))
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
@@ -120,14 +109,8 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 		{Name: "pfm", ChainConfig: cfgD, NumFullNodes: &numNodes, NumValidators: &numVals},
 	})
 
-<<<<<<< HEAD
-	const userFunds = int64(10_000_000_000)
-	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, chain)
-	chainUser := users[0]
-=======
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
->>>>>>> 515bdca (fix: don't unescrow tokens that are moved between escrow accounts (#230))
 
 	chainA, chainB, chainC, chainD := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain), chains[3].(*cosmos.CosmosChain)
 
@@ -180,7 +163,7 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	})
 
 	initBal := math.NewInt(10_000_000_000)
-	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainB, chainC, chainD)
+	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainB, chainC, chainD)
 
 	// -------------------------------------------------------------------------
 	// IBC setup
