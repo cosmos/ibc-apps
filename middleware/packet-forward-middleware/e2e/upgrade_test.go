@@ -37,10 +37,10 @@ const (
 
 var (
 	// baseChain is the current version of the chain that will be upgraded from
-	// docker image load -i ../prev_builds/pfm_8_1_0.tar
+	// docker image load -i ../prev_builds/pfm_7_0_1.tar
 	baseChain = ibc.DockerImage{
 		Repository: "pfm",
-		Version:    "v8.1.0",
+		Version:    "v7.0.1",
 		UidGid:     "1025:1025",
 	}
 
