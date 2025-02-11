@@ -897,8 +897,8 @@ func (app *SimApp) SimulationManager() *module.SimulationManager {
 
 func (app *SimApp) setupUpgradeHandlers() {
 	app.UpgradeKeeper.SetUpgradeHandler(
-		upgrades.V2,
-		upgrades.CreateV2UpgradeHandler(app.mm, app.configurator, app.ParamsKeeper, app.ConsensusParamsKeeper, app.PacketForwardKeeper),
+		upgrades.V3,
+		upgrades.CreateV3UpgradeHandler(app.mm, app.configurator),
 	)
 }
 
