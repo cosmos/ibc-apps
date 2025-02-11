@@ -2,6 +2,7 @@ package simapp
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/upgrades"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/x/dummyware"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -904,26 +906,27 @@ func (app *SimApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
+// setupUpgradeHandlers sets up all the upgrade handlers for the application.
 func (app *SimApp) setupUpgradeHandlers() {
-	// app.UpgradeKeeper.SetUpgradeHandler(
-	// 	upgrades.V3,
-	// 	upgrades.CreateV3UpgradeHandler(app.mm, app.configurator),
-	// )
+	app.UpgradeKeeper.SetUpgradeHandler(
+		upgrades.V3,
+		upgrades.CreateV3UpgradeHandler(app.mm, app.configurator),
+	)
 }
 
 // setupUpgradeStoreLoaders sets all necessary store loaders required by upgrades.
 func (app *SimApp) setupUpgradeStoreLoaders() {
-	// upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	// if err != nil {
-	// 	tmos.Exit(fmt.Sprintf("failed to read upgrade info from disk %s", err))
-	// }
-	//
-	// if upgradeInfo.Name == upgrades.V3 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-	// 	storeUpgrades := storetypes.StoreUpgrades{}
-	//
-	// 	// configure store loader that checks if version == upgradeHeight and applies store upgrades
-	// 	app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	// }
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		tmos.Exit(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
+
+	if upgradeInfo.Name == upgrades.V3 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
