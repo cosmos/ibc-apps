@@ -168,6 +168,11 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 					// to burn.
 					panic(fmt.Sprintf("cannot burn coins after a successful send from escrow account to module account: %v", err))
 				}
+<<<<<<< HEAD
+=======
+
+				k.unescrowToken(ctx, token)
+>>>>>>> 515bdca (fix: don't unescrow tokens that are moved between escrow accounts (#230))
 			}
 		} else {
 			// Funds in the escrow account were burned,

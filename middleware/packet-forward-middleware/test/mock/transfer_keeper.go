@@ -51,6 +51,49 @@ func (mr *MockTransferKeeperMockRecorder) DenomPathFromHash(arg0, arg1 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DenomPathFromHash", reflect.TypeOf((*MockTransferKeeper)(nil).DenomPathFromHash), arg0, arg1)
 }
 
+<<<<<<< HEAD
+=======
+// GetPort mocks base method.
+func (m *MockTransferKeeper) GetPort(arg0 types.Context) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPort", arg0)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetPort indicates an expected call of GetPort.
+func (mr *MockTransferKeeperMockRecorder) GetPort(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPort", reflect.TypeOf((*MockTransferKeeper)(nil).GetPort), arg0)
+}
+
+// GetTotalEscrowForDenom mocks base method.
+func (m *MockTransferKeeper) GetTotalEscrowForDenom(arg0 types.Context, arg1 string) types.Coin {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTotalEscrowForDenom", arg0, arg1)
+	ret0, _ := ret[0].(types.Coin)
+	return ret0
+}
+
+// GetTotalEscrowForDenom indicates an expected call of GetTotalEscrowForDenom.
+func (mr *MockTransferKeeperMockRecorder) GetTotalEscrowForDenom(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTotalEscrowForDenom", reflect.TypeOf((*MockTransferKeeper)(nil).GetTotalEscrowForDenom), arg0, arg1)
+}
+
+// SetTotalEscrowForDenom mocks base method.
+func (m *MockTransferKeeper) SetTotalEscrowForDenom(arg0 types.Context, arg1 types.Coin) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetTotalEscrowForDenom", arg0, arg1)
+}
+
+// SetTotalEscrowForDenom indicates an expected call of SetTotalEscrowForDenom.
+func (mr *MockTransferKeeperMockRecorder) SetTotalEscrowForDenom(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTotalEscrowForDenom", reflect.TypeOf((*MockTransferKeeper)(nil).SetTotalEscrowForDenom), arg0, arg1)
+}
+
+>>>>>>> 515bdca (fix: don't unescrow tokens that are moved between escrow accounts (#230))
 // Transfer mocks base method.
 func (m *MockTransferKeeper) Transfer(arg0 context.Context, arg1 *types0.MsgTransfer) (*types0.MsgTransferResponse, error) {
 	m.ctrl.T.Helper()
