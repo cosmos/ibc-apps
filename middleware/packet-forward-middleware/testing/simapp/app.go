@@ -2,6 +2,7 @@ package simapp
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -560,10 +561,8 @@ func NewSimApp(
 		packetforwardtypes.ModuleName, ibctransfertypes.StoreKey, feegrant.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName,
 		vestingtypes.ModuleName, group.ModuleName, consensusparamtypes.ModuleName,
 	}
-
 	app.mm.SetOrderInitGenesis(genesisModuleOrder...)
 	app.mm.SetOrderExportGenesis(genesisModuleOrder...)
-
 	app.mm.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(app.configurator)
@@ -758,32 +757,27 @@ func (app *SimApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
+// setupUpgradeHandlers sets up all the upgrade handlers for the application.
 func (app *SimApp) setupUpgradeHandlers() {
 	app.UpgradeKeeper.SetUpgradeHandler(
-		upgrades.V2,
-		upgrades.CreateV2UpgradeHandler(app.mm, app.configurator, app.ParamsKeeper, app.ConsensusParamsKeeper, app.PacketForwardKeeper),
+		upgrades.V3,
+		upgrades.CreateV3UpgradeHandler(app.mm, app.configurator),
 	)
 }
 
 // setupUpgradeStoreLoaders sets all necessary store loaders required by upgrades.
 func (app *SimApp) setupUpgradeStoreLoaders() {
-	// upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	// if err != nil {
-	// 	tmos.Exit(fmt.Sprintf("failed to read upgrade info from disk %s", err))
-	// }
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		tmos.Exit(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
 
-	// // Future: if we want to fix the module name, we can do it here.
-	// if upgradeInfo.Name == upgrades.V2 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-	// 	storeUpgrades := storetypes.StoreUpgrades{
-	// 		Renamed: []storetypes.StoreRename{{
-	// 			OldKey: "packetfoward", // previous misspelling
-	// 			NewKey: packetforwardtypes.ModuleName,
-	// 		}},
-	// 	}
+	if upgradeInfo.Name == upgrades.V3 && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storetypes.StoreUpgrades{}
 
-	// 	// configure store loader that checks if version == upgradeHeight and applies store upgrades
-	// 	app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	// }
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
