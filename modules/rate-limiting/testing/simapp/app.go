@@ -12,6 +12,7 @@ import (
 	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
 	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	ratelimitv2 "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/v2"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
@@ -106,12 +107,15 @@ import (
 	"github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	transferv2 "github.com/cosmos/ibc-go/v10/modules/apps/transfer/v2"
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcporttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	solomachine "github.com/cosmos/ibc-go/v10/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+
+	ibcapi "github.com/cosmos/ibc-go/v10/modules/core/api"
 )
 
 const appName = "SimApp"
@@ -466,6 +470,7 @@ func NewSimApp(
 
 	// create the IBC Router
 	ibcRouter := ibcporttypes.NewRouter()
+	ibcRouterV2 := ibcapi.NewRouter()
 
 	// Transfer Keeper
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -487,11 +492,15 @@ func NewSimApp(
 	var transferStack ibcporttypes.IBCModule = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = ratelimit.NewIBCMiddleware(app.RatelimitKeeper, transferStack)
 
+	transferStackV2 := ratelimitv2.NewIBCMiddleware(app.RatelimitKeeper, transferv2.NewIBCModule(app.TransferKeeper))
+
 	// Add IBC Router
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
+	ibcRouterV2.AddRoute(ibctransfertypes.PortID, transferStackV2)
 
 	// Seal the IBC Router
 	app.IBCKeeper.SetRouter(ibcRouter)
+	app.IBCKeeper.SetRouterV2(ibcRouterV2)
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
