@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
-	"github.com/cosmos/ibc-go/v10/modules/core/api"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
+	"github.com/cosmos/ibc-go/v10/modules/core/api"
 )
 
 var _ api.IBCModule = (*IBCMiddleware)(nil)
