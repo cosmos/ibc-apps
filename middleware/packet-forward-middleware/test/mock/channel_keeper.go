@@ -13,8 +13,7 @@ import (
 	reflect "reflect"
 
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/ibc-go/modules/capability/types"
-	types1 "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	types0 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,10 +41,10 @@ func (m *MockChannelKeeper) EXPECT() *MockChannelKeeperMockRecorder {
 }
 
 // GetAllChannelsWithPortPrefix mocks base method.
-func (m *MockChannelKeeper) GetAllChannelsWithPortPrefix(arg0 types.Context, arg1 string) []types1.IdentifiedChannel {
+func (m *MockChannelKeeper) GetAllChannelsWithPortPrefix(arg0 types.Context, arg1 string) []types0.IdentifiedChannel {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllChannelsWithPortPrefix", arg0, arg1)
-	ret0, _ := ret[0].([]types1.IdentifiedChannel)
+	ret0, _ := ret[0].([]types0.IdentifiedChannel)
 	return ret0
 }
 
@@ -56,10 +55,10 @@ func (mr *MockChannelKeeperMockRecorder) GetAllChannelsWithPortPrefix(arg0, arg1
 }
 
 // GetChannel mocks base method.
-func (m *MockChannelKeeper) GetChannel(arg0 types.Context, arg1, arg2 string) (types1.Channel, bool) {
+func (m *MockChannelKeeper) GetChannel(arg0 types.Context, arg1, arg2 string) (types0.Channel, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetChannel", arg0, arg1, arg2)
-	ret0, _ := ret[0].(types1.Channel)
+	ret0, _ := ret[0].(types0.Channel)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -97,20 +96,4 @@ func (m *MockChannelKeeper) GetPacketCommitment(arg0 types.Context, arg1, arg2 s
 func (mr *MockChannelKeeperMockRecorder) GetPacketCommitment(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPacketCommitment", reflect.TypeOf((*MockChannelKeeper)(nil).GetPacketCommitment), arg0, arg1, arg2, arg3)
-}
-
-// LookupModuleByChannel mocks base method.
-func (m *MockChannelKeeper) LookupModuleByChannel(arg0 types.Context, arg1, arg2 string) (string, *types0.Capability, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LookupModuleByChannel", arg0, arg1, arg2)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(*types0.Capability)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// LookupModuleByChannel indicates an expected call of LookupModuleByChannel.
-func (mr *MockChannelKeeperMockRecorder) LookupModuleByChannel(arg0, arg1, arg2 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookupModuleByChannel", reflect.TypeOf((*MockChannelKeeper)(nil).LookupModuleByChannel), arg0, arg1, arg2)
 }
