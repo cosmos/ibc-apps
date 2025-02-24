@@ -35,7 +35,7 @@ func (im IBCMiddleware) OnSendPacket(
 	payload channeltypesv2.Payload,
 	signer sdk.AccAddress,
 ) error {
-	packet := v1ToV2Packet(payload, sourceClient, destinationClient, sequence)
+	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
 	if err := im.keeper.SendRateLimitedPacket(ctx, packet); err != nil {
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 packet send was denied: %s", err.Error()))
 		return err
@@ -51,7 +51,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
 ) channeltypesv2.RecvPacketResult {
-	packet := v1ToV2Packet(payload, sourceClient, destinationClient, sequence)
+	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
 	// Check if the packet would cause the rate limit to be exceeded,
 	// and if so, return an ack error
 	if err := im.keeper.ReceiveRateLimitedPacket(ctx, packet); err != nil {
@@ -74,7 +74,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
 ) error {
-	packet := v1ToV2Packet(payload, sourceClient, destinationClient, sequence)
+	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
 	if err := im.keeper.TimeoutRateLimitedPacket(ctx, packet); err != nil {
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 RateLimited OnTimeoutPacket failed: %s", err.Error()))
 		return err
@@ -91,7 +91,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
 ) error {
-	packet := v1ToV2Packet(payload, sourceClient, destinationClient, sequence)
+	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
 	if err := im.keeper.AcknowledgeRateLimitedPacket(ctx, packet, acknowledgement); err != nil {
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 RateLimited OnAckPacket failed: %s", err.Error()))
 		return err
@@ -99,7 +99,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	return im.app.OnAcknowledgementPacket(ctx, sourceClient, destinationClient, sequence, acknowledgement, payload, relayer)
 }
 
-func v1ToV2Packet(payload channeltypesv2.Payload, sourceClient, destinationClient string, sequence uint64) channeltypes.Packet {
+func v2ToV1Packet(payload channeltypesv2.Payload, sourceClient, destinationClient string, sequence uint64) channeltypes.Packet {
 	return channeltypes.Packet{
 		Sequence:           sequence,
 		SourcePort:         payload.SourcePort,
