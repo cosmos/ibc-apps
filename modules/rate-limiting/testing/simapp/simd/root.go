@@ -6,8 +6,8 @@ import (
 	"os"
 
 	dbm "github.com/cosmos/cosmos-db"
-	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp"
-	appparams "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp/params"
+	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/testing/simapp"
+	appparams "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/testing/simapp/params"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 

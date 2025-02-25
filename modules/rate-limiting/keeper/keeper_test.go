@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/testing/simapp/apptesting"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/testing/simapp/apptesting"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 	"github.com/stretchr/testify/suite"
 )
 

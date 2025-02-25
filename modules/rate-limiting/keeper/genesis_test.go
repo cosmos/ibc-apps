@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 
 	sdkmath "cosmossdk.io/math"
 )
@@ -15,7 +15,7 @@ func createRateLimits() []types.RateLimit {
 		suffix := strconv.Itoa(int(i))
 		rateLimit := types.RateLimit{
 			Path:  &types.Path{Denom: "denom-" + suffix, ChannelId: "channel-" + suffix},
-			Quota: &types.Quota{MaxPercentSend: sdkmath.NewInt(i), MaxPercentRecv: sdkmath.NewInt(i), DurationHours: uint64(i)},
+			Quota: &types.Quota{MaxPercentSend: sdkmath.NewInt(i), MaxPercentRecv: sdkmath.NewInt(i), DurationHours: uint64(i)}, //nolint:gosec
 			Flow:  &types.Flow{Inflow: sdkmath.NewInt(i), Outflow: sdkmath.NewInt(i), ChannelValue: sdkmath.NewInt(i)},
 		}
 
@@ -87,7 +87,7 @@ func (s *KeeperTestSuite) TestGenesis() {
 			// it will be initialized during InitGenesis
 			expectedGenesis := tc.genesisState
 			if tc.firstEpoch {
-				expectedGenesis.HourEpoch.EpochNumber = uint64(currentHour)
+				expectedGenesis.HourEpoch.EpochNumber = uint64(currentHour) //nolint:gosec
 				expectedGenesis.HourEpoch.EpochStartTime = defaultEpochStartTime
 				expectedGenesis.HourEpoch.EpochStartHeight = blockHeight
 			}

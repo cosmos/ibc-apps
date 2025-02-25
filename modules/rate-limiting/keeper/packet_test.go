@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
 
 	tmbytes "github.com/cometbft/cometbft/libs/bytes"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
 const (

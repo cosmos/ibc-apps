@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -12,11 +12,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
 type RateLimitedPacketInfo struct {
@@ -66,7 +65,7 @@ func (k Keeper) CheckAcknowledementSucceeded(ctx sdk.Context, ack []byte) (succe
 // For NON-NATIVE denoms, take the ibc hash (e.g. hash "transfer/channel-2/usoms" into "ibc/...")
 func ParseDenomFromSendPacket(packet transfertypes.FungibleTokenPacketData) (denom string) {
 	// Determine the denom by looking at the denom trace path
-	denomTrace := transfertypes.ParseDenomTrace(packet.Denom)
+	denomTrace := types.ParseDenomTrace(packet.Denom)
 
 	// Native assets will have an empty trace path and can be returned as is
 	if denomTrace.Path == "" {
@@ -113,13 +112,13 @@ func ParseDenomFromSendPacket(packet transfertypes.FungibleTokenPacketData) (den
 //	        -> Hash:          ibc/...
 func ParseDenomFromRecvPacket(packet channeltypes.Packet, packetData transfertypes.FungibleTokenPacketData) (denom string) {
 	// To determine the denom, first check whether Stride is acting as source
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), packetData.Denom) {
+	if types.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), packetData.Denom) {
 		// Remove the source prefix (e.g. transfer/channel-X/transfer/channel-Z/ujuno -> transfer/channel-Z/ujuno)
-		sourcePrefix := transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
+		sourcePrefix := types.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
 		unprefixedDenom := packetData.Denom[len(sourcePrefix):]
 
 		// Native assets will have an empty trace path and can be returned as is
-		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
+		denomTrace := types.ParseDenomTrace(unprefixedDenom)
 		if denomTrace.Path == "" {
 			denom = unprefixedDenom
 		} else {
@@ -128,11 +127,11 @@ func ParseDenomFromRecvPacket(packet channeltypes.Packet, packetData transfertyp
 		}
 	} else {
 		// Prefix the destination channel - this will contain the trailing slash (e.g. transfer/channel-X/)
-		destinationPrefix := transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel())
+		destinationPrefix := types.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel())
 		prefixedDenom := destinationPrefix + packetData.Denom
 
 		// Hash the denom trace
-		denomTrace := transfertypes.ParseDenomTrace(prefixedDenom)
+		denomTrace := types.ParseDenomTrace(prefixedDenom)
 		denom = denomTrace.IBCDenom()
 	}
 
@@ -258,7 +257,6 @@ func (k Keeper) TimeoutRateLimitedPacket(ctx sdk.Context, packet channeltypes.Pa
 // If the packet does not get rate limited, it passes the packet to the IBC Channel keeper
 func (k Keeper) SendPacket(
 	ctx sdk.Context,
-	channelCap *capabilitytypes.Capability,
 	sourcePort string,
 	sourceChannel string,
 	timeoutHeight clienttypes.Height,
@@ -268,7 +266,6 @@ func (k Keeper) SendPacket(
 	// The packet must first be sent up the stack to get the sequence number from the channel keeper
 	sequence, err = k.ics4Wrapper.SendPacket(
 		ctx,
-		channelCap,
 		sourcePort,
 		sourceChannel,
 		timeoutHeight,
@@ -295,8 +292,8 @@ func (k Keeper) SendPacket(
 }
 
 // WriteAcknowledgement wraps IBC ChannelKeeper's WriteAcknowledgement function
-func (k Keeper) WriteAcknowledgement(ctx sdk.Context, chanCap *capabilitytypes.Capability, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
-	return k.ics4Wrapper.WriteAcknowledgement(ctx, chanCap, packet, acknowledgement)
+func (k Keeper) WriteAcknowledgement(ctx sdk.Context, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
+	return k.ics4Wrapper.WriteAcknowledgement(ctx, packet, acknowledgement)
 }
 
 // GetAppVersion wraps IBC ChannelKeeper's GetAppVersion function

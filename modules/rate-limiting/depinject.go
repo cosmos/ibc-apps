@@ -1,9 +1,9 @@
 package ratelimit
 
 import (
-	modulev1 "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/api/ratelimit/module/v1"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	modulev1 "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/api/ratelimit/module/v1"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"

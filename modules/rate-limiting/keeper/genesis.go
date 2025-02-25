@@ -3,7 +3,7 @@ package keeper
 import (
 	"time"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -39,7 +39,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	} else {
 		// If the hour epoch has not been initialized yet, set it so that the epoch number matches
 		// the current hour and the start time is precisely on the hour
-		genState.HourEpoch.EpochNumber = uint64(ctx.BlockTime().Hour())
+		genState.HourEpoch.EpochNumber = uint64(ctx.BlockTime().Hour()) //nolint:gosec
 		genState.HourEpoch.EpochStartTime = ctx.BlockTime().Truncate(time.Hour)
 		genState.HourEpoch.EpochStartHeight = ctx.BlockHeight()
 		k.SetHourEpoch(ctx, genState.HourEpoch)

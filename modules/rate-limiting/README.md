@@ -20,9 +20,9 @@ To add the rate limit module, wire it up in `app.go` in line with the following 
 
 // Import the rate limit module
 import (
-  "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/ratelimit"
-  ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/ratelimit/keeper"
-  ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/ratelimit/types"
+  "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/ratelimit"
+  ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/ratelimit/keeper"
+  ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/ratelimit/types"
 )
 
 ...
