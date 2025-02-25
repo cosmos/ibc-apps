@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"

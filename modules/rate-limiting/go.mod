@@ -1,4 +1,4 @@
-module github.com/cosmos/ibc-apps/modules/rate-limiting/v8
+module github.com/cosmos/ibc-apps/modules/rate-limiting/v9
 
 go 1.23.6
 

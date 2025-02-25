@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
 	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
