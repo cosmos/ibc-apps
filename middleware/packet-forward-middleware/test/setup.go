@@ -9,8 +9,8 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/test/mock"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"

@@ -3,6 +3,7 @@ package packetforward_test
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang/mock/gomock"
 	"testing"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
@@ -10,7 +11,6 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/test"
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/mock/gomock"
 
 	sdkmath "cosmossdk.io/math"
 
