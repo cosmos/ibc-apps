@@ -416,10 +416,6 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{
-			//Timeout: &ibc.IBCTimeout{
-			//	NanoSeconds: uint64(time.Now().Add(1 * time.Minute).Unix()),
-			//	Height:      0,
-			//},
 			Memo: string(memo),
 		})
 		require.NoError(t, err)
