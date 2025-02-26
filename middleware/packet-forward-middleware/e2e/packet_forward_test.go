@@ -426,11 +426,6 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
 		require.NoError(t, err)
 
-		// Wait for the packet to relayed back to A
-		//err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
-		//	return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
-		//
-		//})
 		require.NoError(t, err)
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
