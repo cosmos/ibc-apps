@@ -1,7 +1,7 @@
 # docker build . -t pfm:local
 # docker run --rm -it pfm:local q ibc-router
 
-FROM golang:1.21-alpine3.18 AS builder
+FROM golang:1.23-alpine3.21 AS builder
 
 RUN set -eux; apk add --no-cache git libusb-dev linux-headers gcc musl-dev make;
 
@@ -22,7 +22,7 @@ COPY . .
 
 RUN make build
 
-FROM alpine:3.18
+FROM alpine:3.21
 
 COPY --from=builder /go/build/simd /bin/simd
 

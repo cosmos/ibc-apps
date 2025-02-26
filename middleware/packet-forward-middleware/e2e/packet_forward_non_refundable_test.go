@@ -10,7 +10,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -91,7 +91,6 @@ func TestNonRefundable(t *testing.T) {
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
 		relayer.DockerImage(&DefaultRelayer),
-		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
 	const pathAB = "ab"
@@ -191,8 +190,22 @@ func TestNonRefundable(t *testing.T) {
 
 	expectedFirstHopEscrowAmount := math.NewInt(0)
 
-	t.Run("forward ack error refund - invalid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("forward ack error refund - invalid receiver account on B", func(t *testing.T) {
 		userA := usersA[0]
+
+		chainABalanceBefore, err := chainA.GetBalance(ctx, userA.FormattedAddress(), configA.Denom)
+		require.NoError(t, err)
+		fmt.Println("UserA balance on chain A before", chainABalanceBefore.String(), userA.FormattedAddress())
+		chainBBalanceBefore, err := chainB.GetBalance(ctx, userA.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
+		fmt.Println("UserA balance on chain B before", chainBBalanceBefore.String(), userA.FormattedAddress())
+		firstHopEscrowBalanceBefore, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
+		fmt.Println("First hop escrow balance on chain A before", firstHopEscrowBalanceBefore.String(), firstHopEscrowAccount)
+
+		secondHopEscrowBalanceBefore, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
+		fmt.Println("Second hop escrow balance on chain B before", secondHopEscrowBalanceBefore.String(), secondHopEscrowAccount)
 
 		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
 		transfer := ibc.WalletAmount{
@@ -212,24 +225,33 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
-		require.NoError(t, err)
-
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-		require.NoError(t, err)
+		// Wait for the ack to be relayed back to A
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		})
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
+		require.NoError(t, err)
+		err = r.Flush(ctx, eRep, pathBC, bcChan.ChannelID)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), configA.Denom)
 		require.NoError(t, err)
+		fmt.Println("UserA balance on chain A before", chainABalance.String(), userA.FormattedAddress())
 
 		// funds should end up in the A user's bech32 transformed address on chain B.
 		chainBBalance, err := chainB.GetBalance(ctx, userA.FormattedAddress(), firstHopIBCDenom)
 		require.NoError(t, err)
+		fmt.Println("UserA balance on chain B after", chainBBalance.String(), userA.FormattedAddress())
+
+		chainCBalance, err := chainC.GetBalance(ctx, userA.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
+		fmt.Println("UserA balance on chain C after", chainCBalance.String(), userA.FormattedAddress())
 
 		require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
 
@@ -239,17 +261,19 @@ func TestNonRefundable(t *testing.T) {
 		// assert balances for IBC escrow accounts
 		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 		require.NoError(t, err)
+		fmt.Println("First hop escrow balance on chain A after", firstHopEscrowBalance.String(), firstHopEscrowAccount)
 
 		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
 		require.NoError(t, err)
+		fmt.Println("Second hop escrow balance on chain B after", secondHopEscrowBalance.String(), secondHopEscrowAccount)
 
 		expectedFirstHopEscrowAmount = expectedFirstHopEscrowAmount.Add(transferAmount)
 
 		require.True(t, firstHopEscrowBalance.Equal(expectedFirstHopEscrowAmount))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	})
+	}))
 
-	t.Run("forward ack error refund - valid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("forward ack error refund - valid receiver account on B", func(t *testing.T) {
 		userA := usersA[1]
 		userB := usersB[0]
 		// Send a malformed packet with valid receiver address from Chain A->Chain B->Chain C
@@ -270,15 +294,16 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
-		require.NoError(t, err)
-
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-		require.NoError(t, err)
+		// Wait for the packet to relayed back to A
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		})
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -302,12 +327,35 @@ func TestNonRefundable(t *testing.T) {
 
 		require.True(t, firstHopEscrowBalance.Equal(expectedFirstHopEscrowAmount))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	})
+	}))
 
-	t.Run("forward timeout refund - valid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("forward timeout refund - valid receiver account on B", func(t *testing.T) {
 		userA := usersA[2]
 		userB := usersB[1]
 		userC := timeoutUsersC[0]
+
+		chainABalanceBefore, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
+		require.NoError(t, err)
+
+		chainBBalanceBefore, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
+		require.NoError(t, err)
+
+		chainCBalanceBefore, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
+		require.NoError(t, err)
+
+		firstHopEscrowBalanceBefore, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
+		require.NoError(t, err)
+
+		secondHopEscrowBalanceBefore, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
+		require.NoError(t, err)
+
+		fmt.Printf("UserA balance on chain A before: %s (%s)\n", chainABalanceBefore.String(), userA.FormattedAddress())
+		fmt.Printf("UserB balance on chain B before: %s (%s)\n", chainBBalanceBefore.String(), userB.FormattedAddress())
+		fmt.Printf("UserC balance on chain C before: %s (%s)\n", chainCBalanceBefore.String(), userC.FormattedAddress())
+
+		fmt.Printf("First hop escrow balance on chain A before: %s (%s)\n", firstHopEscrowBalanceBefore.String(), firstHopEscrowAccount)
+		fmt.Printf("Second hop escrow balance on chain B before: %s (%s)\n", secondHopEscrowBalanceBefore.String(), secondHopEscrowAccount)
+
 		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C,
 		// which should result in a refund to User B on Chain B after two retries.
 		transfer := ibc.WalletAmount{
@@ -330,15 +378,33 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{
+			Memo: string(memo),
+		})
 		require.NoError(t, err)
 
-		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-		require.NoError(t, err)
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-		require.NoError(t, err)
+		// Wait for the packet to relayed back to A
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		})
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
+
+		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
+		require.NoError(t, err)
+		time.Sleep(5 * time.Second)
+
+		err = r.Flush(ctx, eRep, pathBC, bcChan.ChannelID)
+		require.NoError(t, err)
+		time.Sleep(5 * time.Second)
+
+		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
+		require.NoError(t, err)
+		time.Sleep(5 * time.Second)
+
+		err = r.Flush(ctx, eRep, pathBC, bcChan.ChannelID)
+		require.NoError(t, err)
+		time.Sleep(5 * time.Second)
 
 		// assert balances for user controlled wallets
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
@@ -350,23 +416,30 @@ func TestNonRefundable(t *testing.T) {
 		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
-		require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
-		require.True(t, chainBBalance.Equal(transferAmount))
-		require.True(t, chainCBalance.Equal(zeroBal))
-
 		firstHopEscrowBalance, err := chainA.GetBalance(ctx, firstHopEscrowAccount, chainA.Config().Denom)
 		require.NoError(t, err)
 
 		secondHopEscrowBalance, err := chainB.GetBalance(ctx, secondHopEscrowAccount, firstHopIBCDenom)
 		require.NoError(t, err)
 
+		fmt.Printf("UserA balance on chain A after: %s (%s)\n", chainABalance.String(), userA.FormattedAddress())
+		fmt.Printf("UserB balance on chain B after: %s (%s)\n", chainBBalance.String(), userB.FormattedAddress())
+		fmt.Printf("UserC balance on chain C after: %s (%s)\n", chainCBalance.String(), userC.FormattedAddress())
+
+		fmt.Printf("First hop escrow balance on chain A after: %s (%s)\n", firstHopEscrowBalance.String(), firstHopEscrowAccount)
+		fmt.Printf("Second hop escrow balance on chain B after: %s (%s)\n", secondHopEscrowBalance.String(), secondHopEscrowAccount)
+
+		require.True(t, chainABalance.Equal(initBal.Sub(transferAmount)))
+		require.True(t, chainBBalance.Equal(transferAmount))
+		require.True(t, chainCBalance.Equal(zeroBal))
+
 		expectedFirstHopEscrowAmount = expectedFirstHopEscrowAmount.Add(transferAmount)
 
 		require.True(t, firstHopEscrowBalance.Equal(expectedFirstHopEscrowAmount))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	})
+	}))
 
-	t.Run("forward timeout refund - invalid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("forward timeout refund - invalid receiver account on B", func(t *testing.T) {
 		userA := usersA[3]
 		userC := timeoutUsersC[1]
 		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C,
@@ -391,14 +464,16 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
-		require.NoError(t, err)
-
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-		require.NoError(t, err)
+
+		// Wait for the packet to relayed back to A
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		})
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -425,7 +500,7 @@ func TestNonRefundable(t *testing.T) {
 
 		require.True(t, firstHopEscrowBalance.Equal(expectedFirstHopEscrowAmount))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	})
+	}))
 
 	revFirstHopDenom := transfertypes.GetPrefixedDenom(bcChan.PortID, bcChan.ChannelID, configC.Denom)
 	revSecondHopDenom := transfertypes.GetPrefixedDenom(abChan.PortID, abChan.ChannelID, revFirstHopDenom)
@@ -467,23 +542,20 @@ func TestNonRefundable(t *testing.T) {
 				return err
 			}
 
-			chainCHeight, err := chainC.Height(ctx)
-			if err != nil {
-				return err
-			}
-
 			transferTx, err := chainC.SendIBCTransfer(ctx, cbChan.ChannelID, userC.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 			if err != nil {
 				return err
 			}
-			_, err = testutil.PollForAck(ctx, chainC, chainCHeight, chainCHeight+30, transferTx.Packet)
-			if err != nil {
-				return err
-			}
+			// Wait for the packet to relayed back to C
+			err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+				return PacketAcknowledged(ctx, chainA, cbChan.PortID, cbChan.ChannelID, transferTx.Packet.Sequence), nil
+			})
 			err = testutil.WaitForBlocks(ctx, waitBlocks, chainC)
 			if err != nil {
 				return err
 			}
+			err = r.Flush(ctx, eRep, pathBC, cbChan.ChannelID)
+			require.NoError(t, err)
 
 			chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), configC.Denom)
 			if err != nil {
@@ -526,7 +598,7 @@ func TestNonRefundable(t *testing.T) {
 	require.True(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount))
 	require.True(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount))
 
-	t.Run("rev forward ack error refund - invalid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("rev forward ack error refund - invalid receiver account on B", func(t *testing.T) {
 		userA := mintVoucherUsersA[0]
 
 		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
@@ -547,15 +619,17 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
-		require.NoError(t, err)
-
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-		require.NoError(t, err)
+		// Wait for the packet to relayed back to A
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+
+		})
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -582,9 +656,9 @@ func TestNonRefundable(t *testing.T) {
 
 		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
 		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
-	})
+	}))
 
-	t.Run("rev forward ack error refund - valid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("rev forward ack error refund - valid receiver account on B", func(t *testing.T) {
 		userA := mintVoucherUsersA[1]
 		userB := usersB[2]
 		// Send a malformed packet with valid receiver address from Chain A->Chain B->Chain C
@@ -605,14 +679,13 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
-		require.NoError(t, err)
-
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-		require.NoError(t, err)
+		// Wait for the packet to relayed back to A
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		})
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
@@ -637,9 +710,9 @@ func TestNonRefundable(t *testing.T) {
 
 		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
 		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
-	})
+	}))
 
-	t.Run("rev forward timeout refund - valid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("rev forward timeout refund - valid receiver account on B", func(t *testing.T) {
 		userA := mintVoucherUsersA[2]
 		userB := usersB[3]
 		userC := timeoutUsersC[2]
@@ -665,12 +738,11 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
-		require.NoError(t, err)
-
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		})
 		require.NoError(t, err)
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
@@ -699,9 +771,9 @@ func TestNonRefundable(t *testing.T) {
 
 		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
 		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
-	})
+	}))
 
-	t.Run("rev forward timeout refund - invalid receiver account on B", func(t *testing.T) {
+	require.True(t, t.Run("rev forward timeout refund - invalid receiver account on B", func(t *testing.T) {
 		userA := mintVoucherUsersA[3]
 		userC := timeoutUsersC[3]
 		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C,
@@ -726,14 +798,20 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
-		chainAHeight, err := chainA.Height(ctx)
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{
+			Memo: string(memo),
+			Timeout: &ibc.IBCTimeout{
+				NanoSeconds: uint64(time.Now().Add(1 * time.Minute).Unix()),
+				Height:      0,
+			},
+		})
 		require.NoError(t, err)
+		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
 
-		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
+		})
 		require.NoError(t, err)
-		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
-		require.NoError(t, err)
-		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
@@ -760,5 +838,5 @@ func TestNonRefundable(t *testing.T) {
 
 		require.Truef(t, revFirstHopEscrowBalance.Equal(expectedRevFirstHopEscrowAmount), "expected %s, got %s", expectedRevFirstHopEscrowAmount, revFirstHopEscrowBalance)
 		require.Truef(t, revSecondHopEscrowBalance.Equal(expectedRevSecondHopEscrowAmount), "expected %s, got %s", expectedRevSecondHopEscrowAmount, revSecondHopEscrowBalance)
-	})
+	}))
 }

@@ -10,10 +10,10 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 	"github.com/hashicorp/go-metrics"
 
+	corestore "cosmossdk.io/core/store"
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
-	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -21,13 +21,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	coretypes "github.com/cosmos/ibc-go/v8/modules/core/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	coremetrics "github.com/cosmos/ibc-go/v10/modules/core/metrics"
 )
 
 var (
@@ -38,13 +37,13 @@ var (
 	}
 
 	// DefaultForwardTransferPacketTimeoutTimestamp is the timeout timestamp following IBC defaults
-	DefaultForwardTransferPacketTimeoutTimestamp = time.Duration(transfertypes.DefaultRelativePacketTimeoutTimestamp) * time.Nanosecond
+	DefaultForwardTransferPacketTimeoutTimestamp = time.Duration(10) * time.Minute
 )
 
 // Keeper defines the packet forward middleware keeper
 type Keeper struct {
-	cdc      codec.BinaryCodec
-	storeKey storetypes.StoreKey
+	storeService corestore.KVStoreService
+	cdc          codec.BinaryCodec
 
 	transferKeeper types.TransferKeeper
 	channelKeeper  types.ChannelKeeper
@@ -59,7 +58,7 @@ type Keeper struct {
 // NewKeeper creates a new forward Keeper instance
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	key storetypes.StoreKey,
+	storeService corestore.KVStoreService,
 	transferKeeper types.TransferKeeper,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
@@ -68,7 +67,7 @@ func NewKeeper(
 ) *Keeper {
 	return &Keeper{
 		cdc:            cdc,
-		storeKey:       key,
+		storeService:   storeService,
 		transferKeeper: transferKeeper,
 		channelKeeper:  channelKeeper,
 		bankKeeper:     bankKeeper,
@@ -108,8 +107,8 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	if !ok {
 		return fmt.Errorf("failed to parse amount from packet data for forward recovery: %s", data.Amount)
 	}
-	denomTrace := transfertypes.ParseDenomTrace(fullDenomPath)
-	token := sdk.NewCoin(denomTrace.IBCDenom(), amount)
+	denom := transfertypes.ParseDenomTrace(fullDenomPath)
+	coin := sdk.NewCoin(denom.IBCDenom(), amount)
 
 	userAccount, err := userRecoverableAccount(inFlightPacket)
 	if err != nil {
@@ -119,12 +118,12 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	if !transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
 		// mint vouchers back to sender
 		if err := k.bankKeeper.MintCoins(
-			ctx, transfertypes.ModuleName, sdk.NewCoins(token),
+			ctx, transfertypes.ModuleName, sdk.NewCoins(coin),
 		); err != nil {
 			return err
 		}
 
-		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, userAccount, sdk.NewCoins(token)); err != nil {
+		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, transfertypes.ModuleName, userAccount, sdk.NewCoins(coin)); err != nil {
 			panic(fmt.Sprintf("unable to send coins from module to account despite previously minting coins to module account: %v", err))
 		}
 		return nil
@@ -133,13 +132,13 @@ func (k *Keeper) moveFundsToUserRecoverableAccount(
 	escrowAddress := transfertypes.GetEscrowAddress(packet.SourcePort, packet.SourceChannel)
 
 	if err := k.bankKeeper.SendCoins(
-		ctx, escrowAddress, userAccount, sdk.NewCoins(token),
+		ctx, escrowAddress, userAccount, sdk.NewCoins(coin),
 	); err != nil {
 		return fmt.Errorf("failed to send coins from escrow account to user recoverable account: %w", err)
 	}
 
 	// update the total escrow amount for the denom.
-	k.unescrowToken(ctx, token)
+	k.unescrowToken(ctx, coin)
 
 	return nil
 }
@@ -174,9 +173,9 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 	ack channeltypes.Acknowledgement,
 ) error {
 	// Lookup module by channel capability
-	_, chanCap, err := k.channelKeeper.LookupModuleByChannel(ctx, inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId)
-	if err != nil {
-		return errorsmod.Wrap(err, "could not retrieve module from port-id")
+	_, found := k.channelKeeper.GetChannel(ctx, inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId)
+	if !found {
+		return fmt.Errorf("could not retrieve module from port-id")
 	}
 
 	// for forwarded packets, the funds were moved into an escrow account if the denom originated on this chain.
@@ -195,7 +194,7 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 			ackResult := fmt.Sprintf("packet forward failed after point of no return: %s", ack.GetError())
 			newAck := channeltypes.NewResultAcknowledgement([]byte(ackResult))
 
-			return k.ics4Wrapper.WriteAcknowledgement(ctx, chanCap, channeltypes.Packet{
+			return k.ics4Wrapper.WriteAcknowledgement(ctx, channeltypes.Packet{
 				Data:               inFlightPacket.PacketData,
 				Sequence:           inFlightPacket.RefundSequence,
 				SourcePort:         inFlightPacket.PacketSrcPortId,
@@ -208,6 +207,7 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 		}
 
 		fullDenomPath := data.Denom
+		var err error
 
 		// deconstruct the token denomination into the denomination trace info
 		// to determine if the sender is the source chain
@@ -223,19 +223,20 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 			return fmt.Errorf("failed to parse amount from packet data for forward refund: %s", data.Amount)
 		}
 
-		denomTrace := transfertypes.ParseDenomTrace(fullDenomPath)
-		token := sdk.NewCoin(denomTrace.IBCDenom(), amount)
+		denom := transfertypes.ParseDenomTrace(fullDenomPath)
+		coin := sdk.NewCoin(denom.IBCDenom(), amount)
 
 		escrowAddress := transfertypes.GetEscrowAddress(packet.SourcePort, packet.SourceChannel)
 		refundEscrowAddress := transfertypes.GetEscrowAddress(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId)
 
-		newToken := sdk.NewCoins(token)
+		newToken := sdk.NewCoins(coin)
 
-		if transfertypes.SenderChainIsSource(packet.SourcePort, packet.SourceChannel, fullDenomPath) {
+		// Sender chain is source
+		if !denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
 			// funds were moved to escrow account for transfer, so they need to either:
 			// - move to the other escrow account, in the case of native denom
 			// - burn
-			if transfertypes.SenderChainIsSource(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId, fullDenomPath) {
+			if !denom.HasPrefix(inFlightPacket.RefundPortId, inFlightPacket.RefundChannelId) {
 				// transfer funds from escrow account for forwarded packet to escrow account going back for refund.
 				if err := k.bankKeeper.SendCoins(
 					ctx, escrowAddress, refundEscrowAddress, newToken,
@@ -259,7 +260,7 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 					panic(fmt.Sprintf("cannot burn coins after a successful send from escrow account to module account: %v", err))
 				}
 
-				k.unescrowToken(ctx, token)
+				k.unescrowToken(ctx, coin)
 			}
 		} else {
 			// Funds in the escrow account were burned,
@@ -272,13 +273,13 @@ func (k *Keeper) WriteAcknowledgementForForwardedPacket(
 				return fmt.Errorf("cannot send coins from the %s module to the escrow account %s: %v", transfertypes.ModuleName, refundEscrowAddress, err)
 			}
 
-			currentTotalEscrow := k.transferKeeper.GetTotalEscrowForDenom(ctx, token.GetDenom())
-			newTotalEscrow := currentTotalEscrow.Add(token)
+			currentTotalEscrow := k.transferKeeper.GetTotalEscrowForDenom(ctx, coin.GetDenom())
+			newTotalEscrow := currentTotalEscrow.Add(coin)
 			k.transferKeeper.SetTotalEscrowForDenom(ctx, newTotalEscrow)
 		}
 	}
 
-	return k.ics4Wrapper.WriteAcknowledgement(ctx, chanCap, channeltypes.Packet{
+	return k.ics4Wrapper.WriteAcknowledgement(ctx, channeltypes.Packet{
 		Data:               inFlightPacket.PacketData,
 		Sequence:           inFlightPacket.RefundSequence,
 		SourcePort:         inFlightPacket.PacketSrcPortId,
@@ -344,7 +345,7 @@ func (k *Keeper) ForwardTransferPacket(
 
 	// send tokens to destination
 	res, err := k.transferKeeper.Transfer(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		msgTransfer,
 	)
 	if err != nil {
@@ -382,7 +383,7 @@ func (k *Keeper) ForwardTransferPacket(
 	}
 
 	key := types.RefundPacketKey(metadata.Channel, metadata.Port, res.Sequence)
-	store := ctx.KVStore(k.storeKey)
+	store := k.storeService.OpenKVStore(ctx)
 	bz := k.cdc.MustMarshal(inFlightPacket)
 	store.Set(key, bz)
 
@@ -391,7 +392,7 @@ func (k *Keeper) ForwardTransferPacket(
 			telemetry.SetGaugeWithLabels(
 				[]string{"tx", "msg", "ibc", "transfer"},
 				float32(token.Amount.Int64()),
-				[]metrics.Label{telemetry.NewLabel(coretypes.LabelDenom, token.Denom)},
+				[]metrics.Label{telemetry.NewLabel(coremetrics.LabelDenom, token.Denom)},
 			)
 		}
 
@@ -409,15 +410,22 @@ func (k *Keeper) TimeoutShouldRetry(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 ) (*types.InFlightPacket, error) {
-	store := ctx.KVStore(k.storeKey)
+	store := k.storeService.OpenKVStore(ctx)
 	key := types.RefundPacketKey(packet.SourceChannel, packet.SourcePort, packet.Sequence)
 
-	if !store.Has(key) {
+	hasKey, err := store.Has(key)
+	if err != nil {
+		return nil, err
+	}
+	if !hasKey {
 		// not a forwarded packet, ignore.
 		return nil, nil
 	}
 
-	bz := store.Get(key)
+	bz, err := store.Get(key)
+	if err != nil {
+		return nil, err
+	}
 	var inFlightPacket types.InFlightPacket
 	k.cdc.MustUnmarshal(bz, &inFlightPacket)
 
@@ -467,9 +475,9 @@ func (k *Keeper) RetryTimeout(
 		return fmt.Errorf("error parsing amount from string for packetforward retry: %s", data.Amount)
 	}
 
-	denom := transfertypes.ParseDenomTrace(data.Denom).IBCDenom()
+	ibcDenom := transfertypes.ExtractDenomFromPath(data.Denom).IBCDenom()
 
-	token := sdk.NewCoin(denom, amount)
+	token := sdk.NewCoin(ibcDenom, amount)
 
 	// srcPacket and srcPacketSender are empty because inFlightPacket is non-nil.
 	return k.ForwardTransferPacket(
@@ -488,15 +496,21 @@ func (k *Keeper) RetryTimeout(
 }
 
 func (k *Keeper) RemoveInFlightPacket(ctx sdk.Context, packet channeltypes.Packet) {
-	store := ctx.KVStore(k.storeKey)
+	store := k.storeService.OpenKVStore(ctx)
 	key := types.RefundPacketKey(packet.SourceChannel, packet.SourcePort, packet.Sequence)
-	if !store.Has(key) {
+	hasKey, err := store.Has(key)
+	if err != nil {
+		panic(err)
+	}
+	if !hasKey {
 		// not a forwarded packet, ignore.
 		return
 	}
 
 	// done with packet key now, delete.
-	store.Delete(key)
+	if err := store.Delete(key); err != nil {
+		panic(err)
+	}
 }
 
 // GetAndClearInFlightPacket will fetch an InFlightPacket from the store, remove it if it exists, and return it.
@@ -506,14 +520,21 @@ func (k *Keeper) GetAndClearInFlightPacket(
 	port string,
 	sequence uint64,
 ) *types.InFlightPacket {
-	store := ctx.KVStore(k.storeKey)
+	store := k.storeService.OpenKVStore(ctx)
 	key := types.RefundPacketKey(channel, port, sequence)
-	if !store.Has(key) {
+	hasKey, err := store.Has(key)
+	if err != nil {
+		panic(err)
+	}
+	if !hasKey {
 		// this is either not a forwarded packet, or it is the final destination for the refund.
 		return nil
 	}
 
-	bz := store.Get(key)
+	bz, err := store.Get(key)
+	if err != nil {
+		panic(err)
+	}
 
 	// done with packet key now, delete.
 	store.Delete(key)
@@ -526,19 +547,18 @@ func (k *Keeper) GetAndClearInFlightPacket(
 // SendPacket wraps IBC ChannelKeeper's SendPacket function
 func (k Keeper) SendPacket(
 	ctx sdk.Context,
-	chanCap *capabilitytypes.Capability,
 	sourcePort string, sourceChannel string,
 	timeoutHeight clienttypes.Height,
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
-	return k.ics4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	return k.ics4Wrapper.SendPacket(ctx, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
 
 // WriteAcknowledgement wraps IBC ICS4Wrapper WriteAcknowledgement function.
 // ICS29 WriteAcknowledgement is used for asynchronous acknowledgements.
-func (k *Keeper) WriteAcknowledgement(ctx sdk.Context, chanCap *capabilitytypes.Capability, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
-	return k.ics4Wrapper.WriteAcknowledgement(ctx, chanCap, packet, acknowledgement)
+func (k *Keeper) WriteAcknowledgement(ctx sdk.Context, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
+	return k.ics4Wrapper.WriteAcknowledgement(ctx, packet, acknowledgement)
 }
 
 // WriteAcknowledgement wraps IBC ICS4Wrapper GetAppVersion function.
@@ -551,6 +571,6 @@ func (k *Keeper) GetAppVersion(
 }
 
 // LookupModuleByChannel wraps ChannelKeeper LookupModuleByChannel function.
-func (k *Keeper) LookupModuleByChannel(ctx sdk.Context, portID, channelID string) (string, *capabilitytypes.Capability, error) {
-	return k.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
+func (k *Keeper) GetChannel(ctx sdk.Context, portID, channelID string) (channeltypes.Channel, bool) {
+	return k.channelKeeper.GetChannel(ctx, portID, channelID)
 }
