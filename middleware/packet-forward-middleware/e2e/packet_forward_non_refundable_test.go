@@ -88,7 +88,7 @@ func TestNonRefundable(t *testing.T) {
 	chainA, chainB, chainC := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain)
 
 	r := interchaintest.NewBuiltinRelayerFactory(
-		ibc.CosmosRly,
+		ibc.Hermes,
 		zaptest.NewLogger(t),
 		relayer.DockerImage(&DefaultRelayer),
 		relayer.StartupFlags("--processor", "events", "--block-history", "100"),

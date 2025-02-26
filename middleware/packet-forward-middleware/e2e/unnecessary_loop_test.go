@@ -55,7 +55,7 @@ func TestUnnecessaryLoop(t *testing.T) {
 	chainA, chainB := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain)
 
 	r := interchaintest.NewBuiltinRelayerFactory(
-		ibc.CosmosRly,
+		ibc.Hermes,
 		zaptest.NewLogger(t),
 		relayer.DockerImage(&DefaultRelayer),
 		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
