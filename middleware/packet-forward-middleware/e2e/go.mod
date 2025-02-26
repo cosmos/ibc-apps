@@ -3,7 +3,7 @@ module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/e2e
 go 1.23.6
 
 replace (
-	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 => ../
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9 => ../
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/strangelove-ventures/interchaintest/v8 => github.com/cosmos/interchaintest/v8 v8.8.2-0.20250224162529-535379c62c73
 )
