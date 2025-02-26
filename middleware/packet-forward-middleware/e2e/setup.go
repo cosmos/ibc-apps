@@ -15,7 +15,7 @@ var (
 	PFMImage            = ibc.DockerImage{
 		Repository: pfmRepo,
 		Version:    pfmVersion,
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	Denom         = "utoken"
@@ -53,9 +53,9 @@ var (
 	}
 
 	DefaultRelayer = ibc.DockerImage{
-		Repository: "ghcr.io/informalsystems/hermes",
-		Version:    "1.12.0",
-		UidGid:     "2000:2000",
+		Repository: "ghcr.io/cosmos/relayer",
+		Version:    "main",
+		UIDGID:     "1025:1025",
 	}
 )
 

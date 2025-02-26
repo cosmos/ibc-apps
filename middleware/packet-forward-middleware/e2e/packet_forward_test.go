@@ -80,7 +80,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	chainA, chainB, chainC, chainD := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain), chains[3].(*cosmos.CosmosChain)
 
 	r := interchaintest.NewBuiltinRelayerFactory(
-		ibc.Hermes,
+		ibc.CosmosRly,
 		zaptest.NewLogger(t),
 		relayer.DockerImage(&DefaultRelayer),
 	).Build(t, client, network)
@@ -416,19 +416,25 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{
-			Timeout: &ibc.IBCTimeout{
-				NanoSeconds: uint64(time.Now().Add(1 * time.Minute).Unix()),
-				Height:      0,
-			},
+			//Timeout: &ibc.IBCTimeout{
+			//	NanoSeconds: uint64(time.Now().Add(1 * time.Minute).Unix()),
+			//	Height:      0,
+			//},
 			Memo: string(memo),
 		})
 		require.NoError(t, err)
 
-		// Wait for the packet to relayed back to A
-		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
-			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
 
-		})
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
+		require.NoError(t, err)
+
+		// Wait for the packet to relayed back to A
+		//err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+		//	return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
+		//
+		//})
 		require.NoError(t, err)
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)

@@ -42,7 +42,7 @@ var (
 	baseChain = ibc.DockerImage{
 		Repository: "pfm",
 		Version:    "v8.1.0",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	// make local-image
@@ -116,7 +116,7 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	chainA, chainB, chainC, chainD := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain), chains[3].(*cosmos.CosmosChain)
 
 	r := interchaintest.NewBuiltinRelayerFactory(
-		ibc.Hermes,
+		ibc.CosmosRly,
 		zaptest.NewLogger(t),
 		relayer.DockerImage(&DefaultRelayer),
 	).Build(t, client, network)
@@ -447,11 +447,11 @@ func UpgradeNodes(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, 
 }
 
 func ValidatorVoting(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, proposalID string, height int64, haltHeight int64) {
-	err := chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
-	require.NoError(t, err, "failed to submit votes")
-
 	proposalInt, err := strconv.ParseUint(proposalID, 10, 64)
 	require.NoError(t, err, "failed to parse proposalID")
+
+	err = chain.VoteOnProposalAllValidators(ctx, proposalInt, cosmos.ProposalVoteYes)
+	require.NoError(t, err, "failed to submit votes")
 
 	_, err = cosmos.PollForProposalStatusV1(ctx, chain, height, height+haltHeightDelta, proposalInt, govv1.ProposalStatus_PROPOSAL_STATUS_PASSED)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
