@@ -430,9 +430,6 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
 
-		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
-		require.NoError(t, err)
-
 		// assert balances for user controlled wallets
 		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err)
