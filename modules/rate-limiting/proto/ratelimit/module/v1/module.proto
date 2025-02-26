@@ -6,7 +6,7 @@ import "cosmos/app/v1alpha1/module.proto";
 
 // Module is the config object of the IBC Rate Limiting module.
 message Module {
-  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"};
+  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/cosmos/ibc-apps/modules/rate-limiting/v9"};
 
   // authority defines the custom module authority.
   string authority = 1;
