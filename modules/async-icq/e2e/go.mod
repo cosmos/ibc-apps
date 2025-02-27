@@ -16,7 +16,8 @@ require (
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
-	cloud.google.com/go/compute v1.27.1 // indirect
+	cloud.google.com/go/auth v0.6.0 // indirect
+	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.9 // indirect
 	cloud.google.com/go/storage v1.41.0 // indirect
@@ -36,6 +37,7 @@ require (
 	github.com/ChainSafe/go-schnorrkel v1.0.0 // indirect
 	github.com/ChainSafe/go-schnorrkel/1 v0.0.0-00010101000000-000000000000 // indirect
 	github.com/ComposableFi/go-subkey/v2 v2.0.0-tm03420 // indirect
+	github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/FactomProject/basen v0.0.0-20150613233007-fe3947df716e // indirect
 	github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec // indirect
@@ -66,7 +68,6 @@ require (
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/iavl v1.1.2 // indirect
 	github.com/cosmos/ibc-go/modules/capability v1.0.1 // indirect
-	github.com/cosmos/ibc-go/v7 v7.9.2 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.3 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
@@ -94,6 +95,8 @@ require (
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
@@ -127,6 +130,7 @@ require (
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
@@ -152,7 +156,6 @@ require (
 	github.com/manifoldco/promptui v0.9.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/mimoo/StrobeGo v0.0.0-20220103164710-9a04d6ca976b // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/minio/sha256-simd v1.0.1 // indirect
@@ -209,6 +212,11 @@ require (
 	github.com/zondax/ledger-go v0.14.3 // indirect
 	go.etcd.io/bbolt v1.3.8 // indirect
 	go.opencensus.io v0.24.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
+	go.opentelemetry.io/otel v1.24.0 // indirect
+	go.opentelemetry.io/otel/metric v1.24.0 // indirect
+	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
@@ -219,10 +227,9 @@ require (
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
-	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.186.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240701130421-f6361c86f094 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240624140628-dc46fd24d27d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240709173604-40e1e62336c5 // indirect
