@@ -235,7 +235,7 @@ type App struct {
 	ICAHostKeeper         icahostkeeper.Keeper
 	FeeGrantKeeper        feegrantkeeper.Keeper
 	GroupKeeper           groupkeeper.Keeper
-	WasmKeeper            wasm.Keeper
+	WasmKeeper            wasmkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	IBCFeeKeeper          ibcfeekeeper.Keeper
 	ContractKeeper        wasmtypes.ContractOpsKeeper
@@ -686,6 +686,8 @@ func NewSimApp(
 		app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName),
 		app.MsgServiceRouter(),
 	)
+	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
+
 	// app.IBCKeeper.Router.AddRoute(icahosttypes.SubModuleName, icahost.NewIBCModule(app.ICAHostKeeper))
 	modules = append(modules, ica.NewAppModule(&icaControllerKeeper, &app.ICAHostKeeper))
 	simModules = append(simModules, ica.NewAppModule(&icaControllerKeeper, &app.ICAHostKeeper))
@@ -706,7 +708,7 @@ func NewSimApp(
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
-	app.WasmKeeper = wasm.NewKeeper(
+	app.WasmKeeper = wasmkeeper.NewKeeper(
 		cdc,
 		app.keys[wasmtypes.StoreKey],
 		app.AuthKeeper,
@@ -714,8 +716,9 @@ func NewSimApp(
 		app.StakingKeeper,
 		distrkeeper.NewQuerier(app.DistrKeeper),
 		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
-		app.CapabilityKeeper.ScopeToModule(wasm.ModuleName),
+		app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName),
 		app.TransferKeeper,
 		app.MsgServiceRouter(),
 		app.GRPCQueryRouter(),
@@ -725,7 +728,6 @@ func NewSimApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		GetWasmOpts(app, appOpts)...,
 	)
-	govLegacyRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, wasm.EnableAllProposals))
 	modules = append(modules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
 	simModules = append(simModules, wasm.NewAppModule(cdc, &app.WasmKeeper, app.StakingKeeper, app.AuthKeeper, app.BankKeeper, app.MsgServiceRouter(), nil))
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(&app.WasmKeeper)
