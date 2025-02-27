@@ -369,6 +369,8 @@ github.com/cosmos/ibc-go/modules/capability v1.0.0-rc1 h1:BvSKnPFKxL+TTSLxGKwJN4
 github.com/cosmos/ibc-go/modules/capability v1.0.0-rc1/go.mod h1:A+CxAQdn2j6ihDTbClpEEBdHthWgAUAcHbRAQPY8sl4=
 github.com/cosmos/ibc-go/v7 v7.6.0 h1:S1G5hcIVe9go+jQV6F9+I9yy+hylbJeLiVHUmktQNrM=
 github.com/cosmos/ibc-go/v7 v7.6.0/go.mod h1:LifBA7JHRHl95ujjHIaBEHmUqy2qCGyqDCXB7qmAsZk=
+github.com/cosmos/ibc-go/v7 v7.9.2 h1:TReF8shQmjvIMXvSJ8AvRgpnf7g6BEeHx8l1rIqQlgU=
+github.com/cosmos/ibc-go/v7 v7.9.2/go.mod h1:v2hOSSf9Lmx2S590X/3aJ8CvHj4ewZV3Bviu6by2Y3g=
 github.com/cosmos/ics23/go v0.10.0 h1:iXqLLgp2Lp+EdpIuwXTYIQU+AiHj9mOC2X9ab++bZDM=
 github.com/cosmos/ics23/go v0.10.0/go.mod h1:ZfJSmng/TBNTBkFemHHHj5YY7VAU/MBU980F4VU1NG0=
 github.com/cosmos/interchain-security/v3 v3.1.1-0.20231102122221-81650a84f989 h1:Yk/2X33hHuS0mqjr4rE0ShiwPE/YflXgdyXPIYdwl+Q=
