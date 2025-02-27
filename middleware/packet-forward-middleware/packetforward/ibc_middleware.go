@@ -277,7 +277,7 @@ func (im IBCMiddleware) receiveFunds(
 		Receiver: overrideReceiver, // override receiver
 		// Memo explicitly zeroed
 	}
-	overrideDataBz := transfertypes.ModuleCdc.MustMarshalJSON(&overrideData)
+	overrideDataBz := overrideData.GetBytes()
 	overridePacket := channeltypes.Packet{
 		Sequence:           packet.Sequence,
 		SourcePort:         packet.SourcePort,
