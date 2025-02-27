@@ -3,7 +3,7 @@ package dummyware
 import (
 	"context"
 
-	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
+	forwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp"
 
 	"cosmossdk.io/log"
 

@@ -3,7 +3,7 @@ package upgrades
 import (
 	"context"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 

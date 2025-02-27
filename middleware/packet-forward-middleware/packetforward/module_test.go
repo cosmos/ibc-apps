@@ -6,9 +6,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"testing"
 
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/keeper"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/test"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/test"
 	"github.com/iancoleman/orderedmap"
 	"github.com/stretchr/testify/require"
 

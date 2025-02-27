@@ -1,7 +1,7 @@
 package simapp
 
 import (
-	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/testing/simapp/params"
+	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp/params"
 
 	"github.com/cosmos/cosmos-sdk/std"
 )

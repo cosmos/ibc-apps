@@ -4,7 +4,7 @@ package packetforward.v1;
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9/packetforward/types";
+option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types";
 
 // GenesisState defines the packetforward genesis state
 message GenesisState {

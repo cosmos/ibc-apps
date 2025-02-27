@@ -1,6 +1,6 @@
 go 1.23.6
 
-module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v9
+module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10
 
 require (
 	cosmossdk.io/api v0.7.6
