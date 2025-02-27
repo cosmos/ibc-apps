@@ -67,8 +67,7 @@ func transferPacket(t *testing.T, sender string, receiver string, metadata any) 
 		}
 	}
 
-	transferData, err := transfertypes.ModuleCdc.MarshalJSON(&transferPacket)
-	require.NoError(t, err)
+	transferData := transferPacket.GetBytes()
 
 	return channeltypes.Packet{
 		SourcePort:         testSourcePort,
@@ -98,8 +97,7 @@ func transferPacket256(t *testing.T, sender string, receiver string, metadata an
 		}
 	}
 
-	transferData, err := transfertypes.ModuleCdc.MarshalJSON(&transferPacket)
-	require.NoError(t, err)
+	transferData := transferPacket.GetBytes()
 
 	return channeltypes.Packet{
 		SourcePort:         testSourcePort,
