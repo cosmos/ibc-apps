@@ -9,7 +9,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -47,7 +47,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		rep                                    = testreporter.NewNopReporter()
 		eRep                                   = rep.RelayerExecReporter(t)
 		chainIdA, chainIdB, chainIdC, chainIdD = "chain-1", "chain-2", "chain-3", "chain-4"
-		waitBlocks                             = 3
+		waitBlocks                             = 5
 	)
 
 	vals := 1
@@ -83,7 +83,6 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
 		relayer.DockerImage(&DefaultRelayer),
-		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
 	const pathAB = "ab"
@@ -126,6 +125,15 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	t.Cleanup(func() {
 		_ = ic.Close()
 	})
+
+	err = PopulateQueryReqToPath(ctx, chainA)
+	require.NoError(t, err)
+	err = PopulateQueryReqToPath(ctx, chainB)
+	require.NoError(t, err)
+	err = PopulateQueryReqToPath(ctx, chainC)
+	require.NoError(t, err)
+	err = PopulateQueryReqToPath(ctx, chainD)
+	require.NoError(t, err)
 
 	initBal := math.NewInt(10_000_000_000)
 	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainB, chainC, chainD)
@@ -181,7 +189,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	zeroBal := math.ZeroInt()
 	transferAmount := math.NewInt(100_000)
 
-	t.Run("multi-hop a->b->c->d", func(t *testing.T) {
+	require.True(t, t.Run("multi-hop a->b->c->d", func(t *testing.T) {
 		// Send packet from Chain A->Chain B->Chain C->Chain D
 		transfer := ibc.WalletAmount{
 			Address: userB.FormattedAddress(),
@@ -251,9 +259,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.Equal(t, transferAmount, firstHopEscrowBalance)
 		require.Equal(t, transferAmount, secondHopEscrowBalance)
 		require.Equal(t, transferAmount, thirdHopEscrowBalance)
-	})
+	}))
 
-	t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
+	require.True(t, t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
 		// Send packet back from Chain D->Chain C->Chain B->Chain A
 		transfer := ibc.WalletAmount{
 			Address: userC.FormattedAddress(),
@@ -327,9 +335,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
 		require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
-	})
+	}))
 
-	t.Run("forward ack error refund", func(t *testing.T) {
+	require.True(t, t.Run("forward ack error refund", func(t *testing.T) {
 		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
 		// This should succeed in the first hop and fail to make the second hop; funds should then be refunded to Chain A.
 		transfer := ibc.WalletAmount{
@@ -383,8 +391,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	})
-	t.Run("forward timeout refund", func(t *testing.T) {
+	}))
+
+	require.True(t, t.Run("forward timeout refund", func(t *testing.T) {
 		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
 		transfer := ibc.WalletAmount{
 			Address: userB.FormattedAddress(),
@@ -406,12 +415,17 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{
+			Memo: string(memo),
+		})
+		require.NoError(t, err)
+
 		chainAHeight, err := chainA.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
-		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
+		require.NoError(t, err)
+
 		require.NoError(t, err)
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
@@ -438,9 +452,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
-	})
+	}))
 
-	t.Run("multi-hop ack error refund", func(t *testing.T) {
+	require.True(t, t.Run("multi-hop ack error refund", func(t *testing.T) {
 		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C->Chain D
 		// This should succeed in the first hop and second hop, then fail to make the third hop.
 		// Funds should be refunded to Chain B and then to Chain A via acknowledgements with errors.
@@ -516,9 +530,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.True(t, firstHopEscrowBalance.Equal(zeroBal))
 		require.True(t, secondHopEscrowBalance.Equal(zeroBal))
 		require.True(t, thirdHopEscrowBalance.Equal(zeroBal))
-	})
+	}))
 
-	t.Run("multi-hop through native chain ack error refund", func(t *testing.T) {
+	require.True(t, t.Run("multi-hop through native chain ack error refund", func(t *testing.T) {
 		// send normal IBC transfer from B->A to get funds in IBC denom, then do multihop A->B(native)->C->D
 		// this lets us test the burn from escrow account on chain C and the escrow to escrow transfer on chain B.
 
@@ -677,9 +691,9 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
-	})
+	}))
 
-	t.Run("forward a->b->a", func(t *testing.T) {
+	require.True(t, t.Run("forward a->b->a", func(t *testing.T) {
 		// Send packet from Chain A->Chain B->Chain A
 		userABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err, "failed to get user a balance")
@@ -722,5 +736,5 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		require.True(t, chainABalance.Equal(userABalance))
 		require.True(t, chainBBalance.Equal(userBBalance))
-	})
+	}))
 }

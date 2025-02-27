@@ -4,8 +4,8 @@ import (
 	"os"
 
 	dbm "github.com/cosmos/cosmos-db"
-	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp"
-	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/testing/simapp/params"
+	app "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp"
+	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp/params"
 	"github.com/spf13/cobra"
 
 	"cosmossdk.io/log"

@@ -146,8 +146,8 @@ mocks: $(MOCKS_DIR)
 	mockgen -package=mock -destination=./test/mock/transfer_keeper.go $(GOMOD)/packetforward/types TransferKeeper
 	mockgen -package=mock -destination=./test/mock/bank_keeper.go $(GOMOD)/packetforward/types BankKeeper
 	mockgen -package=mock -destination=./test/mock/channel_keeper.go $(GOMOD)/packetforward/types ChannelKeeper
-	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v8/modules/core/05-port/types ICS4Wrapper
-	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v8/modules/core/05-port/types IBCModule
+	mockgen -package=mock -destination=./test/mock/ics4_wrapper.go github.com/cosmos/ibc-go/v10/modules/core/05-port/types ICS4Wrapper
+	mockgen -package=mock -destination=./test/mock/ibc_module.go github.com/cosmos/ibc-go/v10/modules/core/05-port/types IBCModule
 
 .PHONY: mocks
 
@@ -218,19 +218,19 @@ local-image:
 	docker build . -t pfm:local
 
 ictest-forward:
-	cd e2e && go test -race -v -timeout 15m -run TestPacketForwardMiddleware .
+	cd e2e && go test -race -v -timeout 30m -run TestPacketForwardMiddleware .
 
 ictest-timeout:
-	cd e2e && go test -race -v -timeout 15m -run TestTimeoutOnForward .
+	cd e2e && go test -race -v -timeout 30m -run TestTimeoutOnForward .
 
 ictest-storage-leak:
-	cd e2e && go test -race -v -timeout 15m -run TestStorageLeak .
+	cd e2e && go test -race -v -timeout 30m -run TestStorageLeak .
 
 ictest-upgrade:
-	cd e2e && go test -race -v -timeout 15m -run TestPFMUpgrade .
+	cd e2e && go test -race -v -timeout 30m -run TestPFMUpgrade .
 
 ictest-nonrefundable:
-	cd e2e && go test -race -v -timeout 15m -run TestNonRefundable .
+	cd e2e && go test -race -v -timeout 60m -run TestNonRefundable .
 
 ###############################################################################
 ###                                Linting                                  ###
@@ -259,7 +259,7 @@ containerProtoGen=cosmos-sdk-proto-gen-$(containerProtoVer)
 containerProtoGenSwagger=cosmos-sdk-proto-gen-swagger-$(containerProtoVer)
 containerProtoFmt=cosmos-sdk-proto-fmt-$(containerProtoVer)
 
-protoVer=0.13.1
+protoVer=0.16.0
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
 protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
 
