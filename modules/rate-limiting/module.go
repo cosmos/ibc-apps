@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/client/cli"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/keeper"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/client/cli"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"

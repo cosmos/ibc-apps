@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/keeper"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
