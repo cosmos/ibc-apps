@@ -54,7 +54,7 @@ var (
 
 	DefaultRelayer = ibc.DockerImage{
 		Repository: "ghcr.io/cosmos/relayer",
-		Version:    "v2.4.2",
+		Version:    "v2.6.0",
 		UidGid:     "1025:1025",
 	}
 )
