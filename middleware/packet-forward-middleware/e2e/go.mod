@@ -14,7 +14,7 @@ require (
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/cosmos/cosmos-sdk v0.50.11
 	github.com/cosmos/gogoproto v1.7.0
-	github.com/cosmos/ibc-go/v10 v10.0.0-beta.0.0.20250224220723-bad10e896f5b
+	github.com/cosmos/ibc-go/v10 v10.0.0-beta.2
 	github.com/docker/docker v28.0.0+incompatible
 	github.com/strangelove-ventures/interchaintest/v8 v8.0.1-0.20240104215144-7c10b9dfa2ad
 	github.com/stretchr/testify v1.10.0
