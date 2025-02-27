@@ -3,7 +3,7 @@ package ratelimit
 import (
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

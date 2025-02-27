@@ -1,6 +1,6 @@
 package keeper_test
 
-import "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
+import "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 func (s *KeeperTestSuite) TestAddressWhitelist() {
 	// Store addresses in whitelist

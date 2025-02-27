@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"

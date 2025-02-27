@@ -9,10 +9,10 @@ import (
 
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
-	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v9"
-	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/keeper"
-	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
-	ratelimitv2 "github.com/cosmos/ibc-apps/modules/rate-limiting/v9/v2"
+	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v10"
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
+	ratelimitv2 "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/v2"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
@@ -478,6 +478,7 @@ func NewSimApp(
 		app.GetSubspace(ibctransfertypes.ModuleName),
 		app.RatelimitKeeper, // ICS4Wrapper
 		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeperV2,
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),

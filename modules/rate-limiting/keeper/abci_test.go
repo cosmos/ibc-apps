@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v9/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	sdkmath "cosmossdk.io/math"
 )
