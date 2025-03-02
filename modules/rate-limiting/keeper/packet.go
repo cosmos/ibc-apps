@@ -65,10 +65,10 @@ func (k Keeper) CheckAcknowledementSucceeded(ctx sdk.Context, ack []byte) (succe
 // For NON-NATIVE denoms, take the ibc hash (e.g. hash "transfer/channel-2/usoms" into "ibc/...")
 func ParseDenomFromSendPacket(packet transfertypes.FungibleTokenPacketData) (denom string) {
 	// Determine the denom by looking at the denom trace path
-	denomTrace := types.ParseDenomTrace(packet.Denom)
+	denomTrace := transfertypes.ParseDenomTrace(packet.Denom)
 
 	// Native assets will have an empty trace path and can be returned as is
-	if denomTrace.Path == "" {
+	if denomTrace.Path() == "" {
 		denom = packet.Denom
 	} else {
 		// Non-native assets should be hashed
@@ -112,14 +112,14 @@ func ParseDenomFromSendPacket(packet transfertypes.FungibleTokenPacketData) (den
 //	        -> Hash:          ibc/...
 func ParseDenomFromRecvPacket(packet channeltypes.Packet, packetData transfertypes.FungibleTokenPacketData) (denom string) {
 	// To determine the denom, first check whether Stride is acting as source
-	if types.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), packetData.Denom) {
+	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), packetData.Denom) {
 		// Remove the source prefix (e.g. transfer/channel-X/transfer/channel-Z/ujuno -> transfer/channel-Z/ujuno)
-		sourcePrefix := types.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
+		sourcePrefix := transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
 		unprefixedDenom := packetData.Denom[len(sourcePrefix):]
 
 		// Native assets will have an empty trace path and can be returned as is
-		denomTrace := types.ParseDenomTrace(unprefixedDenom)
-		if denomTrace.Path == "" {
+		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
+		if denomTrace.Path() == "" {
 			denom = unprefixedDenom
 		} else {
 			// Non-native assets should be hashed
@@ -127,11 +127,11 @@ func ParseDenomFromRecvPacket(packet channeltypes.Packet, packetData transfertyp
 		}
 	} else {
 		// Prefix the destination channel - this will contain the trailing slash (e.g. transfer/channel-X/)
-		destinationPrefix := types.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel())
+		destinationPrefix := transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel())
 		prefixedDenom := destinationPrefix + packetData.Denom
 
 		// Hash the denom trace
-		denomTrace := types.ParseDenomTrace(prefixedDenom)
+		denomTrace := transfertypes.ParseDenomTrace(prefixedDenom)
 		denom = denomTrace.IBCDenom()
 	}
 
