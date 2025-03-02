@@ -31,6 +31,11 @@ func TestV2ToV1Packet_WithJSONEncoding(t *testing.T) {
 
 	v1Packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
 	require.NoError(t, err)
+	require.Equal(t, uint64(1), v1Packet.Sequence)
+	require.Equal(t, payload.SourcePort, v1Packet.SourcePort)
+	require.Equal(t, "sourceClient", v1Packet.SourceChannel)
+	require.Equal(t, payload.DestinationPort, v1Packet.DestinationPort)
+	require.Equal(t, "destinationClient", v1Packet.DestinationChannel)
 
 	var v1PacketData transfertypes.FungibleTokenPacketData
 	err = json.Unmarshal(v1Packet.Data, &v1PacketData)
@@ -60,6 +65,11 @@ func TestV2ToV1Packet_WithABIEncoding(t *testing.T) {
 
 	v1Packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
 	require.NoError(t, err)
+	require.Equal(t, uint64(1), v1Packet.Sequence)
+	require.Equal(t, payload.SourcePort, v1Packet.SourcePort)
+	require.Equal(t, "sourceClient", v1Packet.SourceChannel)
+	require.Equal(t, payload.DestinationPort, v1Packet.DestinationPort)
+	require.Equal(t, "destinationClient", v1Packet.DestinationChannel)
 
 	var v1PacketData transfertypes.FungibleTokenPacketData
 	err = json.Unmarshal(v1Packet.Data, &v1PacketData)
@@ -89,6 +99,11 @@ func TestV2ToV1Packet_WithProtobufEncoding(t *testing.T) {
 
 	v1Packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
 	require.NoError(t, err)
+	require.Equal(t, uint64(1), v1Packet.Sequence)
+	require.Equal(t, payload.SourcePort, v1Packet.SourcePort)
+	require.Equal(t, "sourceClient", v1Packet.SourceChannel)
+	require.Equal(t, payload.DestinationPort, v1Packet.DestinationPort)
+	require.Equal(t, "destinationClient", v1Packet.DestinationChannel)
 
 	var v1PacketData transfertypes.FungibleTokenPacketData
 	err = json.Unmarshal(v1Packet.Data, &v1PacketData)
@@ -105,9 +120,8 @@ func TestV2ToV1Packet_WithNilPayload(t *testing.T) {
 		Value:           nil,
 	}
 
-	packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
+	_, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
 	require.Error(t, err)
-	require.Nil(t, packet.Data)
 }
 
 func TestV2ToV1Packet_WithEmptyPayload(t *testing.T) {
@@ -119,7 +133,6 @@ func TestV2ToV1Packet_WithEmptyPayload(t *testing.T) {
 		Value:           []byte{},
 	}
 
-	packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
+	_, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
 	require.Error(t, err)
-	require.Nil(t, packet.Data)
 }
