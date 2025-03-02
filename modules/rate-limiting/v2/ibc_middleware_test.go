@@ -1,0 +1,124 @@
+package v2
+
+import (
+	"encoding/json"
+	"testing"
+
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
+	"github.com/stretchr/testify/require"
+)
+
+func TestV2ToV1Packet_WithJSONEncoding(t *testing.T) {
+	payloadValue := transfertypes.FungibleTokenPacketData{
+		Denom:    "denom",
+		Amount:   "100",
+		Sender:   "sender",
+		Receiver: "receiver",
+		Memo:     "memo",
+	}
+	payloadValueBz, err := transfertypes.MarshalPacketData(payloadValue, transfertypes.V1, transfertypes.EncodingJSON)
+	require.NoError(t, err)
+
+	payload := channeltypesv2.Payload{
+		SourcePort:      "sourcePort",
+		DestinationPort: "destinationPort",
+		Version:         transfertypes.V1,
+		Encoding:        transfertypes.EncodingJSON,
+		Value:           payloadValueBz,
+	}
+
+	v1Packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
+	require.NoError(t, err)
+
+	var v1PacketData transfertypes.FungibleTokenPacketData
+	err = json.Unmarshal(v1Packet.Data, &v1PacketData)
+	require.NoError(t, err)
+	require.Equal(t, payloadValue, v1PacketData)
+}
+
+func TestV2ToV1Packet_WithABIEncoding(t *testing.T) {
+	payloadValue := transfertypes.FungibleTokenPacketData{
+		Denom:    "denom",
+		Amount:   "100",
+		Sender:   "sender",
+		Receiver: "receiver",
+		Memo:     "memo",
+	}
+
+	payloadValueBz, err := transfertypes.MarshalPacketData(payloadValue, transfertypes.V1, transfertypes.EncodingABI)
+	require.NoError(t, err)
+
+	payload := channeltypesv2.Payload{
+		SourcePort:      "sourcePort",
+		DestinationPort: "destinationPort",
+		Version:         transfertypes.V1,
+		Encoding:        transfertypes.EncodingABI,
+		Value:           payloadValueBz,
+	}
+
+	v1Packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
+	require.NoError(t, err)
+
+	var v1PacketData transfertypes.FungibleTokenPacketData
+	err = json.Unmarshal(v1Packet.Data, &v1PacketData)
+	require.NoError(t, err)
+	require.Equal(t, payloadValue, v1PacketData)
+}
+
+func TestV2ToV1Packet_WithProtobufEncoding(t *testing.T) {
+	payloadValue := transfertypes.FungibleTokenPacketData{
+		Denom:    "denom",
+		Amount:   "100",
+		Sender:   "sender",
+		Receiver: "receiver",
+		Memo:     "memo",
+	}
+
+	payloadValueBz, err := transfertypes.MarshalPacketData(payloadValue, transfertypes.V1, transfertypes.EncodingProtobuf)
+	require.NoError(t, err)
+
+	payload := channeltypesv2.Payload{
+		SourcePort:      "sourcePort",
+		DestinationPort: "destinationPort",
+		Version:         transfertypes.V1,
+		Encoding:        transfertypes.EncodingProtobuf,
+		Value:           payloadValueBz,
+	}
+
+	v1Packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
+	require.NoError(t, err)
+
+	var v1PacketData transfertypes.FungibleTokenPacketData
+	err = json.Unmarshal(v1Packet.Data, &v1PacketData)
+	require.NoError(t, err)
+	require.Equal(t, payloadValue, v1PacketData)
+}
+
+func TestV2ToV1Packet_WithNilPayload(t *testing.T) {
+	payload := channeltypesv2.Payload{
+		SourcePort:      "sourcePort",
+		DestinationPort: "destinationPort",
+		Version:         transfertypes.V1,
+		Encoding:        transfertypes.EncodingABI,
+		Value:           nil,
+	}
+
+	packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
+	require.Error(t, err)
+	require.Nil(t, packet.Data)
+}
+
+func TestV2ToV1Packet_WithEmptyPayload(t *testing.T) {
+	payload := channeltypesv2.Payload{
+		SourcePort:      "sourcePort",
+		DestinationPort: "destinationPort",
+		Version:         transfertypes.V1,
+		Encoding:        transfertypes.EncodingABI,
+		Value:           []byte{},
+	}
+
+	packet, err := v2ToV1Packet(payload, "sourceClient", "destinationClient", 1)
+	require.Error(t, err)
+	require.Nil(t, packet.Data)
+}

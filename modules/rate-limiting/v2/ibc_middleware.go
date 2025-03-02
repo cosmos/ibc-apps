@@ -1,12 +1,14 @@
 package v2
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
@@ -35,7 +37,11 @@ func (im IBCMiddleware) OnSendPacket(
 	payload channeltypesv2.Payload,
 	signer sdk.AccAddress,
 ) error {
-	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	packet, err := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	if err != nil {
+		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 rate limiting OnSendPacket failed to convert v2 packet to v1 packet: %s", err.Error()))
+		return err
+	}
 	if err := im.keeper.SendRateLimitedPacket(ctx, packet); err != nil {
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 packet send was denied: %s", err.Error()))
 		return err
@@ -51,7 +57,14 @@ func (im IBCMiddleware) OnRecvPacket(
 	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
 ) channeltypesv2.RecvPacketResult {
-	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	packet, err := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	if err != nil {
+		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 rate limiting OnRecvPacket failed to convert v2 packet to v1 packet: %s", err.Error()))
+		return channeltypesv2.RecvPacketResult{
+			Status:          channeltypesv2.PacketStatus_Failure,
+			Acknowledgement: []byte(err.Error()),
+		}
+	}
 	// Check if the packet would cause the rate limit to be exceeded,
 	// and if so, return an ack error
 	if err := im.keeper.ReceiveRateLimitedPacket(ctx, packet); err != nil {
@@ -74,7 +87,11 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
 ) error {
-	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	packet, err := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	if err != nil {
+		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 rate limiting OnTimeoutPacket failed to convert v2 packet to v1 packet: %s", err.Error()))
+		return err
+	}
 	if err := im.keeper.TimeoutRateLimitedPacket(ctx, packet); err != nil {
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 RateLimited OnTimeoutPacket failed: %s", err.Error()))
 		return err
@@ -91,7 +108,11 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
 ) error {
-	packet := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	packet, err := v2ToV1Packet(payload, sourceClient, destinationClient, sequence)
+	if err != nil {
+		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 rate limiting OnAckPacketfailed to convert v2 packet to v1 packet: %s", err.Error()))
+		return err
+	}
 	if err := im.keeper.AcknowledgeRateLimitedPacket(ctx, packet, acknowledgement); err != nil {
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 RateLimited OnAckPacket failed: %s", err.Error()))
 		return err
@@ -99,15 +120,33 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	return im.app.OnAcknowledgementPacket(ctx, sourceClient, destinationClient, sequence, acknowledgement, payload, relayer)
 }
 
-func v2ToV1Packet(payload channeltypesv2.Payload, sourceClient, destinationClient string, sequence uint64) channeltypes.Packet {
+func v2ToV1Packet(payload channeltypesv2.Payload, sourceClient, destinationClient string, sequence uint64) (channeltypes.Packet, error) {
+	transferRepresentation, err := transfertypes.UnmarshalPacketData(payload.Value, payload.Version, payload.Encoding)
+	if err != nil {
+		return channeltypes.Packet{}, err
+	}
+
+	packetData := transfertypes.FungibleTokenPacketData{
+		Denom:    transferRepresentation.Token.Denom.Path(),
+		Amount:   transferRepresentation.Token.Amount,
+		Sender:   transferRepresentation.Sender,
+		Receiver: transferRepresentation.Receiver,
+		Memo:     transferRepresentation.Memo,
+	}
+
+	packetDataBz, err := json.Marshal(packetData)
+	if err != nil {
+		return channeltypes.Packet{}, err
+	}
+
 	return channeltypes.Packet{
 		Sequence:           sequence,
 		SourcePort:         payload.SourcePort,
 		SourceChannel:      sourceClient,
 		DestinationPort:    payload.DestinationPort,
 		DestinationChannel: destinationClient,
-		Data:               payload.Value,
+		Data:               packetDataBz,
 		TimeoutHeight:      clienttypes.Height{},
 		TimeoutTimestamp:   0,
-	}
+	}, nil
 }
