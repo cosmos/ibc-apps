@@ -62,7 +62,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 rate limiting OnRecvPacket failed to convert v2 packet to v1 packet: %s", err.Error()))
 		return channeltypesv2.RecvPacketResult{
 			Status:          channeltypesv2.PacketStatus_Failure,
-			Acknowledgement: []byte(err.Error()),
+			Acknowledgement: channeltypes.NewErrorAcknowledgement(err).Acknowledgement(),
 		}
 	}
 	// Check if the packet would cause the rate limit to be exceeded,
@@ -71,7 +71,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		im.keeper.Logger(ctx).Error(fmt.Sprintf("ICS20 packet receive was denied: %s", err.Error()))
 		return channeltypesv2.RecvPacketResult{
 			Status:          channeltypesv2.PacketStatus_Failure,
-			Acknowledgement: []byte(err.Error()),
+			Acknowledgement: channeltypes.NewErrorAcknowledgement(err).Acknowledgement(),
 		}
 	}
 
