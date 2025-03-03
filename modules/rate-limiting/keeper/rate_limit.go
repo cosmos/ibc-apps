@@ -8,8 +8,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 )
 
 // Stores/Updates a rate limit object in the store
@@ -78,12 +76,6 @@ func (k Keeper) AddRateLimit(ctx sdk.Context, msg *types.MsgAddRateLimit) error 
 	_, found := k.GetRateLimit(ctx, msg.Denom, msg.ChannelId)
 	if found {
 		return types.ErrRateLimitAlreadyExists
-	}
-
-	// Confirm the channel exists
-	_, found = k.channelKeeper.GetChannel(ctx, transfertypes.PortID, msg.ChannelId)
-	if !found {
-		return types.ErrChannelNotFound
 	}
 
 	// Create and store the rate limit object

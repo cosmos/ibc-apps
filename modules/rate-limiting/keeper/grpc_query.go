@@ -42,7 +42,9 @@ func (k Keeper) RateLimitsByChainId(c context.Context, req *types.QueryRateLimit
 		// Determine the client state from the channel Id
 		_, clientState, err := k.channelKeeper.GetChannelClientState(ctx, transfertypes.PortID, rateLimit.Path.ChannelId)
 		if err != nil {
-			return &types.QueryRateLimitsByChainIdResponse{}, errorsmod.Wrapf(types.ErrInvalidClientState, "Unable to fetch client state from channelId")
+			// return &types.QueryRateLimitsByChainIdResponse{}, errorsmod.Wrapf(types.ErrInvalidClientState, "Unable to fetch client state from channelId")
+			// TODO: this function currently doesn't return IBC v2 rate limits since the client state is not retrievable by channelId
+			continue
 		}
 		client, ok := clientState.(*ibctmtypes.ClientState)
 		if !ok {

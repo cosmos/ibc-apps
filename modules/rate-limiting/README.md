@@ -12,6 +12,8 @@ The _net_ inflow and outflow is used (rather than the total inflow/outflow) to p
 
 The module is implemented as IBC Middleware around the transfer module. An "hour epoch" abstraction is leveraged to determine when each rate limit window has expired (each window is denominated in hours). This means all rate limit windows with the same window duration will start and end at the same time. In the case of a 24 hour rate limit window, the rate limit will reset at the end of the day in UTC (i.e. 00:00 UTC).
 
+Note: channels are removed in IBC v2. All uses of channel and channel ID in this document should be interpreted as client and client ID respectively for IBC v2.
+
 ## Integration
 To add the rate limit module, wire it up in `app.go` in line with the following example. The module must be included in a middleware stack alongside the transfer module.
 

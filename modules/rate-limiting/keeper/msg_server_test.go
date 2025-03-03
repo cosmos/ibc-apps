@@ -100,9 +100,6 @@ func (s *KeeperTestSuite) TestMsgServer_AddRateLimit() {
 	// Create channel value
 	s.createChannelValue(denom, channelValue)
 
-	// Then try to add a rate limit before the channel has been created, it will also fail
-	s.addRateLimitWithError(types.ErrChannelNotFound)
-
 	// Create the channel
 	s.createChannel(channelId)
 
