@@ -46,13 +46,6 @@ func TestValidateGenesis(t *testing.T) {
 			expectedError: "invalid pending send packet (channel-2|3), must be of form: {channelId}/{sequenceNumber}",
 		},
 		{
-			name: "invalid packet sequence - invalid channel ID",
-			genesisState: types.GenesisState{
-				PendingSendPacketSequenceNumbers: []string{"channelX/1", "channel-2/3"},
-			},
-			expectedError: "invalid channel ID (channelX) in pending send packet",
-		},
-		{
 			name: "invalid packet sequence - invalid sequence",
 			genesisState: types.GenesisState{
 				PendingSendPacketSequenceNumbers: []string{"channel-0/1", "channel-2/X"},

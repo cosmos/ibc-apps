@@ -72,18 +72,6 @@ func TestMsgAddRateLimit(t *testing.T) {
 			err: "invalid denom",
 		},
 		{
-			name: "invalid channel-id",
-			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      "channel-",
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
-			},
-			err: "invalid channel-id",
-		},
-		{
 			name: "invalid send percent (lt 0)",
 			msg: types.MsgAddRateLimit{
 				Authority:      validAuthority,
@@ -229,18 +217,6 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 			err: "invalid denom",
 		},
 		{
-			name: "invalid channel-id",
-			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      "channel-",
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
-			},
-			err: "invalid channel-id",
-		},
-		{
 			name: "invalid send percent (lt 0)",
 			msg: types.MsgUpdateRateLimit{
 				Authority:      validAuthority,
@@ -373,15 +349,6 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 			},
 			err: "invalid denom",
 		},
-		{
-			name: "invalid channel-id",
-			msg: types.MsgRemoveRateLimit{
-				Authority: validAuthority,
-				Denom:     validDenom,
-				ChannelId: "chan-1",
-			},
-			err: "invalid channel-id",
-		},
 	}
 
 	for _, tc := range testCases {
@@ -439,15 +406,6 @@ func TestMsgResetRateLimit(t *testing.T) {
 				ChannelId: validChannelId,
 			},
 			err: "invalid denom",
-		},
-		{
-			name: "invalid channel-id",
-			msg: types.MsgResetRateLimit{
-				Authority: validAuthority,
-				Denom:     validDenom,
-				ChannelId: "chan-1",
-			},
-			err: "invalid channel-id",
 		},
 	}
 
