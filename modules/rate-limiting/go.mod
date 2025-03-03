@@ -20,7 +20,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.10
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
-	github.com/cosmos/ibc-go/v10 v10.0.0-beta.2
+	github.com/cosmos/ibc-go/v10 v10.0.0-rc.2
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
