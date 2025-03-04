@@ -21,6 +21,10 @@ type ChannelKeeper interface {
 	GetChannelClientState(ctx sdk.Context, portID string, channelID string) (string, ibcexported.ClientState, error)
 }
 
+type ClientKeeper interface {
+	GetClientState(ctx sdk.Context, clientID string) (ibcexported.ClientState, bool)
+}
+
 // ICS4Wrapper defines the expected ICS4Wrapper for middleware
 type ICS4Wrapper interface {
 	WriteAcknowledgement(ctx sdk.Context, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error

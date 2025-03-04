@@ -22,6 +22,7 @@ type (
 
 		bankKeeper    types.BankKeeper
 		channelKeeper types.ChannelKeeper
+		clientKeeper  types.ClientKeeper
 		ics4Wrapper   types.ICS4Wrapper
 	}
 )
@@ -33,6 +34,7 @@ func NewKeeper(
 	authority string,
 	bankKeeper types.BankKeeper,
 	channelKeeper types.ChannelKeeper,
+	clientKeeper types.ClientKeeper,
 	ics4Wrapper types.ICS4Wrapper,
 ) *Keeper {
 	return &Keeper{
@@ -42,6 +44,7 @@ func NewKeeper(
 		authority:     authority,
 		bankKeeper:    bankKeeper,
 		channelKeeper: channelKeeper,
+		clientKeeper:  clientKeeper,
 		ics4Wrapper:   ics4Wrapper,
 	}
 }
@@ -53,8 +56,9 @@ func (k Keeper) GetAuthority() string {
 
 // SetIBCKeepers allows us to set the relevant IBC keepers post dependency
 // injection, as IBC doesn't support dependency injection yet.
-func (k *Keeper) SetIBCKeepers(channelKeeper types.ChannelKeeper, ics4Wrapper types.ICS4Wrapper) {
+func (k *Keeper) SetIBCKeepers(channelKeeper types.ChannelKeeper, clientKeeper types.ClientKeeper, ics4Wrapper types.ICS4Wrapper) {
 	k.channelKeeper = channelKeeper
+	k.clientKeeper = clientKeeper
 	k.ics4Wrapper = ics4Wrapper
 }
 
