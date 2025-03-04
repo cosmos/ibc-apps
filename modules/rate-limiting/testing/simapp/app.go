@@ -479,7 +479,7 @@ func NewSimApp(
 		app.GetSubspace(ibctransfertypes.ModuleName),
 		app.RatelimitKeeper, // ICS4Wrapper
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeperV2,
+		app.MsgServiceRouter(),
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
