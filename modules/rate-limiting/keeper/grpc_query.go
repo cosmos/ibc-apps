@@ -25,7 +25,7 @@ func (k Keeper) AllRateLimits(c context.Context, req *types.QueryAllRateLimitsRe
 // Query a rate limit by denom and channelId
 func (k Keeper) RateLimit(c context.Context, req *types.QueryRateLimitRequest) (*types.QueryRateLimitResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	rateLimit, found := k.GetRateLimit(ctx, req.Denom, req.ChannelId)
+	rateLimit, found := k.GetRateLimit(ctx, req.Denom, req.ChannelOrClientId)
 	if !found {
 		return &types.QueryRateLimitResponse{}, nil
 	}
@@ -40,13 +40,18 @@ func (k Keeper) RateLimitsByChainId(c context.Context, req *types.QueryRateLimit
 	for _, rateLimit := range k.GetAllRateLimits(ctx) {
 
 		// Determine the client state from the channel Id
-		_, clientState, err := k.channelKeeper.GetChannelClientState(ctx, transfertypes.PortID, rateLimit.Path.ChannelId)
+		_, clientState, err := k.channelKeeper.GetChannelClientState(ctx, transfertypes.PortID, rateLimit.Path.ChannelOrClientId)
 		if err != nil {
-			return &types.QueryRateLimitsByChainIdResponse{}, errorsmod.Wrapf(types.ErrInvalidClientState, "Unable to fetch client state from channelId")
+			var ok bool
+			clientState, ok = k.clientKeeper.GetClientState(ctx, rateLimit.Path.ChannelOrClientId)
+			if !ok {
+				return &types.QueryRateLimitsByChainIdResponse{}, errorsmod.Wrapf(types.ErrInvalidClientState, "Unable to fetch client state from channel or client Id")
+			}
 		}
 		client, ok := clientState.(*ibctmtypes.ClientState)
 		if !ok {
-			return &types.QueryRateLimitsByChainIdResponse{}, errorsmod.Wrapf(types.ErrInvalidClientState, "Client state is not tendermint")
+			// If the client state is not a tendermint client state, we don't return the rate limit from this query
+			continue
 		}
 
 		// If the chain ID matches, add the rate limit to the returned list
@@ -59,18 +64,18 @@ func (k Keeper) RateLimitsByChainId(c context.Context, req *types.QueryRateLimit
 }
 
 // Query all rate limits for a given channel
-func (k Keeper) RateLimitsByChannelId(c context.Context, req *types.QueryRateLimitsByChannelIdRequest) (*types.QueryRateLimitsByChannelIdResponse, error) {
+func (k Keeper) RateLimitsByChannelOrClientId(c context.Context, req *types.QueryRateLimitsByChannelOrClientIdRequest) (*types.QueryRateLimitsByChannelOrClientIdResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
 	rateLimits := []types.RateLimit{}
 	for _, rateLimit := range k.GetAllRateLimits(ctx) {
 		// If the channel ID matches, add the rate limit to the returned list
-		if rateLimit.Path.ChannelId == req.ChannelId {
+		if rateLimit.Path.ChannelOrClientId == req.ChannelOrClientId {
 			rateLimits = append(rateLimits, rateLimit)
 		}
 	}
 
-	return &types.QueryRateLimitsByChannelIdResponse{RateLimits: rateLimits}, nil
+	return &types.QueryRateLimitsByChannelOrClientIdResponse{RateLimits: rateLimits}, nil
 }
 
 // Query all blacklisted denoms

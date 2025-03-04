@@ -464,6 +464,7 @@ func NewSimApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ClientKeeper,
 		app.IBCKeeper.ChannelKeeper, // ICS4Wrapper
 	)
 

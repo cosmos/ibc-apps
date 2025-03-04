@@ -57,12 +57,12 @@ func (k msgServer) RemoveRateLimit(goCtx context.Context, msg *types.MsgRemoveRa
 		return nil, errorsmod.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
 	}
 
-	_, found := k.Keeper.GetRateLimit(ctx, msg.Denom, msg.ChannelId)
+	_, found := k.Keeper.GetRateLimit(ctx, msg.Denom, msg.ChannelOrClientId)
 	if !found {
 		return nil, types.ErrRateLimitNotFound
 	}
 
-	k.Keeper.RemoveRateLimit(ctx, msg.Denom, msg.ChannelId)
+	k.Keeper.RemoveRateLimit(ctx, msg.Denom, msg.ChannelOrClientId)
 	return &types.MsgRemoveRateLimitResponse{}, nil
 }
 
@@ -73,7 +73,7 @@ func (k msgServer) ResetRateLimit(goCtx context.Context, msg *types.MsgResetRate
 		return nil, errorsmod.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
 	}
 
-	if err := k.Keeper.ResetRateLimit(ctx, msg.Denom, msg.ChannelId); err != nil {
+	if err := k.Keeper.ResetRateLimit(ctx, msg.Denom, msg.ChannelOrClientId); err != nil {
 		return nil, err
 	}
 

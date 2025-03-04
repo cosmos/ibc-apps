@@ -217,8 +217,8 @@ func (s *KeeperTestSuite) createRateLimitCloseToQuota(denom string, channelId st
 	// Store rate limit
 	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
 		Path: &types.Path{
-			Denom:     denom,
-			ChannelId: channelId,
+			Denom:             denom,
+			ChannelOrClientId: channelId,
 		},
 		Quota: &types.Quota{
 			MaxPercentSend: threshold,
@@ -314,7 +314,7 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_AckSuccess() {
 
 	// Create rate limit - the flow and quota does not matter for this test
 	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
-		Path: &types.Path{Denom: denom, ChannelId: channelId},
+		Path: &types.Path{Denom: denom, ChannelOrClientId: channelId},
 	})
 
 	// Store the pending packet for this sequence number
@@ -355,7 +355,7 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_AckFailure() {
 
 	// Create rate limit - only outflow is needed to this tests
 	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
-		Path: &types.Path{Denom: denom, ChannelId: channelId},
+		Path: &types.Path{Denom: denom, ChannelOrClientId: channelId},
 		Flow: &types.Flow{Outflow: initialOutflow},
 	})
 
@@ -402,7 +402,7 @@ func (s *KeeperTestSuite) TestTimeoutRateLimitedPacket() {
 
 	// Create rate limit - only outflow is needed to this tests
 	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
-		Path: &types.Path{Denom: denom, ChannelId: channelId},
+		Path: &types.Path{Denom: denom, ChannelOrClientId: channelId},
 		Flow: &types.Flow{Outflow: initialOutflow},
 	})
 

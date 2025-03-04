@@ -20,9 +20,6 @@ func ParsePendingPacketId(pendingPacketId string) (channelId string, sequence ui
 	channelId = splits[0]
 	sequenceString := splits[1]
 
-	if !strings.HasPrefix(channelId, "channel-") {
-		return "", 0, fmt.Errorf("invalid channel ID (%s) in pending send packet", channelId)
-	}
 	sequence, err = strconv.ParseUint(sequenceString, 10, 64)
 	if err != nil {
 		return "", 0, errorsmod.Wrapf(err, "unable to parse sequence number (%s) from pending send packet, %s", sequenceString, err)

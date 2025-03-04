@@ -14,7 +14,7 @@ func createRateLimits() []types.RateLimit {
 	for i := int64(1); i <= 3; i++ {
 		suffix := strconv.Itoa(int(i))
 		rateLimit := types.RateLimit{
-			Path:  &types.Path{Denom: "denom-" + suffix, ChannelId: "channel-" + suffix},
+			Path:  &types.Path{Denom: "denom-" + suffix, ChannelOrClientId: "channel-" + suffix},
 			Quota: &types.Quota{MaxPercentSend: sdkmath.NewInt(i), MaxPercentRecv: sdkmath.NewInt(i), DurationHours: uint64(i)}, //nolint:gosec
 			Flow:  &types.Flow{Inflow: sdkmath.NewInt(i), Outflow: sdkmath.NewInt(i), ChannelValue: sdkmath.NewInt(i)},
 		}

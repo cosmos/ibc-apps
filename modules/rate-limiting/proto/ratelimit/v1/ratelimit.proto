@@ -19,7 +19,7 @@ enum PacketDirection {
 // Path holds the denom and channelID that define the rate limited route
 message Path {
   string denom = 1;
-  string channel_id = 2;
+  string channel_or_client_id = 2;
 }
 
 // Quota defines the rate limit thresholds for transfer packets

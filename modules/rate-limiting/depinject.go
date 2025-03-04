@@ -56,6 +56,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.BankKeeper,
 		nil,
 		nil,
+		nil,
 	)
 	m := NewAppModule(in.Cdc, *k)
 

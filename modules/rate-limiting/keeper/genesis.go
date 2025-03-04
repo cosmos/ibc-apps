@@ -26,11 +26,11 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 
 	// Set pending sequence numbers - validating that they're in right format of {channelId}/{sequenceNumber}
 	for _, pendingPacketId := range genState.PendingSendPacketSequenceNumbers {
-		channelId, sequence, err := types.ParsePendingPacketId(pendingPacketId)
+		channelOrClientId, sequence, err := types.ParsePendingPacketId(pendingPacketId)
 		if err != nil {
 			panic(err.Error())
 		}
-		k.SetPendingSendPacket(ctx, channelId, sequence)
+		k.SetPendingSendPacket(ctx, channelOrClientId, sequence)
 	}
 
 	// If the hour epoch has been initialized already (epoch number != 0), validate and then use it
