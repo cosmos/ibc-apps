@@ -50,7 +50,8 @@ func (k Keeper) RateLimitsByChainId(c context.Context, req *types.QueryRateLimit
 		}
 		client, ok := clientState.(*ibctmtypes.ClientState)
 		if !ok {
-			return &types.QueryRateLimitsByChainIdResponse{}, errorsmod.Wrapf(types.ErrInvalidClientState, "Client state is not tendermint")
+			// If the client state is not a tendermint client state, we don't return the rate limit from this query
+			continue
 		}
 
 		// If the chain ID matches, add the rate limit to the returned list
