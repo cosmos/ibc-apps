@@ -33,7 +33,7 @@ message MsgAddRateLimit {
   // When rate limiting a non-native token, this will be an ibc denom
   string denom = 2;
   // ChannelId for the rate limit, on the side of the rate limited chain
-  string channel_id = 3;
+  string channel_or_client_id = 3;
   // MaxPercentSend defines the threshold for outflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_send = 4 [
@@ -63,7 +63,7 @@ message MsgUpdateRateLimit {
   // When rate limiting a non-native token, this will be an ibc denom
   string denom = 2;
   // ChannelId for the rate limit, on the side of the rate limited chain
-  string channel_id = 3;
+  string channel_or_client_id = 3;
   // MaxPercentSend defines the threshold for outflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_send = 4 [
@@ -93,7 +93,7 @@ message MsgRemoveRateLimit {
   // When rate limiting a non-native token, this will be an ibc denom
   string denom = 2;
   // ChannelId for the rate limit, on the side of the rate limited chain
-  string channel_id = 3;
+  string channel_or_client_id = 3;
 }
 message MsgRemoveRateLimitResponse {}
 
@@ -108,6 +108,6 @@ message MsgResetRateLimit {
   // When rate limiting a non-native token, this will be an ibc denom
   string denom = 2;
   // ChannelId for the rate limit, on the side of the rate limited chain
-  string channel_id = 3;
+  string channel_or_client_id = 3;
 }
 message MsgResetRateLimitResponse {}

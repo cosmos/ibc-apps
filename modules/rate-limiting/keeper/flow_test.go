@@ -30,8 +30,8 @@ func (s *KeeperTestSuite) SetupCheckRateLimitAndUpdateFlowTest() {
 
 	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
 		Path: &types.Path{
-			Denom:     denom,
-			ChannelId: channelId,
+			Denom:             denom,
+			ChannelOrClientId: channelId,
 		},
 		Quota: &types.Quota{
 			MaxPercentSend: maxPercentSend,
@@ -397,11 +397,11 @@ func (s *KeeperTestSuite) TestUndoSendPacket() {
 	initialOutflow := sdkmath.NewInt(100)
 	packetSendAmount := sdkmath.NewInt(10)
 	rateLimit1 := types.RateLimit{
-		Path: &types.Path{Denom: denom, ChannelId: channelId},
+		Path: &types.Path{Denom: denom, ChannelOrClientId: channelId},
 		Flow: &types.Flow{Outflow: initialOutflow},
 	}
 	rateLimit2 := types.RateLimit{
-		Path: &types.Path{Denom: "different-denom", ChannelId: "different-channel"},
+		Path: &types.Path{Denom: "different-denom", ChannelOrClientId: "different-channel"},
 		Flow: &types.Flow{Outflow: initialOutflow},
 	}
 	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, rateLimit1)

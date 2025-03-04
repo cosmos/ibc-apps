@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_AllRateLimits_FullMethodName           = "/ratelimit.v1.Query/AllRateLimits"
-	Query_RateLimit_FullMethodName               = "/ratelimit.v1.Query/RateLimit"
-	Query_RateLimitsByChainId_FullMethodName     = "/ratelimit.v1.Query/RateLimitsByChainId"
-	Query_RateLimitsByChannelId_FullMethodName   = "/ratelimit.v1.Query/RateLimitsByChannelId"
-	Query_AllBlacklistedDenoms_FullMethodName    = "/ratelimit.v1.Query/AllBlacklistedDenoms"
-	Query_AllWhitelistedAddresses_FullMethodName = "/ratelimit.v1.Query/AllWhitelistedAddresses"
+	Query_AllRateLimits_FullMethodName                 = "/ratelimit.v1.Query/AllRateLimits"
+	Query_RateLimit_FullMethodName                     = "/ratelimit.v1.Query/RateLimit"
+	Query_RateLimitsByChainId_FullMethodName           = "/ratelimit.v1.Query/RateLimitsByChainId"
+	Query_RateLimitsByChannelOrClientId_FullMethodName = "/ratelimit.v1.Query/RateLimitsByChannelOrClientId"
+	Query_AllBlacklistedDenoms_FullMethodName          = "/ratelimit.v1.Query/AllBlacklistedDenoms"
+	Query_AllWhitelistedAddresses_FullMethodName       = "/ratelimit.v1.Query/AllWhitelistedAddresses"
 )
 
 // QueryClient is the client API for Query service.
@@ -35,12 +35,12 @@ type QueryClient interface {
 	AllRateLimits(ctx context.Context, in *QueryAllRateLimitsRequest, opts ...grpc.CallOption) (*QueryAllRateLimitsResponse, error)
 	// Queries a specific rate limit by channel ID and denom
 	// Ex:
-	//   - /ratelimit/{channel_id}/by_denom?denom={denom}
+	//   - /ratelimit/{channel_or_client_id}/by_denom?denom={denom}
 	RateLimit(ctx context.Context, in *QueryRateLimitRequest, opts ...grpc.CallOption) (*QueryRateLimitResponse, error)
 	// Queries all the rate limits for a given chain
 	RateLimitsByChainId(ctx context.Context, in *QueryRateLimitsByChainIdRequest, opts ...grpc.CallOption) (*QueryRateLimitsByChainIdResponse, error)
 	// Queries all the rate limits for a given channel ID
-	RateLimitsByChannelId(ctx context.Context, in *QueryRateLimitsByChannelIdRequest, opts ...grpc.CallOption) (*QueryRateLimitsByChannelIdResponse, error)
+	RateLimitsByChannelOrClientId(ctx context.Context, in *QueryRateLimitsByChannelOrClientIdRequest, opts ...grpc.CallOption) (*QueryRateLimitsByChannelOrClientIdResponse, error)
 	// Queries all blacklisted denoms
 	AllBlacklistedDenoms(ctx context.Context, in *QueryAllBlacklistedDenomsRequest, opts ...grpc.CallOption) (*QueryAllBlacklistedDenomsResponse, error)
 	// Queries all whitelisted address pairs
@@ -82,9 +82,9 @@ func (c *queryClient) RateLimitsByChainId(ctx context.Context, in *QueryRateLimi
 	return out, nil
 }
 
-func (c *queryClient) RateLimitsByChannelId(ctx context.Context, in *QueryRateLimitsByChannelIdRequest, opts ...grpc.CallOption) (*QueryRateLimitsByChannelIdResponse, error) {
-	out := new(QueryRateLimitsByChannelIdResponse)
-	err := c.cc.Invoke(ctx, Query_RateLimitsByChannelId_FullMethodName, in, out, opts...)
+func (c *queryClient) RateLimitsByChannelOrClientId(ctx context.Context, in *QueryRateLimitsByChannelOrClientIdRequest, opts ...grpc.CallOption) (*QueryRateLimitsByChannelOrClientIdResponse, error) {
+	out := new(QueryRateLimitsByChannelOrClientIdResponse)
+	err := c.cc.Invoke(ctx, Query_RateLimitsByChannelOrClientId_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +117,12 @@ type QueryServer interface {
 	AllRateLimits(context.Context, *QueryAllRateLimitsRequest) (*QueryAllRateLimitsResponse, error)
 	// Queries a specific rate limit by channel ID and denom
 	// Ex:
-	//   - /ratelimit/{channel_id}/by_denom?denom={denom}
+	//   - /ratelimit/{channel_or_client_id}/by_denom?denom={denom}
 	RateLimit(context.Context, *QueryRateLimitRequest) (*QueryRateLimitResponse, error)
 	// Queries all the rate limits for a given chain
 	RateLimitsByChainId(context.Context, *QueryRateLimitsByChainIdRequest) (*QueryRateLimitsByChainIdResponse, error)
 	// Queries all the rate limits for a given channel ID
-	RateLimitsByChannelId(context.Context, *QueryRateLimitsByChannelIdRequest) (*QueryRateLimitsByChannelIdResponse, error)
+	RateLimitsByChannelOrClientId(context.Context, *QueryRateLimitsByChannelOrClientIdRequest) (*QueryRateLimitsByChannelOrClientIdResponse, error)
 	// Queries all blacklisted denoms
 	AllBlacklistedDenoms(context.Context, *QueryAllBlacklistedDenomsRequest) (*QueryAllBlacklistedDenomsResponse, error)
 	// Queries all whitelisted address pairs
@@ -143,8 +143,8 @@ func (UnimplementedQueryServer) RateLimit(context.Context, *QueryRateLimitReques
 func (UnimplementedQueryServer) RateLimitsByChainId(context.Context, *QueryRateLimitsByChainIdRequest) (*QueryRateLimitsByChainIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RateLimitsByChainId not implemented")
 }
-func (UnimplementedQueryServer) RateLimitsByChannelId(context.Context, *QueryRateLimitsByChannelIdRequest) (*QueryRateLimitsByChannelIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RateLimitsByChannelId not implemented")
+func (UnimplementedQueryServer) RateLimitsByChannelOrClientId(context.Context, *QueryRateLimitsByChannelOrClientIdRequest) (*QueryRateLimitsByChannelOrClientIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RateLimitsByChannelOrClientId not implemented")
 }
 func (UnimplementedQueryServer) AllBlacklistedDenoms(context.Context, *QueryAllBlacklistedDenomsRequest) (*QueryAllBlacklistedDenomsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AllBlacklistedDenoms not implemented")
@@ -219,20 +219,20 @@ func _Query_RateLimitsByChainId_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_RateLimitsByChannelId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRateLimitsByChannelIdRequest)
+func _Query_RateLimitsByChannelOrClientId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRateLimitsByChannelOrClientIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).RateLimitsByChannelId(ctx, in)
+		return srv.(QueryServer).RateLimitsByChannelOrClientId(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_RateLimitsByChannelId_FullMethodName,
+		FullMethod: Query_RateLimitsByChannelOrClientId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).RateLimitsByChannelId(ctx, req.(*QueryRateLimitsByChannelIdRequest))
+		return srv.(QueryServer).RateLimitsByChannelOrClientId(ctx, req.(*QueryRateLimitsByChannelOrClientIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -293,8 +293,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_RateLimitsByChainId_Handler,
 		},
 		{
-			MethodName: "RateLimitsByChannelId",
-			Handler:    _Query_RateLimitsByChannelId_Handler,
+			MethodName: "RateLimitsByChannelOrClientId",
+			Handler:    _Query_RateLimitsByChannelOrClientId_Handler,
 		},
 		{
 			MethodName: "AllBlacklistedDenoms",

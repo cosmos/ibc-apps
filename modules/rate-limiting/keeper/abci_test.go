@@ -17,8 +17,8 @@ func (s *KeeperTestSuite) resetRateLimits(denom string, durations []uint64, nonZ
 
 		s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
 			Path: &types.Path{
-				Denom:     denom,
-				ChannelId: channelId,
+				Denom:             denom,
+				ChannelOrClientId: channelId,
 			},
 			Quota: &types.Quota{
 				DurationHours: duration,
@@ -66,7 +66,7 @@ func (s *KeeperTestSuite) TestBeginBlocker() {
 		for _, rateLimit := range rateLimits {
 			context := fmt.Sprintf("duration: %d, epoch: %d", duration, epochId)
 
-			if rateLimit.Path.ChannelId == channelIdFromResetRateLimit {
+			if rateLimit.Path.ChannelOrClientId == channelIdFromResetRateLimit {
 				s.Require().Equal(int64(0), rateLimit.Flow.Inflow.Int64(), "inflow was not reset to 0 - %s", context)
 				s.Require().Equal(int64(0), rateLimit.Flow.Outflow.Int64(), "outflow was not reset to 0 - %s", context)
 			} else {

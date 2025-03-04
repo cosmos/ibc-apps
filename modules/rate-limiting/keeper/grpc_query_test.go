@@ -38,7 +38,7 @@ func (s *KeeperTestSuite) setupQueryRateLimitTests() []types.RateLimit {
 
 		// Then add the rate limit
 		rateLimit := types.RateLimit{
-			Path: &types.Path{Denom: "denom", ChannelId: channelId},
+			Path: &types.Path{Denom: "denom", ChannelOrClientId: channelId},
 		}
 		s.App.RatelimitKeeper.SetRateLimit(s.Ctx, rateLimit)
 		rateLimits = append(rateLimits, rateLimit)
@@ -57,10 +57,10 @@ func (s *KeeperTestSuite) TestQueryRateLimit() {
 	allRateLimits := s.setupQueryRateLimitTests()
 	for _, expectedRateLimit := range allRateLimits {
 		queryResponse, err := s.QueryClient.RateLimit(context.Background(), &types.QueryRateLimitRequest{
-			Denom:     expectedRateLimit.Path.Denom,
-			ChannelId: expectedRateLimit.Path.ChannelId,
+			Denom:             expectedRateLimit.Path.Denom,
+			ChannelOrClientId: expectedRateLimit.Path.ChannelOrClientId,
 		})
-		s.Require().NoError(err, "no error expected when querying rate limit on channel: %s", expectedRateLimit.Path.ChannelId)
+		s.Require().NoError(err, "no error expected when querying rate limit on channel: %s", expectedRateLimit.Path.ChannelOrClientId)
 		s.Require().Equal(expectedRateLimit, *queryResponse.RateLimit)
 	}
 }
@@ -78,12 +78,12 @@ func (s *KeeperTestSuite) TestQueryRateLimitsByChainId() {
 	}
 }
 
-func (s *KeeperTestSuite) TestQueryRateLimitsByChannelId() {
+func (s *KeeperTestSuite) TestQueryRateLimitsByChannelOrClientId() {
 	allRateLimits := s.setupQueryRateLimitTests()
 	for i, expectedRateLimit := range allRateLimits {
 		channelId := fmt.Sprintf("channel-%d", i)
-		queryResponse, err := s.QueryClient.RateLimitsByChannelId(context.Background(), &types.QueryRateLimitsByChannelIdRequest{
-			ChannelId: channelId,
+		queryResponse, err := s.QueryClient.RateLimitsByChannelOrClientId(context.Background(), &types.QueryRateLimitsByChannelOrClientIdRequest{
+			ChannelOrClientId: channelId,
 		})
 		s.Require().NoError(err, "no error expected when querying rate limit on channel: %s", channelId)
 		s.Require().Len(queryResponse.RateLimits, 1)

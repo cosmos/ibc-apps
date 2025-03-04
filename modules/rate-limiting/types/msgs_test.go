@@ -39,107 +39,107 @@ func TestMsgAddRateLimit(t *testing.T) {
 		{
 			name: "successful proposal",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 		},
 		{
 			name: "invalid authority",
 			msg: types.MsgAddRateLimit{
-				Authority:      "invalid_address",
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         "invalid_address",
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "invalid authority",
 		},
 		{
 			name: "invalid denom",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          "",
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             "",
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "invalid denom",
 		},
 		{
 			name: "invalid send percent (lt 0)",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: sdkmath.NewInt(-1),
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    sdkmath.NewInt(-1),
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid send percent (gt 100)",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: sdkmath.NewInt(101),
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    sdkmath.NewInt(101),
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid receive percent (lt 0)",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: sdkmath.NewInt(-1),
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    sdkmath.NewInt(-1),
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid receive percent (gt 100)",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: sdkmath.NewInt(101),
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    sdkmath.NewInt(101),
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid send and receive percent",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: sdkmath.ZeroInt(),
-				MaxPercentRecv: sdkmath.ZeroInt(),
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    sdkmath.ZeroInt(),
+				MaxPercentRecv:    sdkmath.ZeroInt(),
+				DurationHours:     validDurationHours,
 			},
 			err: "either the max send or max receive threshold must be greater than 0",
 		},
 		{
 			name: "invalid duration",
 			msg: types.MsgAddRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  0,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     0,
 			},
 			err: "duration can not be zero",
 		},
@@ -150,7 +150,7 @@ func TestMsgAddRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelId, validChannelId, "channel-id")
+				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channel-id")
 				require.Equal(t, tc.msg.MaxPercentSend, validMaxPercentSend, "maxPercentSend")
 				require.Equal(t, tc.msg.MaxPercentRecv, validMaxPercentRecv, "maxPercentRecv")
 				require.Equal(t, tc.msg.DurationHours, validDurationHours, "durationHours")
@@ -184,107 +184,107 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 		{
 			name: "successful proposal",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 		},
 		{
 			name: "invalid authority",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      "invalid_address",
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         "invalid_address",
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "invalid authority",
 		},
 		{
 			name: "invalid denom",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          "",
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             "",
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "invalid denom",
 		},
 		{
 			name: "invalid send percent (lt 0)",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: sdkmath.NewInt(-1),
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    sdkmath.NewInt(-1),
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid send percent (gt 100)",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: sdkmath.NewInt(101),
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    sdkmath.NewInt(101),
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid receive percent (lt 0)",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: sdkmath.NewInt(-1),
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    sdkmath.NewInt(-1),
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid receive percent (gt 100)",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: sdkmath.NewInt(101),
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    sdkmath.NewInt(101),
+				DurationHours:     validDurationHours,
 			},
 			err: "percent must be between 0 and 100",
 		},
 		{
 			name: "invalid send and receive percent",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: sdkmath.ZeroInt(),
-				MaxPercentRecv: sdkmath.ZeroInt(),
-				DurationHours:  validDurationHours,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    sdkmath.ZeroInt(),
+				MaxPercentRecv:    sdkmath.ZeroInt(),
+				DurationHours:     validDurationHours,
 			},
 			err: "either the max send or max receive threshold must be greater than 0",
 		},
 		{
 			name: "invalid duration",
 			msg: types.MsgUpdateRateLimit{
-				Authority:      validAuthority,
-				Denom:          validDenom,
-				ChannelId:      validChannelId,
-				MaxPercentSend: validMaxPercentSend,
-				MaxPercentRecv: validMaxPercentRecv,
-				DurationHours:  0,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     0,
 			},
 			err: "duration can not be zero",
 		},
@@ -295,7 +295,7 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelId, validChannelId, "channel-id")
+				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channel-id")
 				require.Equal(t, tc.msg.MaxPercentSend, validMaxPercentSend, "maxPercentSend")
 				require.Equal(t, tc.msg.MaxPercentRecv, validMaxPercentRecv, "maxPercentRecv")
 				require.Equal(t, tc.msg.DurationHours, validDurationHours, "durationHours")
@@ -326,26 +326,26 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 		{
 			name: "successful message",
 			msg: types.MsgRemoveRateLimit{
-				Authority: validAuthority,
-				Denom:     validDenom,
-				ChannelId: validChannelId,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
 			},
 		},
 		{
 			name: "invalid authority",
 			msg: types.MsgRemoveRateLimit{
-				Authority: "invalid_address",
-				Denom:     validDenom,
-				ChannelId: validChannelId,
+				Authority:         "invalid_address",
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
 			},
 			err: "invalid authority",
 		},
 		{
 			name: "invalid denom",
 			msg: types.MsgRemoveRateLimit{
-				Authority: validAuthority,
-				Denom:     "",
-				ChannelId: validChannelId,
+				Authority:         validAuthority,
+				Denom:             "",
+				ChannelOrClientId: validChannelId,
 			},
 			err: "invalid denom",
 		},
@@ -356,7 +356,7 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelId, validChannelId, "channelId")
+				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channelOrClientId")
 
 				require.Equal(t, tc.msg.Type(), types.TypeMsgRemoveRateLimit, "type")
 				require.Equal(t, tc.msg.Route(), types.ModuleName, "route")
@@ -384,26 +384,26 @@ func TestMsgResetRateLimit(t *testing.T) {
 		{
 			name: "successful message",
 			msg: types.MsgResetRateLimit{
-				Authority: validAuthority,
-				Denom:     validDenom,
-				ChannelId: validChannelId,
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
 			},
 		},
 		{
 			name: "invalid authority",
 			msg: types.MsgResetRateLimit{
-				Authority: "invalid_address",
-				Denom:     validDenom,
-				ChannelId: validChannelId,
+				Authority:         "invalid_address",
+				Denom:             validDenom,
+				ChannelOrClientId: validChannelId,
 			},
 			err: "invalid authority",
 		},
 		{
 			name: "invalid denom",
 			msg: types.MsgResetRateLimit{
-				Authority: validAuthority,
-				Denom:     "",
-				ChannelId: validChannelId,
+				Authority:         validAuthority,
+				Denom:             "",
+				ChannelOrClientId: validChannelId,
 			},
 			err: "invalid denom",
 		},
@@ -414,7 +414,7 @@ func TestMsgResetRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelId, validChannelId, "channelId")
+				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channelOrClientId")
 
 				require.Equal(t, tc.msg.Type(), types.TypeMsgResetRateLimit, "type")
 				require.Equal(t, tc.msg.Route(), types.ModuleName, "route")

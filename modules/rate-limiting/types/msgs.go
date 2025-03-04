@@ -33,13 +33,13 @@ var (
 //               MsgAddRateLimit
 // ----------------------------------------------
 
-func NewMsgAddRateLimit(denom, channelId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgAddRateLimit {
+func NewMsgAddRateLimit(denom, channelOrClientId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgAddRateLimit {
 	return &MsgAddRateLimit{
-		Denom:          denom,
-		ChannelId:      channelId,
-		MaxPercentSend: maxPercentSend,
-		MaxPercentRecv: maxPercentRecv,
-		DurationHours:  durationHours,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
+		MaxPercentSend:    maxPercentSend,
+		MaxPercentRecv:    maxPercentRecv,
+		DurationHours:     durationHours,
 	}
 }
 
@@ -100,13 +100,13 @@ func (msg *MsgAddRateLimit) ValidateBasic() error {
 //               MsgUpdateRateLimit
 // ----------------------------------------------
 
-func NewMsgUpdateRateLimit(denom, channelId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgUpdateRateLimit {
+func NewMsgUpdateRateLimit(denom, channelOrClientId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgUpdateRateLimit {
 	return &MsgUpdateRateLimit{
-		Denom:          denom,
-		ChannelId:      channelId,
-		MaxPercentSend: maxPercentSend,
-		MaxPercentRecv: maxPercentRecv,
-		DurationHours:  durationHours,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
+		MaxPercentSend:    maxPercentSend,
+		MaxPercentRecv:    maxPercentRecv,
+		DurationHours:     durationHours,
 	}
 }
 
@@ -167,10 +167,10 @@ func (msg *MsgUpdateRateLimit) ValidateBasic() error {
 //               MsgRemoveRateLimit
 // ----------------------------------------------
 
-func NewMsgRemoveRateLimit(denom, channelId string) *MsgRemoveRateLimit {
+func NewMsgRemoveRateLimit(denom, channelOrClientId string) *MsgRemoveRateLimit {
 	return &MsgRemoveRateLimit{
-		Denom:     denom,
-		ChannelId: channelId,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
 	}
 }
 
@@ -212,10 +212,10 @@ func (msg *MsgRemoveRateLimit) ValidateBasic() error {
 //               MsgResetRateLimit
 // ----------------------------------------------
 
-func NewMsgResetRateLimit(denom, channelId string) *MsgResetRateLimit {
+func NewMsgResetRateLimit(denom, channelOrClientId string) *MsgResetRateLimit {
 	return &MsgResetRateLimit{
-		Denom:     denom,
-		ChannelId: channelId,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
 	}
 }
 
