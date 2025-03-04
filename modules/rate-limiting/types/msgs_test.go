@@ -20,6 +20,7 @@ import (
 const (
 	validChannelId = "channel-0"
 	validDenom     = "denom"
+	validClientId  = "07-tendermint-1"
 )
 
 func TestMsgAddRateLimit(t *testing.T) {
@@ -48,6 +49,17 @@ func TestMsgAddRateLimit(t *testing.T) {
 			},
 		},
 		{
+			name: "successful proposal with client-id",
+			msg: types.MsgAddRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validClientId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
+			},
+		},
+		{
 			name: "invalid authority",
 			msg: types.MsgAddRateLimit{
 				Authority:         "invalid_address",
@@ -70,6 +82,18 @@ func TestMsgAddRateLimit(t *testing.T) {
 				DurationHours:     validDurationHours,
 			},
 			err: "invalid denom",
+		},
+		{
+			name: "invalid channel-id",
+			msg: types.MsgAddRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: "channel-",
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
+			},
+			err: "invalid channel",
 		},
 		{
 			name: "invalid send percent (lt 0)",
@@ -150,7 +174,7 @@ func TestMsgAddRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channel-id")
+				require.True(t, tc.msg.ChannelOrClientId == validChannelId || tc.msg.ChannelOrClientId == validClientId, "channel-or-client-id")
 				require.Equal(t, tc.msg.MaxPercentSend, validMaxPercentSend, "maxPercentSend")
 				require.Equal(t, tc.msg.MaxPercentRecv, validMaxPercentRecv, "maxPercentRecv")
 				require.Equal(t, tc.msg.DurationHours, validDurationHours, "durationHours")
@@ -193,6 +217,17 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 			},
 		},
 		{
+			name: "successful proposal with client-id",
+			msg: types.MsgUpdateRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validClientId,
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
+			},
+		},
+		{
 			name: "invalid authority",
 			msg: types.MsgUpdateRateLimit{
 				Authority:         "invalid_address",
@@ -215,6 +250,18 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 				DurationHours:     validDurationHours,
 			},
 			err: "invalid denom",
+		},
+		{
+			name: "invalid channel-id",
+			msg: types.MsgUpdateRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: "channel-",
+				MaxPercentSend:    validMaxPercentSend,
+				MaxPercentRecv:    validMaxPercentRecv,
+				DurationHours:     validDurationHours,
+			},
+			err: "invalid channel",
 		},
 		{
 			name: "invalid send percent (lt 0)",
@@ -295,7 +342,7 @@ func TestMsgUpdateRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channel-id")
+				require.True(t, tc.msg.ChannelOrClientId == validChannelId || tc.msg.ChannelOrClientId == validClientId, "channel-or-client-id")
 				require.Equal(t, tc.msg.MaxPercentSend, validMaxPercentSend, "maxPercentSend")
 				require.Equal(t, tc.msg.MaxPercentRecv, validMaxPercentRecv, "maxPercentRecv")
 				require.Equal(t, tc.msg.DurationHours, validDurationHours, "durationHours")
@@ -332,6 +379,14 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 			},
 		},
 		{
+			name: "successful message with client-id",
+			msg: types.MsgRemoveRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validClientId,
+			},
+		},
+		{
 			name: "invalid authority",
 			msg: types.MsgRemoveRateLimit{
 				Authority:         "invalid_address",
@@ -349,6 +404,15 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 			},
 			err: "invalid denom",
 		},
+		{
+			name: "invalid channel-id",
+			msg: types.MsgRemoveRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: "channel-",
+			},
+			err: "invalid channel",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -356,7 +420,7 @@ func TestMsgRemoveRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channelOrClientId")
+				require.True(t, tc.msg.ChannelOrClientId == validChannelId || tc.msg.ChannelOrClientId == validClientId, "channel-or-client-id")
 
 				require.Equal(t, tc.msg.Type(), types.TypeMsgRemoveRateLimit, "type")
 				require.Equal(t, tc.msg.Route(), types.ModuleName, "route")
@@ -390,6 +454,14 @@ func TestMsgResetRateLimit(t *testing.T) {
 			},
 		},
 		{
+			name: "successful message with client-id",
+			msg: types.MsgResetRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: validClientId,
+			},
+		},
+		{
 			name: "invalid authority",
 			msg: types.MsgResetRateLimit{
 				Authority:         "invalid_address",
@@ -407,6 +479,15 @@ func TestMsgResetRateLimit(t *testing.T) {
 			},
 			err: "invalid denom",
 		},
+		{
+			name: "invalid channel-id",
+			msg: types.MsgResetRateLimit{
+				Authority:         validAuthority,
+				Denom:             validDenom,
+				ChannelOrClientId: "channel-",
+			},
+			err: "invalid channel",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -414,7 +495,7 @@ func TestMsgResetRateLimit(t *testing.T) {
 			if tc.err == "" {
 				require.NoError(t, tc.msg.ValidateBasic(), "test: %v", tc.name)
 				require.Equal(t, tc.msg.Denom, validDenom, "denom")
-				require.Equal(t, tc.msg.ChannelOrClientId, validChannelId, "channelOrClientId")
+				require.True(t, tc.msg.ChannelOrClientId == validChannelId || tc.msg.ChannelOrClientId == validClientId, "channel-or-client-id")
 
 				require.Equal(t, tc.msg.Type(), types.TypeMsgResetRateLimit, "type")
 				require.Equal(t, tc.msg.Route(), types.ModuleName, "route")
