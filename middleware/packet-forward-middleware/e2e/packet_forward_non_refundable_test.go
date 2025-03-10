@@ -745,13 +745,14 @@ func TestNonRefundable(t *testing.T) {
 		memo, err := json.Marshal(metadata)
 		require.NoError(t, err)
 
+		chainAHeight, err := chainA.Height(ctx)
+		require.NoError(t, err)
+
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
-		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
-			err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
-			require.NoError(t, err)
-			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
-		})
+
+		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
+
 		require.NoError(t, err)
 		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
 		require.NoError(t, err)
