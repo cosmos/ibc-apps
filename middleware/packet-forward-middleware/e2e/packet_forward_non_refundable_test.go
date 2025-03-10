@@ -125,6 +125,13 @@ func TestNonRefundable(t *testing.T) {
 		_ = ic.Close()
 	})
 
+	err = PopulateQueryReqToPath(ctx, chainA)
+	require.NoError(t, err)
+	err = PopulateQueryReqToPath(ctx, chainB)
+	require.NoError(t, err)
+	err = PopulateQueryReqToPath(ctx, chainC)
+	require.NoError(t, err)
+
 	initBal := math.NewInt(10_000_000_000)
 
 	users1 := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainC)
