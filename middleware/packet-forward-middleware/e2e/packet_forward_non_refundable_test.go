@@ -748,6 +748,8 @@ func TestNonRefundable(t *testing.T) {
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
+			err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
+			require.NoError(t, err)
 			return PacketAcknowledged(ctx, chainA, abChan.PortID, abChan.ChannelID, transferTx.Packet.Sequence), nil
 		})
 		require.NoError(t, err)
@@ -807,10 +809,6 @@ func TestNonRefundable(t *testing.T) {
 
 		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{
 			Memo: string(memo),
-			Timeout: &ibc.IBCTimeout{
-				NanoSeconds: uint64(time.Now().Add(1 * time.Minute).Unix()),
-				Height:      0,
-			},
 		})
 		require.NoError(t, err)
 		err = testutil.WaitForCondition(time.Minute*5, time.Second*5, func() (bool, error) {
@@ -818,7 +816,9 @@ func TestNonRefundable(t *testing.T) {
 
 		})
 		require.NoError(t, err)
-		testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		err = testutil.WaitForBlocks(ctx, waitBlocks, chainA)
+		require.NoError(t, err)
+		err = r.Flush(ctx, eRep, pathAB, abChan.ChannelID)
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
