@@ -59,7 +59,7 @@ func TestNonRefundable(t *testing.T) {
 		rep                          = testreporter.NewNopReporter()
 		eRep                         = rep.RelayerExecReporter(t)
 		chainIdA, chainIdB, chainIdC = "chain-1", "chain-2", "chain-3"
-		waitBlocks                   = 3
+		waitBlocks                   = 10
 	)
 
 	vals := 1
