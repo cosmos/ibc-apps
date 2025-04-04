@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/appmodule"
+
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/client/cli"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
@@ -22,8 +24,9 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule          = AppModule{}
+	_ module.AppModuleBasic     = AppModuleBasic{}
+	_ appmodule.HasBeginBlocker = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -149,8 +152,11 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(ctx sdk.Context) {
-	am.keeper.BeginBlocker(ctx)
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	am.keeper.BeginBlocker(sdkCtx)
+	// we do not want to raise an error in block processing if rate limit reset fails
+	return nil
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
