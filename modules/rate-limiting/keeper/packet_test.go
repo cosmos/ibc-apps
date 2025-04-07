@@ -16,6 +16,7 @@ import (
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
 )
 
 const (
@@ -376,6 +377,51 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_AckFailure() {
 	ackFailure := transfertypes.ModuleCdc.MustMarshalJSON(&channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Error{Error: "error"},
 	})
+
+	// Call OnTimeoutPacket with the failed ack
+	err = s.App.RatelimitKeeper.AcknowledgeRateLimitedPacket(s.Ctx, packet, ackFailure)
+	s.Require().NoError(err, "no error expected during AckPacket")
+
+	// Confirm the pending packet was removed
+	found := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	s.Require().False(found, "send packet should have been removed")
+
+	// Confirm the flow was adjusted
+	rateLimit, found := s.App.RatelimitKeeper.GetRateLimit(s.Ctx, denom, sourceChannel)
+	s.Require().True(found)
+	s.Require().Equal(initialOutflow.Sub(packetAmount).Int64(), rateLimit.Flow.Outflow.Int64(), "outflow")
+}
+
+func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_UniversalErrorAck() {
+	// For ack packets, the source will be stride and the destination will be the host
+	denom := ustrd
+	sourceChannel := channelOnStride
+	destinationChannel := channelOnHost
+	initialOutflow := sdkmath.NewInt(100)
+	packetAmount := sdkmath.NewInt(10)
+	sequence := uint64(10)
+
+	// Create rate limit - only outflow is needed to this tests
+	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
+		Path: &types.Path{Denom: denom, ChannelOrClientId: channelId},
+		Flow: &types.Flow{Outflow: initialOutflow},
+	})
+
+	// Store the pending packet for this sequence number
+	s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+
+	// Build the ack packet
+	packetData, err := json.Marshal(transfertypes.FungibleTokenPacketData{Denom: denom, Amount: packetAmount.String()})
+	s.Require().NoError(err)
+	packet := channeltypes.Packet{
+		SourcePort:         transferPort,
+		SourceChannel:      sourceChannel,
+		DestinationPort:    transferPort,
+		DestinationChannel: destinationChannel,
+		Data:               packetData,
+		Sequence:           sequence,
+	}
+	ackFailure := channeltypesv2.ErrorAcknowledgement[:]
 
 	// Call OnTimeoutPacket with the failed ack
 	err = s.App.RatelimitKeeper.AcknowledgeRateLimitedPacket(s.Ctx, packet, ackFailure)

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -15,6 +16,7 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
@@ -29,6 +31,11 @@ type RateLimitedPacketInfo struct {
 // CheckAcknowledementSucceeded unmarshals IBC Acknowledgements, and determines
 // whether the tx was successful
 func (k Keeper) CheckAcknowledementSucceeded(ctx sdk.Context, ack []byte) (success bool, err error) {
+	// Check if the ack is the IBC v2 universal error acknowledgement
+	if bytes.Equal(ack, channeltypesv2.ErrorAcknowledgement[:]) {
+		return false, nil
+	}
+
 	// Unmarshal the raw ack response
 	var acknowledgement channeltypes.Acknowledgement
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(ack, &acknowledgement); err != nil {
