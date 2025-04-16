@@ -1,0 +1,35 @@
+go 1.24.1
+
+use (
+	./middleware/packet-forward-middleware
+	./middleware/packet-forward-middleware/e2e
+	./modules/async-icq
+	./modules/async-icq/e2e
+	./modules/async-icq/testing/demo-simapp
+	./modules/ibc-hooks
+)
+
+replace (
+	cosmossdk.io/api => github.com/agoric-labs/cosmos-sdk/api v0.0.0-20250326031203-e68e6747bede
+	cosmossdk.io/core => github.com/agoric-labs/cosmos-sdk/core v0.0.0-20250326031203-e68e6747bede
+	cosmossdk.io/depinject => github.com/agoric-labs/cosmos-sdk/depinject v0.0.0-20250326031203-e68e6747bede
+	cosmossdk.io/errors => github.com/agoric-labs/cosmos-sdk/errors v0.0.0-20250326031203-e68e6747bede
+	cosmossdk.io/math => github.com/agoric-labs/cosmos-sdk/math v0.0.0-20250326031203-e68e6747bede
+	cosmossdk.io/simapp => github.com/agoric-labs/cosmos-sdk/simapp v0.0.0-20250326031203-e68e6747bede
+	cosmossdk.io/tools/rosetta => github.com/agoric-labs/cosmos-sdk/tools/rosetta v0.0.0-20250326031203-e68e6747bede
+
+	// use cometbft
+	github.com/cometbft/cometbft => github.com/agoric-labs/cometbft v0.37.15-alpha.agoric.1
+
+	github.com/cosmos/cosmos-sdk => github.com/agoric-labs/cosmos-sdk v0.47.17-alpha.agoric.1
+	// github.com/cosmos/keyring => github.com/99designs/keyring v1.2.1
+	// github.com/keybase/go-keychain => github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
+
+	github.com/cosmos/ibc-go/v7 => github.com/agoric-labs/ibc-go/v7 v7.10.0-alpha.agoric.2
+)
+
+replace (
+	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v1.1.0
+	github.com/cosmos/ledger-cosmos-go => github.com/cosmos/ledger-cosmos-go v0.12.4
+	google.golang.org/grpc => google.golang.org/grpc v1.64.0
+)
