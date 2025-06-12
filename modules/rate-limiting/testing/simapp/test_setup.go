@@ -21,9 +21,9 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	tmtypes "github.com/cometbft/cometbft/types"
+	abci "github.com/cometbft/cometbft/v2/abci/types"
+	"github.com/cometbft/cometbft/v2/crypto/secp256k1"
+	tmtypes "github.com/cometbft/cometbft/v2/types"
 )
 
 const Bech32Prefix = "stride"
@@ -77,7 +77,7 @@ func InitTestingApp() *SimApp {
 	}
 
 	_, err = app.InitChain(
-		&abci.RequestInitChain{
+		&abci.InitChainRequest{
 			ConsensusParams: simtestutil.DefaultConsensusParams,
 			AppStateBytes:   stateBytes,
 		},
