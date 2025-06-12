@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	"github.com/docker/docker/client"
 	"github.com/strangelove-ventures/interchaintest/v8"

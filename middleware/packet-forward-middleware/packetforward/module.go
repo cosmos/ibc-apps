@@ -17,7 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	abci "github.com/cometbft/cometbft/abci/types"
+	abci "github.com/cometbft/cometbft/v2/abci/types"
 )
 
 var (

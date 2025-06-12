@@ -29,8 +29,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	tmcfg "github.com/cometbft/cometbft/config"
-	tmcli "github.com/cometbft/cometbft/libs/cli"
+	tmcfg "github.com/cometbft/cometbft/v2/config"
+	tmcli "github.com/cometbft/cometbft/v2/libs/cli"
 )
 
 // NewRootCmd creates a new root command for simd. It is called once in the

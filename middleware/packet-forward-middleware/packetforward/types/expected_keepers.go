@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	cmtbytes "github.com/cometbft/cometbft/libs/bytes"
+	cmtbytes "github.com/cometbft/cometbft/v2/libs/bytes"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

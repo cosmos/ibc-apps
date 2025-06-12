@@ -13,7 +13,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmproto "github.com/cometbft/cometbft/api/cometbft/types/v2"
 	dbm "github.com/cosmos/cosmos-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

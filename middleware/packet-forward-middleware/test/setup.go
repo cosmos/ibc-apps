@@ -22,7 +22,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmproto "github.com/cometbft/cometbft/api/cometbft/types/v2"
 
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 )
