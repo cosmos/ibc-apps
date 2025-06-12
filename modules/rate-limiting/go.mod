@@ -2,8 +2,6 @@ module github.com/cosmos/ibc-apps/modules/rate-limiting/v10
 
 go 1.24.3
 
-toolchain go1.24.4
-
 require (
 	cosmossdk.io/api v1.0.0-alpha.0.0.20250604161429-8c61b74a1806
 	cosmossdk.io/core v1.1.0-alpha.1.0.20250604161429-8c61b74a1806
