@@ -11,7 +11,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	bytes "github.com/cometbft/cometbft/libs/bytes"
+	bytes "github.com/cometbft/cometbft/v2/libs/bytes"
 	types "github.com/cosmos/cosmos-sdk/types"
 	types0 "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	gomock "github.com/golang/mock/gomock"

@@ -8,21 +8,22 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/math"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
+	"github.com/cosmos/interchaintest/v10/relayer"
+	"github.com/cosmos/interchaintest/v10/testreporter"
+	"github.com/cosmos/interchaintest/v10/testutil"
 	"github.com/docker/docker/client"
-	"github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	"github.com/strangelove-ventures/interchaintest/v8/relayer"
-	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
-	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"cosmossdk.io/math"
 )
 
 const (
