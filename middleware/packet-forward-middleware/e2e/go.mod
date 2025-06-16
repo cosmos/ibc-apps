@@ -6,18 +6,18 @@ toolchain go1.24.4
 
 replace (
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 => ../
+	github.com/cosmos/interchaintest/v10 => github.com/cosmos/interchaintest/v10 v10.0.0-alpha.2.0.20250611231223-e9b89758db37
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/strangelove-ventures/interchaintest/v8 => github.com/cosmos/interchaintest/v8 v8.8.2-0.20250224162529-535379c62c73
 )
 
 require (
-	cosmossdk.io/api v1.0.0-alpha.0.0.20250604161429-8c61b74a1806
-	cosmossdk.io/math v1.5.3
+	cosmossdk.io/api v1.0.0-alpha.0.0.20250604174653-810d15dd6d16
+	cosmossdk.io/math v1.5.4-0.20250604174653-810d15dd6d16
 	github.com/cosmos/cosmos-sdk v0.54.0-alpha.0.0.20250610194259-ef7b561f7019
 	github.com/cosmos/gogoproto v1.7.0
-	github.com/cosmos/ibc-go/v10 v10.0.0-beta.0.0.20250611233349-11dfe65dd5c8
+	github.com/cosmos/ibc-go/v10 v10.3.0
+	github.com/cosmos/interchaintest/v10 v10.0.0-alpha.2
 	github.com/docker/docker v28.0.0+incompatible
-	github.com/strangelove-ventures/interchaintest/v8 v8.0.1-0.20240104215144-7c10b9dfa2ad
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.73.0
@@ -28,7 +28,6 @@ require (
 	cel.dev/expr v0.23.0 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
 	cosmossdk.io/schema v1.1.0 // indirect
-	cosmossdk.io/x/upgrade v0.1.4 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.27.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
@@ -58,15 +57,13 @@ require (
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/storage v1.49.0 // indirect
-	cosmossdk.io/collections v1.2.1 // indirect
-	cosmossdk.io/core v1.1.0-alpha.1.0.20250604161429-8c61b74a1806 // indirect
+	cosmossdk.io/collections v1.3.0 // indirect
+	cosmossdk.io/core v1.1.0-alpha.1.0.20250604174653-810d15dd6d16 // indirect
 	cosmossdk.io/depinject v1.2.1 // indirect
-	cosmossdk.io/errors v1.0.2 // indirect
-	cosmossdk.io/log v1.6.0 // indirect
+	cosmossdk.io/errors v1.0.3-0.20250604174653-810d15dd6d16 // indirect
+	cosmossdk.io/log v1.6.1-0.20250604174653-810d15dd6d16 // indirect
 	cosmossdk.io/store v1.10.0-rc.1.0.20250609200650-1521447c77da // indirect
-	cosmossdk.io/x/evidence v0.1.1 // indirect
-	cosmossdk.io/x/feegrant v0.1.1 // indirect
-	cosmossdk.io/x/tx v1.2.0-alpha.0.0.20250604161429-8c61b74a1806 // indirect
+	cosmossdk.io/x/tx v1.2.0-alpha.0.0.20250604174653-810d15dd6d16 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
@@ -94,9 +91,8 @@ require (
 	github.com/cockroachdb/pebble v1.1.5 // indirect
 	github.com/cockroachdb/redact v1.1.6 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20250429170803-42689b6311bb // indirect
-	github.com/cometbft/cometbft v0.38.15 // indirect
 	github.com/cometbft/cometbft-db v1.0.4 // indirect
-	github.com/cometbft/cometbft/v2 v2.0.0-alpha.1 // indirect
+	github.com/cometbft/cometbft/v2 v2.0.0-main // indirect
 	github.com/consensys/bavard v0.1.27 // indirect
 	github.com/consensys/gnark-crypto v0.16.0 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
@@ -105,9 +101,8 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/iavl v1.2.6 // indirect
-	github.com/cosmos/ibc-go/modules/capability v1.0.1 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
-	github.com/cosmos/interchain-security/v7 v7.0.0-20250220171855-c39340d2cf4c // indirect
+	github.com/cosmos/interchain-security/v7 v7.0.0-20250611213438-69983c82a4ff // indirect
 	github.com/cosmos/ledger-cosmos-go v0.14.0 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20240724233137-53bbb0ceb27a // indirect
 	github.com/danieljoos/wincred v1.2.1 // indirect
@@ -115,7 +110,9 @@ require (
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
 	github.com/desertbit/timer v1.0.1 // indirect
+	github.com/dgraph-io/badger/v2 v2.2007.4 // indirect
 	github.com/dgraph-io/badger/v4 v4.6.0 // indirect
+	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -284,3 +281,5 @@ replace github.com/cometbft/cometbft/v2 => github.com/cometbft/cometbft/v2 v2.0.
 replace github.com/cometbft/cometbft/api => github.com/cometbft/cometbft/api v1.1.0-alpha.1
 
 replace github.com/cosmos/ibc-go/v10 => github.com/cosmos/ibc-go/v10 v10.0.0-beta.0.0.20250611233349-11dfe65dd5c8
+
+replace github.com/cosmos/interchain-security/v7 => github.com/cosmos/interchain-security/v7 v7.0.0-20250612185456-7fa104a52f0c
