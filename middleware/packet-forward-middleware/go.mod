@@ -1,7 +1,5 @@
 go 1.24.3
 
-toolchain go1.24.4
-
 module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10
 
 require (
