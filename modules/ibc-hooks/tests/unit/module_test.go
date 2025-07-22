@@ -16,12 +16,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcmock "github.com/cosmos/ibc-go/v8/testing/mock"
+	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcmock "github.com/cosmos/ibc-go/v10/testing/mock"
 )
 
 //go:embed testdata/counter/artifacts/counter.wasm
@@ -136,6 +135,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 	// call the hook twice
 	res := ibcmiddleware.OnRecvPacket(
 		suite.Ctx,
+		transfertypes.V1,
 		recvPacket,
 		suite.TestAddress.GetAddress(),
 	)
@@ -198,12 +198,14 @@ func (suite *HooksTestSuite) TestOnRecvPacketCounterContract() {
 	// call the hook twice
 	res := ibcmiddleware.OnRecvPacket(
 		suite.Ctx,
+		transfertypes.V1,
 		recvPacket,
 		suite.TestAddress.GetAddress(),
 	)
 	suite.True(res.Success())
 	res = ibcmiddleware.OnRecvPacket(
 		suite.Ctx,
+		transfertypes.V1,
 		recvPacket,
 		suite.TestAddress.GetAddress(),
 	)
@@ -276,7 +278,6 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 	// call the hook
 	seq, err := ibcmiddleware.SendPacket(
 		suite.Ctx,
-		&capabilitytypes.Capability{Index: 1},
 		callbackPacket.SourcePort,
 		callbackPacket.SourceChannel,
 		ibcclienttypes.Height{
@@ -309,6 +310,7 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 	err = wasmHooks.OnAcknowledgementPacketOverride(
 		ibcmiddleware,
 		suite.Ctx,
+		transfertypes.V1,
 		recvPacket,
 		ibcmock.MockAcknowledgement.Acknowledgement(),
 		suite.TestAddress.GetAddress(),
@@ -375,7 +377,6 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	// call the hook
 	seq, err := ibcmiddleware.SendPacket(
 		suite.Ctx,
-		&capabilitytypes.Capability{Index: 1},
 		callbackPacket.SourcePort,
 		callbackPacket.SourceChannel,
 		ibcclienttypes.Height{
@@ -408,6 +409,7 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	err = wasmHooks.OnTimeoutPacketOverride(
 		ibcmiddleware,
 		suite.Ctx,
+		transfertypes.V1,
 		recvPacket,
 		suite.TestAddress.GetAddress(),
 	)
