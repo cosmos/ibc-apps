@@ -2,8 +2,6 @@ module github.com/cosmos/ibc-apps/modules/ibc-hooks/v8
 
 go 1.23.8
 
-toolchain go1.24.5
-
 require (
 	cosmossdk.io/client/v2 v2.0.0-beta.3
 	cosmossdk.io/core v0.11.3
