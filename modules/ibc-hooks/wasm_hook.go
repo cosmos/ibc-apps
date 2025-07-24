@@ -14,11 +14,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
 type ContractAck struct {
@@ -44,20 +43,20 @@ func (h WasmHooks) ProperlyConfigured() bool {
 	return h.ContractKeeper != nil && h.ibcHooksKeeper != nil
 }
 
-func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
+func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
 	if !h.ProperlyConfigured() {
 		// Not configured
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 	isIcs20, data := isIcs20Packet(packet.GetData())
 	if !isIcs20 {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 
 	// Validate the memo
 	isWasmRouted, contractAddr, msgBytes, err := ValidateAndParseMemo(data.GetMemo(), data.Receiver)
 	if !isWasmRouted {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 	if err != nil {
 		return NewEmitErrorAcknowledgement(ctx, types.ErrMsgValidation, err.Error())
@@ -88,7 +87,7 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 	packet.Data = bz
 
 	// Execute the receive
-	ack := im.App.OnRecvPacket(ctx, packet, relayer)
+	ack := im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	if !ack.Success() {
 		return ack
 	}
@@ -218,15 +217,15 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 	return isWasmRouted, contractAddr, msgBytes, nil
 }
 
-func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight ibcclienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {
+func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, sourcePort string, sourceChannel string, timeoutHeight ibcclienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {
 	isIcs20, ics20data := isIcs20Packet(data)
 	if !isIcs20 {
-		return i.channel.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data) // continue
+		return i.channel.SendPacket(ctx, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data) // continue
 	}
 
 	isCallbackRouted, metadata := jsonStringHasKey(ics20data.GetMemo(), types.IBCCallbackKey)
 	if !isCallbackRouted {
-		return i.channel.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data) // continue
+		return i.channel.SendPacket(ctx, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data) // continue
 	}
 
 	// We remove the meta.callback provides instructions for post-send processing. This instruction are saved
@@ -252,7 +251,7 @@ func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap
 		return 0, errors.Wrap(err, "ics20data marshall error")
 	}
 
-	seq, err := i.channel.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, dataBytes)
+	seq, err := i.channel.SendPacket(ctx, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, dataBytes)
 	if err != nil {
 		return 0, err
 	}
@@ -271,8 +270,8 @@ func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap
 	return seq, nil
 }
 
-func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
-	err := im.App.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
+	err := im.App.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer)
 	if err != nil {
 		return err
 	}
@@ -318,8 +317,8 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 	return nil
 }
 
-func (h WasmHooks) OnTimeoutPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
-	err := im.App.OnTimeoutPacket(ctx, packet, relayer)
+func (h WasmHooks) OnTimeoutPacketOverride(im IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) error {
+	err := im.App.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 	if err != nil {
 		return err
 	}
@@ -403,25 +402,20 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 		panic("unable to unmarshal ICS20 packet data")
 	}
 
-	var denom string
-	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// if we receive back a token, that was originally sent from "this" chain, then we need to remove
-		// prefix added by the sender chain: port/channel/base_denom -> base_denom.
-		voucherPrefix := transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
-		unprefixedDenom := data.Denom[len(voucherPrefix):]
-
-		// coin denomination used in sending from the escrow address
-		denom = unprefixedDenom
-
-		// The denomination used to send the coins is either the native denom or the hash of the path
-		// if the denomination is not native.
-		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
-		if !denomTrace.IsNativeDenom() {
-			denom = denomTrace.IBCDenom()
+	denom := transfertypes.ExtractDenomFromPath(data.Denom)
+	if denom.HasPrefix(packet.GetSourcePort(), packet.GetSourceChannel()) {
+		// unwind denom
+		denom.Trace = denom.Trace[1:]
+		if len(denom.Trace) == 0 {
+			// denom is now unwound back to native denom
+			return denom.Path()
 		}
-	} else {
-		prefixedDenom := transfertypes.GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom
-		denom = transfertypes.ParseDenomTrace(prefixedDenom).IBCDenom()
+		// denom is still IBC denom
+		return denom.IBCDenom()
 	}
-	return denom
+	// append port and channel from this chain to denom
+	trace := []transfertypes.Hop{transfertypes.NewHop(packet.GetSourcePort(), packet.GetSourceChannel())}
+	denom.Trace = append(trace, denom.Trace...)
+
+	return denom.IBCDenom()
 }
