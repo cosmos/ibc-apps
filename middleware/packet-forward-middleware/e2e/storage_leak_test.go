@@ -27,7 +27,7 @@ type PFMExport struct {
 	} `json:"app_state"`
 }
 
-// TestStorageLeak verifies that that the PFM module does not retain any in-flight packets after a timeout occurs
+// TestStorageLeak verifies that the PFM module does not retain any in-flight packets after a timeout occurs
 func TestStorageLeak(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
