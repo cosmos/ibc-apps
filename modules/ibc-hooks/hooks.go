@@ -91,7 +91,7 @@ type OnRecvPacketAfterHooks interface {
 
 // OnAcknowledgementPacket Hooks
 type OnAcknowledgementPacketOverrideHooks interface {
-	OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error
+	OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error
 }
 type OnAcknowledgementPacketBeforeHooks interface {
 	OnAcknowledgementPacketBeforeHook(ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress)
@@ -102,7 +102,7 @@ type OnAcknowledgementPacketAfterHooks interface {
 
 // OnTimeoutPacket Hooks
 type OnTimeoutPacketOverrideHooks interface {
-	OnTimeoutPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error
+	OnTimeoutPacketOverride(im IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) error
 }
 type OnTimeoutPacketBeforeHooks interface {
 	OnTimeoutPacketBeforeHook(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress)

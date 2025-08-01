@@ -198,7 +198,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	if hook, ok := im.ICS4Middleware.Hooks.(OnAcknowledgementPacketOverrideHooks); ok {
-		return hook.OnAcknowledgementPacketOverride(im, ctx, packet, acknowledgement, relayer)
+		return hook.OnAcknowledgementPacketOverride(im, ctx, channelVersion, packet, acknowledgement, relayer)
 	}
 	if hook, ok := im.ICS4Middleware.Hooks.(OnAcknowledgementPacketBeforeHooks); ok {
 		hook.OnAcknowledgementPacketBeforeHook(ctx, packet, acknowledgement, relayer)
@@ -221,7 +221,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	relayer sdk.AccAddress,
 ) error {
 	if hook, ok := im.ICS4Middleware.Hooks.(OnTimeoutPacketOverrideHooks); ok {
-		return hook.OnTimeoutPacketOverride(im, ctx, packet, relayer)
+		return hook.OnTimeoutPacketOverride(im, ctx, channelVersion, packet, relayer)
 	}
 
 	if hook, ok := im.ICS4Middleware.Hooks.(OnTimeoutPacketBeforeHooks); ok {
