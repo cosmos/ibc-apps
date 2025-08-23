@@ -60,7 +60,7 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	config := simcli.NewConfigFromFlags()
 	config.ChainID = simulationAppChainID
 
-	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, "leveldb-app-sim", "Simulation", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
+	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, simulationDirPrefix, simulationDbName, simcli.FlagVerboseValue, simcli.FlagEnabledValue)
 	if skip {
 		t.Skip(msg)
 	}
@@ -76,6 +76,6 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
 	app := NewSimApp(logger, db, nil, true, appOptions, baseapp.SetChainID(simulationAppChainID))
-	require.Equal(t, "SimApp", app.Name())
+	require.Equal(t, AppName, app.Name())
 	return config, db, appOptions, app
 }
