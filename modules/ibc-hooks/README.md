@@ -194,9 +194,9 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 ```go
 // import (
     ...
-    ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8"
-	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/keeper"
-	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/types"
+    ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
+	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/keeper"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
     ...
 // )
 ```
