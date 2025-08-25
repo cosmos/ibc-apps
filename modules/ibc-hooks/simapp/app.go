@@ -600,7 +600,7 @@ func NewSimApp(
 		appCodec,
 		runtime.NewKVStoreService(keys[icahosttypes.StoreKey]),
 		app.GetSubspace(icahosttypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // use ics29 fee as ics4Wrapper in middleware stack
+		app.IBCKeeper.ChannelKeeper, // ISC4 Wrapper: channel keeper directly since this is not used in a middleware stack
 		app.IBCKeeper.ChannelKeeper,
 		app.AccountKeeper,
 		app.MsgServiceRouter(),
