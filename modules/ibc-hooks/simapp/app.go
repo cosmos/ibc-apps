@@ -503,11 +503,10 @@ func NewSimApp(
 		govModAddress,
 	)
 
-	// 'ibc' module - depends on
-	// 1. 'staking'
-	// 2. 'upgrade'
-	// 4. 'gov'
-	// 5. 'params'
+	// 'ibc' keeper - depends on
+	// 1. 'upgrade'
+	// 2. 'gov'
+	// 3. 'params'
 	app.keys[ibcexported.StoreKey] = storetypes.NewKVStoreKey(ibcexported.StoreKey)
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,
@@ -519,23 +518,15 @@ func NewSimApp(
 
 	simModules = append(simModules, ibc.NewAppModule(app.IBCKeeper))
 
-	// 'ibcfeekeeper' module - depends on
-	// 1. 'bank'
-	// 2. 'auth'
-	// 3. 'ibc channel'
-	// 4. 'ibc port'
-
 	app.keys[ibcporttypes.StoreKey] = storetypes.NewKVStoreKey(ibcporttypes.StoreKey)
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
-	icaHostStack := icaHostIBCModule
 
 	// Create fee enabled wasm ibc Stack
-	var wasmStack ibcporttypes.IBCModule
-	wasmStack = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
+	wasmIBCModule := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
 
 	app.IBCKeeper.SetRouter(ibcporttypes.NewRouter().
-		AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(wasm.ModuleName, wasmStack))
+		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
+		AddRoute(wasmtypes.ModuleName, wasmIBCModule))
 
 	// 'ibc-hooks' module - depends on
 	// 1. 'auth'
@@ -612,7 +603,6 @@ func NewSimApp(
 	app.BankKeeper.GetBlockedAddresses()[authtypes.NewModuleAddress(wasmtypes.ModuleName).String()] = true
 	app.keys[wasmtypes.StoreKey] = storetypes.NewKVStoreKey(wasmtypes.StoreKey)
 
-	// availableCapabilities := strings.Join(AllCapabilities(), ",")
 	wasmDir := filepath.Join(homePath, "wasm")
 	nodeConfig, err := wasm.ReadNodeConfig(appOpts)
 	if err != nil {
@@ -621,6 +611,7 @@ func NewSimApp(
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
+	// availableCapabilities := strings.Join(AllCapabilities(), ",")
 	app.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
