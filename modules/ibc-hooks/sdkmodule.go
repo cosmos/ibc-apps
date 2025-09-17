@@ -1,7 +1,6 @@
 package ibc_hooks
 
 import (
-	"context"
 	"encoding/json"
 
 	"cosmossdk.io/core/appmodule"
@@ -22,11 +21,11 @@ import (
 )
 
 var (
-	_ module.AppModuleBasic     = AppModuleBasic{}
-	_ module.AppModule          = AppModule{}
-	_ appmodule.AppModule       = AppModule{}
-	_ appmodule.HasEndBlocker   = AppModule{}
-	_ appmodule.HasBeginBlocker = AppModule{}
+	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule      = AppModule{}
+	_ appmodule.AppModule   = AppModule{}
+
+	// This module does not implement any begin or end block logic
 )
 
 // AppModuleBasic defines the basic application module used by the ibc-hooks module.
@@ -109,17 +108,6 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	return json.RawMessage([]byte("{}"))
-}
-
-// BeginBlock returns the begin blocker for the ibc-hooks module.
-func (am AppModule) BeginBlock(_ context.Context) error {
-	return nil
-}
-
-// EndBlock returns the end blocker for the ibc-hooks module. It returns no validator
-// updates.
-func (AppModule) EndBlock(_ context.Context) error {
-	return nil
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
