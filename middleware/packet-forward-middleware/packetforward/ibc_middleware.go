@@ -400,6 +400,11 @@ func (im IBCMiddleware) WriteAcknowledgement(
 	return im.keeper.WriteAcknowledgement(ctx, packet, ack)
 }
 
+// SetUnderlyingApplication implements the porttypes.Middleware interface.
+func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
+	im.app = app
+}
+
 // SetICS4Wrapper implements the porttypes.Middleware interface.
 func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
 	im.keeper.SetICS4Wrapper(wrapper)
