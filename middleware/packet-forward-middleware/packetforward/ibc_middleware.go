@@ -400,6 +400,11 @@ func (im IBCMiddleware) WriteAcknowledgement(
 	return im.keeper.WriteAcknowledgement(ctx, packet, ack)
 }
 
+// SetICS4Wrapper implements the porttypes.Middleware interface.
+func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	im.keeper.SetICS4Wrapper(wrapper)
+}
+
 func (im IBCMiddleware) GetAppVersion(
 	ctx sdk.Context,
 	portID,
