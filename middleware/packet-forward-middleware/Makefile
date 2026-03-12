@@ -237,10 +237,10 @@ ictest-nonrefundable:
 ###############################################################################
 
 lint:
-	golangci-lint run --out-format=tab
+	go tool golangci-lint run --out-format=tab
 
 lint-fix:
-	golangci-lint run --fix --out-format=tab --issues-exit-code=0
+	go tool golangci-lint run --fix --out-format=tab --issues-exit-code=0
 .PHONY: lint lint-fix
 
 format:

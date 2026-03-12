@@ -17,8 +17,8 @@
 
 target/
 
-go.work.sum
-go.work
+#go.work.sum
+#go.work
 
 build/
 
