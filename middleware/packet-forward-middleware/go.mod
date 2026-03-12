@@ -2,7 +2,10 @@ go 1.24.1
 
 module github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10
 
-tool github.com/golangci/golangci-lint/cmd/golangci-lint
+tool (
+	github.com/golangci/golangci-lint/cmd/golangci-lint
+	github.com/daixiang0/gci
+)
 
 require (
 	cosmossdk.io/api v0.7.6

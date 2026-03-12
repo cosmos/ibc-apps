@@ -14,7 +14,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
 		key := key
 		value := value
 		bz := k.cdc.MustMarshal(&value)
-		store.Set([]byte(key), bz)
+		_ = store.Set([]byte(key), bz)
 	}
 }
 

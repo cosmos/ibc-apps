@@ -321,7 +321,7 @@ func (k *Keeper) ForwardTransferPacket(
 			k.Logger(ctx).Error("packetForwardMiddleware error marshaling next as JSON",
 				"error", err,
 			)
-			return errorsmod.Wrapf(sdkerrors.ErrJSONMarshal, err.Error())
+			return errorsmod.Wrapf(sdkerrors.ErrJSONMarshal, "%s", err)
 		}
 		memo = string(memoBz)
 	}
@@ -355,7 +355,7 @@ func (k *Keeper) ForwardTransferPacket(
 			"amount", token.Amount.String(), "denom", token.Denom,
 			"error", err,
 		)
-		return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
+		return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "%s", err)
 	}
 
 	// Store the following information in keeper:
@@ -385,7 +385,7 @@ func (k *Keeper) ForwardTransferPacket(
 	key := types.RefundPacketKey(metadata.Channel, metadata.Port, res.Sequence)
 	store := k.storeService.OpenKVStore(ctx)
 	bz := k.cdc.MustMarshal(inFlightPacket)
-	store.Set(key, bz)
+	_ = store.Set(key, bz)
 
 	defer func() {
 		if token.Amount.IsInt64() {
@@ -537,7 +537,7 @@ func (k *Keeper) GetAndClearInFlightPacket(
 	}
 
 	// done with packet key now, delete.
-	store.Delete(key)
+	_ = store.Delete(key)
 
 	var inFlightPacket types.InFlightPacket
 	k.cdc.MustUnmarshal(bz, &inFlightPacket)

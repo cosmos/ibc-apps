@@ -95,7 +95,7 @@ endif
 all: tools build lint test
 
 # The below include contains the tools and runsim targets.
-#include contrib/devtools/Makefile
+include testing/contrib/devtools/Makefile
 
 ###############################################################################
 ###                                  Build                                  ###
