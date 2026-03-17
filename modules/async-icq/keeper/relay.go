@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	"cosmossdk.io/errors"
 
@@ -10,7 +10,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
 // OnRecvPacket handles a given interchain queries packet on a destination host chain.
@@ -52,7 +52,7 @@ func (k Keeper) executeQuery(ctx sdk.Context, reqs []abci.RequestQuery) ([]byte,
 			return nil, errors.Wrapf(sdkerrors.ErrUnauthorized, "no route found for: %s", req.Path)
 		}
 
-		resp, err := route(ctx, abci.RequestQuery{
+		resp, err := route(ctx, &abci.RequestQuery{
 			Data: req.Data,
 			Path: req.Path,
 		})

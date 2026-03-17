@@ -3,8 +3,10 @@ package keeper_test
 import (
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+
+	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -13,9 +15,9 @@ import (
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 )
 
 func (suite *KeeperTestSuite) TestOnRecvPacket() {
@@ -237,13 +239,13 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 	)
 
 	ctx := suite.chainB.GetContext()
-	ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeter(2000))
 	// enough gas for this small query, but not for the larger one. This one should work
 	_, err = simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
 	suite.Require().NoError(err)
 
 	// fund account with 10_000 denoms
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 	for i := 0; i < 10_000; i++ {
 		denom := fmt.Sprintf("denom%d", i)
 		err = simapp.GetSimApp(suite.chainB).BankKeeper.MintCoins(ctx, minttypes.ModuleName, sdk.NewCoins(sdk.NewInt64Coin(denom, 10)))
@@ -273,7 +275,7 @@ func (suite *KeeperTestSuite) TestOutOfGasOnSlowQueries() {
 
 	// and this one should panic
 	suite.Assert().Panics(func() {
-		ctx = ctx.WithGasMeter(sdk.NewGasMeter(2000))
+		ctx = ctx.WithGasMeter(storetypes.NewGasMeter(2000))
 		_, _ = simapp.GetSimApp(suite.chainB).ICQKeeper.OnRecvPacket(ctx, packet)
 	}, "out of gas")
 }

@@ -8,7 +8,7 @@ import (
 
 	"github.com/iancoleman/orderedmap"
 
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 )
 
 type PacketMetadata struct {

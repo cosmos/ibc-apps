@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 	PFMImage            = ibc.DockerImage{
 		Repository: pfmRepo,
 		Version:    pfmVersion,
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	Denom         = "utoken"
@@ -54,8 +54,8 @@ var (
 
 	DefaultRelayer = ibc.DockerImage{
 		Repository: "ghcr.io/cosmos/relayer",
-		Version:    "v2.6.0",
-		UidGid:     "1025:1025",
+		Version:    "main",
+		UIDGID:     "1025:1025",
 	}
 )
 

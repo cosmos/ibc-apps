@@ -3,10 +3,9 @@ package ibcapps.interchainquerydemo.interquery;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-query-demo/x/interquery/types";
 
 // Params defines the parameters for the module.
 message Params {
-  option (gogoproto.goproto_stringer) = false;
   
 }

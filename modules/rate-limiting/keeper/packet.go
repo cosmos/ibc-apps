@@ -1,22 +1,23 @@
 package keeper
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
 type RateLimitedPacketInfo struct {
@@ -30,6 +31,11 @@ type RateLimitedPacketInfo struct {
 // CheckAcknowledementSucceeded unmarshals IBC Acknowledgements, and determines
 // whether the tx was successful
 func (k Keeper) CheckAcknowledementSucceeded(ctx sdk.Context, ack []byte) (success bool, err error) {
+	// Check if the ack is the IBC v2 universal error acknowledgement
+	if bytes.Equal(ack, channeltypesv2.ErrorAcknowledgement[:]) {
+		return false, nil
+	}
+
 	// Unmarshal the raw ack response
 	var acknowledgement channeltypes.Acknowledgement
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(ack, &acknowledgement); err != nil {
@@ -69,7 +75,7 @@ func ParseDenomFromSendPacket(packet transfertypes.FungibleTokenPacketData) (den
 	denomTrace := transfertypes.ParseDenomTrace(packet.Denom)
 
 	// Native assets will have an empty trace path and can be returned as is
-	if denomTrace.Path == "" {
+	if denomTrace.Path() == "" {
 		denom = packet.Denom
 	} else {
 		// Non-native assets should be hashed
@@ -120,7 +126,7 @@ func ParseDenomFromRecvPacket(packet channeltypes.Packet, packetData transfertyp
 
 		// Native assets will have an empty trace path and can be returned as is
 		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
-		if denomTrace.Path == "" {
+		if denomTrace.Path() == "" {
 			denom = unprefixedDenom
 		} else {
 			// Non-native assets should be hashed
@@ -146,8 +152,8 @@ func ParseDenomFromRecvPacket(packet channeltypes.Packet, packetData transfertyp
 // For a SEND packet, the Stride channelID is the SOURCE channel
 // For a RECEIVE packet, the Stride channelID is the DESTINATION channel
 //
-// The Source and Desination are defined from the perspective of a packet recipient
-// Meaning, when a send packet lands on a the host chain, the "Source" will be the Stride Channel,
+// The Source and Destination are defined from the perspective of a packet recipient
+// Meaning, when a send packet lands on the host chain, the "Source" will be the Stride Channel,
 // and the "Destination" will be the Host Channel
 // And, when a receive packet lands on a Stride, the "Source" will be the host zone's channel,
 // and the "Destination" will be the Stride Channel
@@ -166,7 +172,7 @@ func ParsePacketInfo(packet channeltypes.Packet, direction types.PacketDirection
 		denom = ParseDenomFromRecvPacket(packet, packetData)
 	}
 
-	amount, ok := sdk.NewIntFromString(packetData.Amount)
+	amount, ok := sdkmath.NewIntFromString(packetData.Amount)
 	if !ok {
 		return RateLimitedPacketInfo{},
 			errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "Unable to cast packet amount '%s' to sdkmath.Int", packetData.Amount)
@@ -258,7 +264,6 @@ func (k Keeper) TimeoutRateLimitedPacket(ctx sdk.Context, packet channeltypes.Pa
 // If the packet does not get rate limited, it passes the packet to the IBC Channel keeper
 func (k Keeper) SendPacket(
 	ctx sdk.Context,
-	channelCap *capabilitytypes.Capability,
 	sourcePort string,
 	sourceChannel string,
 	timeoutHeight clienttypes.Height,
@@ -268,7 +273,6 @@ func (k Keeper) SendPacket(
 	// The packet must first be sent up the stack to get the sequence number from the channel keeper
 	sequence, err = k.ics4Wrapper.SendPacket(
 		ctx,
-		channelCap,
 		sourcePort,
 		sourceChannel,
 		timeoutHeight,
@@ -295,8 +299,8 @@ func (k Keeper) SendPacket(
 }
 
 // WriteAcknowledgement wraps IBC ChannelKeeper's WriteAcknowledgement function
-func (k Keeper) WriteAcknowledgement(ctx sdk.Context, chanCap *capabilitytypes.Capability, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
-	return k.ics4Wrapper.WriteAcknowledgement(ctx, chanCap, packet, acknowledgement)
+func (k Keeper) WriteAcknowledgement(ctx sdk.Context, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
+	return k.ics4Wrapper.WriteAcknowledgement(ctx, packet, acknowledgement)
 }
 
 // GetAppVersion wraps IBC ChannelKeeper's GetAppVersion function

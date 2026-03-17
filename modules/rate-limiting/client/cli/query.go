@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -53,7 +53,7 @@ Example:
 		),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			channelId := args[0]
+			channelOrClientId := args[0]
 			denom, err := cmd.Flags().GetString(FlagDenom)
 			if err != nil {
 				return err
@@ -63,10 +63,10 @@ Example:
 			queryClient := types.NewQueryClient(clientCtx)
 
 			if denom == "" {
-				req := &types.QueryRateLimitsByChannelIdRequest{
-					ChannelId: channelId,
+				req := &types.QueryRateLimitsByChannelOrClientIdRequest{
+					ChannelOrClientId: channelOrClientId,
 				}
-				res, err := queryClient.RateLimitsByChannelId(context.Background(), req)
+				res, err := queryClient.RateLimitsByChannelOrClientId(context.Background(), req)
 				if err != nil {
 					return err
 				}
@@ -75,8 +75,8 @@ Example:
 			}
 
 			req := &types.QueryRateLimitRequest{
-				Denom:     denom,
-				ChannelId: channelId,
+				Denom:             denom,
+				ChannelOrClientId: channelOrClientId,
 			}
 			res, err := queryClient.RateLimit(context.Background(), req)
 			if err != nil {

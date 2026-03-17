@@ -1,0 +1,56 @@
+# Builds and commits the artifacts whenever a polytone release is made.
+name: polytone artifact compiler
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - "cosmwasm/polytone/v*"
+
+env:
+  WORKING_DIRECTORY: cosmwasm/polytone
+
+jobs:
+  release-artifacts:
+    runs-on: ubuntu-latest
+    container: cosmwasm/workspace-optimizer:0.15.1
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # tar is required for cargo cache
+      - run: apk add --no-cache tar
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Compile contracts
+        timeout-minutes: 30
+        run: optimize.sh .
+
+      - name: Upload contracts
+        uses: actions/upload-artifact@v3
+        with:
+          name: contracts
+          path: ${{ env.WORKING_DIRECTORY }}/artifacts/*
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ env.WORKING_DIRECTORY }}/artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -5,6 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
+	tmrand "github.com/tendermint/tendermint/libs/rand"
+	tmdb "github.com/tendermint/tm-db"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
@@ -14,11 +18,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/tendermint/starport/starport/pkg/cosmoscmd"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/app"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-query-demo/app"
 )
 
 type (

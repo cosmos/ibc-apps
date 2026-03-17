@@ -53,7 +53,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=stride \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=strided \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" 
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(LINK_STATICALLY),true)
 	ldflags += -linkmode=external -extldflags "-Wl,-z,muldefs -static"
@@ -90,41 +90,49 @@ clean:
 gosec:
 	gosec -exclude-dir=deps -severity=high ./...
 
+golangci_lint_cmd=golangci-lint
+golangci_version=v1.60.1
+
 lint:
-	golangci-lint run
+	@echo "--> Running linter"
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
+	@$(golangci_lint_cmd) run --timeout=10m
 
 ###############################################################################
 ###                                Tests                                    ###
 ###############################################################################
 
 test-unit:
-	@go test -mod=readonly ./... 
+	@go test -mod=readonly ./keeper/...
 
 
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
 
-containerProtoVer=0.14.0
-containerProtoImage=ghcr.io/cosmos/proto-builder:$(containerProtoVer)
+BUF_VERSION=1.31.0
+BUILDER_VERSION=0.14.0
 
-proto-all: proto-format proto-gen
-
-proto-gen:
-	@echo "Generating Protobuf files"
-	@$(DOCKER) run --user $(id -u):$(id -g) --rm -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/generate.sh; 
+proto-all: proto-format proto-lint proto-gen
 
 proto-format:
-	@echo "Formatting Protobuf files"
-	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/docker-build-proto \
-		find ./proto -name "*.proto" -exec clang-format -i {} \;  
+	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
+		bufbuild/buf:$(BUF_VERSION) format --diff --write
 
-proto-swagger-gen:
-	@echo "Generating Protobuf Swagger"
-	@$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protoc-swagger-gen.sh; 
+proto-gen:
+	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
+		ghcr.io/cosmos/proto-builder:$(BUILDER_VERSION) sh ./scripts/generate.sh
 
-proto-check-breaking:
-	@$(DOCKER_BUF) breaking --against $(HTTPS_GIT)#branch=main
+proto-lint:
+	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
+		bufbuild/buf:$(BUF_VERSION) lint
 
+###############################################################################
+###                             e2e interchain test                         ###
+###############################################################################
+
+local-image:
+	docker build . -f Dockerfile -t rate-limiting:local
+
+ictest-ratelimit:
+	cd e2e && go test -race -v -timeout 15m -run TestRateLimitBasic .

@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/exported"
-	v2 "github.com/cosmos/ibc-apps/modules/async-icq/v7/migrations/v2"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/exported"
+	v2 "github.com/cosmos/ibc-apps/modules/async-icq/v8/migrations/v2"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

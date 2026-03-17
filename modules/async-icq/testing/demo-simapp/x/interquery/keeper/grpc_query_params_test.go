@@ -3,10 +3,11 @@ package keeper_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	testkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/testutil/keeper"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/interchain-query-demo/x/interquery/types"
+	testkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-query-demo/testutil/keeper"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/interchain-query-demo/x/interquery/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestParamsQuery(t *testing.T) {

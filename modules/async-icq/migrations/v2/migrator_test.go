@@ -3,11 +3,13 @@ package v2_test
 import (
 	"testing"
 
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v7"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/exported"
-	v2 "github.com/cosmos/ibc-apps/modules/async-icq/v7/migrations/v2"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/exported"
+	v2 "github.com/cosmos/ibc-apps/modules/async-icq/v8/migrations/v2"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/stretchr/testify/require"
+
+	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,8 +39,8 @@ func TestMigrate(t *testing.T) {
 	encCfg := moduletestutil.MakeTestEncodingConfig(icq.AppModuleBasic{})
 	cdc := encCfg.Codec
 
-	storeKey := sdk.NewKVStoreKey(types.ModuleName)
-	tKey := sdk.NewTransientStoreKey("transient_test")
+	storeKey := storetypes.NewKVStoreKey(types.ModuleName)
+	tKey := storetypes.NewTransientStoreKey("transient_test")
 	ctx := testutil.DefaultContext(storeKey, tKey)
 	store := ctx.KVStore(storeKey)
 

@@ -1,21 +1,18 @@
 package apptesting
 
 import (
-	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp"
+	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/testing/simapp"
 	"github.com/stretchr/testify/suite"
+
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	tmtypesproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
-const (
-	TestChainId = "chain-0"
-)
+var TestChainId = "chain-0"
 
 type AppTestHelper struct {
 	suite.Suite
@@ -29,7 +26,7 @@ type AppTestHelper struct {
 // AppTestHelper Constructor
 func (s *AppTestHelper) Setup() {
 	s.App = app.InitTestingApp()
-	s.Ctx = s.App.BaseApp.NewContext(false, tmtypesproto.Header{Height: 1, ChainID: TestChainId})
+	s.Ctx = s.App.BaseApp.NewContext(false)
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
@@ -37,7 +34,7 @@ func (s *AppTestHelper) Setup() {
 	s.TestAccs = CreateRandomAccounts(3)
 }
 
-// Generate random account addresss
+// Generate random account addresses
 func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
 	testAddrs := make([]sdk.AccAddress, numAccts)
 	for i := 0; i < numAccts; i++ {
@@ -58,13 +55,13 @@ func (s *AppTestHelper) ConfirmUpgradeSucceededs(upgradeName string, upgradeHeig
 
 	err := s.App.UpgradeKeeper.ScheduleUpgrade(s.Ctx, plan)
 	s.Require().NoError(err)
-	_, exists := s.App.UpgradeKeeper.GetUpgradePlan(s.Ctx)
-	s.Require().True(exists)
+	_, err = s.App.UpgradeKeeper.GetUpgradePlan(s.Ctx)
+	s.Require().NoError(err)
 
 	s.Ctx = s.Ctx.WithBlockHeight(upgradeHeight)
 	s.Require().NotPanics(func() {
-		beginBlockRequest := abci.RequestBeginBlock{}
-		s.App.BeginBlocker(s.Ctx, beginBlockRequest)
+		_, err := s.App.BeginBlocker(s.Ctx)
+		s.Require().NoError(err)
 	})
 }
 

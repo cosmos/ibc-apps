@@ -1,6 +1,6 @@
 [package]
 name = "echo"
-description = "Cosmwasm contract that always returns the same response"
+description = "CosmWasm contract that always returns the same response"
 version = "0.1.0"
 authors = ["osmosis contributors"]
 edition = "2021"

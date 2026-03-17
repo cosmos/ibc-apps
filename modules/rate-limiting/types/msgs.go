@@ -9,6 +9,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
+
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 )
 
 const (
@@ -35,13 +37,13 @@ var (
 //               MsgAddRateLimit
 // ----------------------------------------------
 
-func NewMsgAddRateLimit(denom, channelId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgAddRateLimit {
+func NewMsgAddRateLimit(denom, channelOrClientId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgAddRateLimit {
 	return &MsgAddRateLimit{
-		Denom:          denom,
-		ChannelId:      channelId,
-		MaxPercentSend: maxPercentSend,
-		MaxPercentRecv: maxPercentRecv,
-		DurationHours:  durationHours,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
+		MaxPercentSend:    maxPercentSend,
+		MaxPercentRecv:    maxPercentRecv,
+		DurationHours:     durationHours,
 	}
 }
 
@@ -76,13 +78,13 @@ func (msg *MsgAddRateLimit) ValidateBasic() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid denom (%s)", msg.Denom)
 	}
 
-	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelId)
+	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelOrClientId)
 	if err != nil {
-		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelId)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelOrClientId)
 	}
-	if !matched {
+	if !matched && !clienttypes.IsValidClientID(msg.ChannelOrClientId) {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
-			"invalid channel-id (%s), must be of the format 'channel-{N}'", msg.ChannelId)
+			"invalid channel or client-id (%s), must be of the format 'channel-{N}' or a valid client-id", msg.ChannelOrClientId)
 	}
 
 	if msg.MaxPercentSend.GT(sdkmath.NewInt(100)) || msg.MaxPercentSend.LT(sdkmath.ZeroInt()) {
@@ -111,13 +113,13 @@ func (msg *MsgAddRateLimit) ValidateBasic() error {
 //               MsgUpdateRateLimit
 // ----------------------------------------------
 
-func NewMsgUpdateRateLimit(denom, channelId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgUpdateRateLimit {
+func NewMsgUpdateRateLimit(denom, channelOrClientId string, maxPercentSend sdkmath.Int, maxPercentRecv sdkmath.Int, durationHours uint64) *MsgUpdateRateLimit {
 	return &MsgUpdateRateLimit{
-		Denom:          denom,
-		ChannelId:      channelId,
-		MaxPercentSend: maxPercentSend,
-		MaxPercentRecv: maxPercentRecv,
-		DurationHours:  durationHours,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
+		MaxPercentSend:    maxPercentSend,
+		MaxPercentRecv:    maxPercentRecv,
+		DurationHours:     durationHours,
 	}
 }
 
@@ -152,13 +154,13 @@ func (msg *MsgUpdateRateLimit) ValidateBasic() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid denom (%s)", msg.Denom)
 	}
 
-	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelId)
+	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelOrClientId)
 	if err != nil {
-		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelId)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelOrClientId)
 	}
-	if !matched {
+	if !matched && !clienttypes.IsValidClientID(msg.ChannelOrClientId) {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
-			"invalid channel-id (%s), must be of the format 'channel-{N}'", msg.ChannelId)
+			"invalid channel or client-id (%s), must be of the format 'channel-{N}' or a valid client-id", msg.ChannelOrClientId)
 	}
 
 	if msg.MaxPercentSend.GT(sdkmath.NewInt(100)) || msg.MaxPercentSend.LT(sdkmath.ZeroInt()) {
@@ -187,10 +189,10 @@ func (msg *MsgUpdateRateLimit) ValidateBasic() error {
 //               MsgRemoveRateLimit
 // ----------------------------------------------
 
-func NewMsgRemoveRateLimit(denom, channelId string) *MsgRemoveRateLimit {
+func NewMsgRemoveRateLimit(denom, channelOrClientId string) *MsgRemoveRateLimit {
 	return &MsgRemoveRateLimit{
-		Denom:     denom,
-		ChannelId: channelId,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
 	}
 }
 
@@ -225,13 +227,13 @@ func (msg *MsgRemoveRateLimit) ValidateBasic() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid denom (%s)", msg.Denom)
 	}
 
-	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelId)
+	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelOrClientId)
 	if err != nil {
-		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelId)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelOrClientId)
 	}
-	if !matched {
+	if !matched && !clienttypes.IsValidClientID(msg.ChannelOrClientId) {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
-			"invalid channel-id (%s), must be of the format 'channel-{N}'", msg.ChannelId)
+			"invalid channel or client-id (%s), must be of the format 'channel-{N}' or a valid client-id", msg.ChannelOrClientId)
 	}
 
 	return nil
@@ -241,10 +243,10 @@ func (msg *MsgRemoveRateLimit) ValidateBasic() error {
 //               MsgResetRateLimit
 // ----------------------------------------------
 
-func NewMsgResetRateLimit(denom, channelId string) *MsgResetRateLimit {
+func NewMsgResetRateLimit(denom, channelOrClientId string) *MsgResetRateLimit {
 	return &MsgResetRateLimit{
-		Denom:     denom,
-		ChannelId: channelId,
+		Denom:             denom,
+		ChannelOrClientId: channelOrClientId,
 	}
 }
 
@@ -279,13 +281,13 @@ func (msg *MsgResetRateLimit) ValidateBasic() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid denom (%s)", msg.Denom)
 	}
 
-	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelId)
+	matched, err := regexp.MatchString(`^channel-\d+$`, msg.ChannelOrClientId)
 	if err != nil {
-		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelId)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unable to verify channel-id (%s)", msg.ChannelOrClientId)
 	}
-	if !matched {
+	if !matched && !clienttypes.IsValidClientID(msg.ChannelOrClientId) {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
-			"invalid channel-id (%s), must be of the format 'channel-{N}'", msg.ChannelId)
+			"invalid channel or client-id (%s), must be of the format 'channel-{N}' or a valid client-id", msg.ChannelOrClientId)
 	}
 
 	return nil

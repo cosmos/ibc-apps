@@ -1,0 +1,5 @@
+[codespell]
+skip = *.pulsar.go,*.pb.go,*.pb.gw.go,*.cosmos_orm.go,*.json,*.git,*.js,crypto/keys,fuzz,*.h,proto/tendermint,*.bin,*.sum,*.mod,*_test.go
+ignore-words-list = userA,users,create,crate
+count =
+quiet-level = 3

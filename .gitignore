@@ -18,3 +18,8 @@
 target/
 
 go.work.sum
+go.work
+
+build/
+
+.idea

@@ -3,12 +3,12 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/testing/simapp"
-	"github.com/cosmos/ibc-apps/modules/async-icq/v7/types"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/stretchr/testify/suite"
 
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 )
 
 var TestPort = "icq-test"
@@ -45,7 +45,7 @@ func NewICQPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
 	return path
 }
 
-// SetupICAPath invokes the ICQ entrypoint and subsequent channel handshake handlers
+// SetupICQPath invokes the ICQ entrypoint and subsequent channel handshake handlers
 func SetupICQPath(path *ibctesting.Path) error {
 	if err := path.EndpointA.ChanOpenInit(); err != nil {
 		return err

@@ -12,9 +12,9 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 	if epochStarting, epochNumber := k.CheckHourEpochStarting(ctx); epochStarting {
 		for _, rateLimit := range k.GetAllRateLimits(ctx) {
 			if rateLimit.Quota.DurationHours != 0 && epochNumber%rateLimit.Quota.DurationHours == 0 {
-				err := k.ResetRateLimit(ctx, rateLimit.Path.Denom, rateLimit.Path.ChannelId)
+				err := k.ResetRateLimit(ctx, rateLimit.Path.Denom, rateLimit.Path.ChannelOrClientId)
 				if err != nil {
-					k.Logger(ctx).Error(fmt.Sprintf("Unable to reset quota for Denom: %s, ChannelId: %s", rateLimit.Path.Denom, rateLimit.Path.ChannelId))
+					k.Logger(ctx).Error(fmt.Sprintf("Unable to reset quota for Denom: %s, ChannelOrClientId: %s", rateLimit.Path.Denom, rateLimit.Path.ChannelOrClientId))
 				}
 			}
 		}

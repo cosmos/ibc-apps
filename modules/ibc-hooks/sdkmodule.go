@@ -3,8 +3,8 @@ package ibc_hooks
 import (
 	"encoding/json"
 
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/client/cli"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/client/cli"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
@@ -107,14 +107,20 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // BeginBlock returns the begin blocker for the ibc-hooks module.
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx sdk.Context) {
 }
 
 // EndBlock returns the end blocker for the ibc-hooks module. It returns no validator
 // updates.
-func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (AppModule) EndBlock(_ sdk.Context) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 1 }
+
+// Add this method to implement the module.AppModule interface
+func (AppModule) IsAppModule() {}
+
+// IsOnePerModuleType ensures AppModule implements the module.AppModule interface.
+func (AppModule) IsOnePerModuleType() {}

@@ -1,21 +1,24 @@
 package keeper
 
 import (
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
 // Stores/Updates a rate limit object in the store
 func (k Keeper) SetRateLimit(ctx sdk.Context, rateLimit types.RateLimit) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 
-	rateLimitKey := types.GetRateLimitItemKey(rateLimit.Path.Denom, rateLimit.Path.ChannelId)
+	rateLimitKey := types.GetRateLimitItemKey(rateLimit.Path.Denom, rateLimit.Path.ChannelOrClientId)
 	rateLimitValue := k.cdc.MustMarshal(&rateLimit)
 
 	store.Set(rateLimitKey, rateLimitValue)
@@ -23,14 +26,16 @@ func (k Keeper) SetRateLimit(ctx sdk.Context, rateLimit types.RateLimit) {
 
 // Removes a rate limit object from the store using denom and channel-id
 func (k Keeper) RemoveRateLimit(ctx sdk.Context, denom string, channelId string) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 	rateLimitKey := types.GetRateLimitItemKey(denom, channelId)
 	store.Delete(rateLimitKey)
 }
 
 // Grabs and returns a rate limit object from the store using denom and channel-id
 func (k Keeper) GetRateLimit(ctx sdk.Context, denom string, channelId string) (rateLimit types.RateLimit, found bool) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 
 	rateLimitKey := types.GetRateLimitItemKey(denom, channelId)
 	rateLimitValue := store.Get(rateLimitKey)
@@ -45,7 +50,8 @@ func (k Keeper) GetRateLimit(ctx sdk.Context, denom string, channelId string) (r
 
 // Returns all rate limits stored
 func (k Keeper) GetAllRateLimits(ctx sdk.Context) []types.RateLimit {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.RateLimitKeyPrefix)
 
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
@@ -70,21 +76,25 @@ func (k Keeper) AddRateLimit(ctx sdk.Context, msg *types.MsgAddRateLimit) error 
 	}
 
 	// Confirm the rate limit does not already exist
-	_, found := k.GetRateLimit(ctx, msg.Denom, msg.ChannelId)
+	_, found := k.GetRateLimit(ctx, msg.Denom, msg.ChannelOrClientId)
 	if found {
 		return types.ErrRateLimitAlreadyExists
 	}
 
 	// Confirm the channel exists
-	_, found = k.channelKeeper.GetChannel(ctx, transfertypes.PortID, msg.ChannelId)
+	_, found = k.channelKeeper.GetChannel(ctx, transfertypes.PortID, msg.ChannelOrClientId)
 	if !found {
-		return types.ErrChannelNotFound
+		// Check if the channelId is clientId
+		status := k.clientKeeper.GetClientStatus(ctx, msg.ChannelOrClientId)
+		if status == ibcexported.Unauthorized {
+			return types.ErrChannelNotFound
+		}
 	}
 
 	// Create and store the rate limit object
 	path := types.Path{
-		Denom:     msg.Denom,
-		ChannelId: msg.ChannelId,
+		Denom:             msg.Denom,
+		ChannelOrClientId: msg.ChannelOrClientId,
 	}
 	quota := types.Quota{
 		MaxPercentSend: msg.MaxPercentSend,
@@ -109,7 +119,7 @@ func (k Keeper) AddRateLimit(ctx sdk.Context, msg *types.MsgAddRateLimit) error 
 // Updates an existing rate limit. Fails if the rate limit doesn't exist
 func (k Keeper) UpdateRateLimit(ctx sdk.Context, msg *types.MsgUpdateRateLimit) error {
 	// Confirm the rate limit exists
-	_, found := k.GetRateLimit(ctx, msg.Denom, msg.ChannelId)
+	_, found := k.GetRateLimit(ctx, msg.Denom, msg.ChannelOrClientId)
 	if !found {
 		return types.ErrRateLimitNotFound
 	}
@@ -117,8 +127,8 @@ func (k Keeper) UpdateRateLimit(ctx sdk.Context, msg *types.MsgUpdateRateLimit) 
 	// Update the rate limit object with the new quota information
 	// The flow should also get reset to 0
 	path := types.Path{
-		Denom:     msg.Denom,
-		ChannelId: msg.ChannelId,
+		Denom:             msg.Denom,
+		ChannelOrClientId: msg.ChannelOrClientId,
 	}
 	quota := types.Quota{
 		MaxPercentSend: msg.MaxPercentSend,

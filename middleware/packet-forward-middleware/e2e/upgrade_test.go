@@ -4,20 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
 	"cosmossdk.io/math"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	cosmosproto "github.com/cosmos/gogoproto/proto"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	"github.com/docker/docker/client"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/relayer"
-	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	"github.com/strangelove-ventures/interchaintest/v8"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/relayer"
+	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"google.golang.org/grpc"
@@ -28,8 +29,8 @@ const (
 	chainName   = "simapp"
 	upgradeName = "v3" // escrow state and balance re-sync upgrade
 
-	haltHeightDelta    = uint64(20) // will propose upgrade this many blocks in the future
-	blocksAfterUpgrade = uint64(7)
+	haltHeightDelta    = int64(20) // will propose upgrade this many blocks in the future
+	blocksAfterUpgrade = int64(7)
 
 	VotingPeriod     = "15s"
 	MaxDepositPeriod = "10s"
@@ -37,11 +38,11 @@ const (
 
 var (
 	// baseChain is the current version of the chain that will be upgraded from
-	// docker image load -i ../prev_builds/pfm_7_2_0.tar
+	// docker image load -i ../prev_builds/pfm_8_1_0.tar
 	baseChain = ibc.DockerImage{
 		Repository: "pfm",
-		Version:    "v7.2.0",
-		UidGid:     "1025:1025",
+		Version:    "v8.1.0",
+		UIDGID:     "1025:1025",
 	}
 
 	// make local-image
@@ -118,7 +119,6 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
 		relayer.DockerImage(&DefaultRelayer),
-		relayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	).Build(t, client, network)
 
 	const pathAB = "ab"
@@ -163,7 +163,7 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	})
 
 	initBal := math.NewInt(10_000_000_000)
-	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainB, chainC, chainD)
+	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainB, chainC, chainD)
 
 	// -------------------------------------------------------------------------
 	// IBC setup
@@ -395,8 +395,8 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	t.Logf("after: total escrow for denom: %s", totalEscrowAfter.Amount.Amount.String())
 }
 
-func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, upgradeName string, haltHeight uint64) string {
-	upgradeMsg := []cosmosproto.Message{
+func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, upgradeName string, haltHeight int64) string {
+	upgradeMsg := []cosmos.ProtoMessage{
 		&upgradetypes.MsgSoftwareUpgrade{
 			// Gov Module account
 			Authority: "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn",
@@ -407,7 +407,7 @@ func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.Cosm
 		},
 	}
 
-	proposal, err := chain.BuildProposal(upgradeMsg, "Chain Upgrade "+upgradeName, "Summary desc", "ipfs://CID", fmt.Sprintf(`500000000%s`, chain.Config().Denom))
+	proposal, err := chain.BuildProposal(upgradeMsg, "Chain Upgrade "+upgradeName, "Summary desc", "ipfs://CID", fmt.Sprintf(`500000000%s`, chain.Config().Denom), user.KeyName(), false)
 	require.NoError(t, err, "error building proposal")
 
 	txProp, err := chain.SubmitProposal(ctx, user.KeyName(), proposal)
@@ -417,7 +417,7 @@ func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.Cosm
 	return txProp.ProposalID
 }
 
-func UpgradeNodes(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, client *client.Client, haltHeight uint64, upgradeRepo, upgradeBranchVersion string) {
+func UpgradeNodes(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, client *client.Client, haltHeight int64, upgradeRepo, upgradeBranchVersion string) {
 	// bring down nodes to prepare for upgrade
 	t.Log("stopping node(s)")
 	err := chain.StopAllNodes(ctx)
@@ -446,11 +446,14 @@ func UpgradeNodes(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, 
 	require.GreaterOrEqual(t, height, haltHeight+blocksAfterUpgrade, "height did not increment enough after upgrade")
 }
 
-func ValidatorVoting(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, proposalID string, height uint64, haltHeight uint64) {
-	err := chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
+func ValidatorVoting(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, proposalID string, height int64, haltHeight int64) {
+	proposalInt, err := strconv.ParseUint(proposalID, 10, 64)
+	require.NoError(t, err, "failed to parse proposalID")
+
+	err = chain.VoteOnProposalAllValidators(ctx, proposalInt, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
-	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+haltHeightDelta, proposalID, cosmos.ProposalStatusPassed)
+	_, err = cosmos.PollForProposalStatusV1(ctx, chain, height, height+haltHeightDelta, proposalInt, govv1.ProposalStatus_PROPOSAL_STATUS_PASSED)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
 
 	timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, time.Second*45)

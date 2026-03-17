@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/testing/simapp"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/testing/simapp"
 
 	"cosmossdk.io/log"
 

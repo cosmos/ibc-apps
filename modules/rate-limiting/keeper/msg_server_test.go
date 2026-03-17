@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -12,41 +12,41 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
 var (
 	authority = authtypes.NewModuleAddress(govtypes.ModuleName).String()
 
 	addRateLimitMsg = types.MsgAddRateLimit{
-		Authority:      authority,
-		Denom:          "denom",
-		ChannelId:      "channel-0",
-		MaxPercentRecv: sdkmath.NewInt(10),
-		MaxPercentSend: sdkmath.NewInt(20),
-		DurationHours:  30,
+		Authority:         authority,
+		Denom:             "denom",
+		ChannelOrClientId: "channel-0",
+		MaxPercentRecv:    sdkmath.NewInt(10),
+		MaxPercentSend:    sdkmath.NewInt(20),
+		DurationHours:     30,
 	}
 
 	updateRateLimitMsg = types.MsgUpdateRateLimit{
-		Authority:      authority,
-		Denom:          "denom",
-		ChannelId:      "channel-0",
-		MaxPercentRecv: sdkmath.NewInt(20),
-		MaxPercentSend: sdkmath.NewInt(30),
-		DurationHours:  40,
+		Authority:         authority,
+		Denom:             "denom",
+		ChannelOrClientId: "channel-0",
+		MaxPercentRecv:    sdkmath.NewInt(20),
+		MaxPercentSend:    sdkmath.NewInt(30),
+		DurationHours:     40,
 	}
 
 	removeRateLimitMsg = types.MsgRemoveRateLimit{
-		Authority: authority,
-		Denom:     "denom",
-		ChannelId: "channel-0",
+		Authority:         authority,
+		Denom:             "denom",
+		ChannelOrClientId: "channel-0",
 	}
 
 	resetRateLimitMsg = types.MsgResetRateLimit{
-		Authority: authority,
-		Denom:     "denom",
-		ChannelId: "channel-0",
+		Authority:         authority,
+		Denom:             "denom",
+		ChannelOrClientId: "channel-0",
 	}
 )
 
@@ -71,7 +71,7 @@ func (s *KeeperTestSuite) addRateLimit(expectedErr *errorsmod.Error) {
 	if expectedErr == nil {
 		s.Require().NoError(actualErr)
 
-		_, found := s.App.RatelimitKeeper.GetRateLimit(s.Ctx, addRateLimitMsg.Denom, addRateLimitMsg.ChannelId)
+		_, found := s.App.RatelimitKeeper.GetRateLimit(s.Ctx, addRateLimitMsg.Denom, addRateLimitMsg.ChannelOrClientId)
 		s.Require().True(found)
 	} else {
 		// If it should have failed, check the error
@@ -91,7 +91,7 @@ func (s *KeeperTestSuite) addRateLimitWithError(expectedErr *errorsmod.Error) {
 
 func (s *KeeperTestSuite) TestMsgServer_AddRateLimit() {
 	denom := addRateLimitMsg.Denom
-	channelId := addRateLimitMsg.ChannelId
+	channelId := addRateLimitMsg.ChannelOrClientId
 	channelValue := sdkmath.NewInt(100)
 
 	// First try to add a rate limit when there's no channel value, it will fail
@@ -115,7 +115,7 @@ func (s *KeeperTestSuite) TestMsgServer_AddRateLimit() {
 
 func (s *KeeperTestSuite) TestMsgServer_UpdateRateLimit() {
 	denom := updateRateLimitMsg.Denom
-	channelId := updateRateLimitMsg.ChannelId
+	channelId := updateRateLimitMsg.ChannelOrClientId
 	channelValue := sdkmath.NewInt(100)
 
 	msgServer := keeper.NewMsgServerImpl(s.App.RatelimitKeeper)
@@ -147,7 +147,7 @@ func (s *KeeperTestSuite) TestMsgServer_UpdateRateLimit() {
 
 func (s *KeeperTestSuite) TestMsgServer_RemoveRateLimit() {
 	denom := removeRateLimitMsg.Denom
-	channelId := removeRateLimitMsg.ChannelId
+	channelId := removeRateLimitMsg.ChannelOrClientId
 	channelValue := sdkmath.NewInt(100)
 
 	msgServer := keeper.NewMsgServerImpl(s.App.RatelimitKeeper)
@@ -173,7 +173,7 @@ func (s *KeeperTestSuite) TestMsgServer_RemoveRateLimit() {
 
 func (s *KeeperTestSuite) TestMsgServer_ResetRateLimit() {
 	denom := resetRateLimitMsg.Denom
-	channelId := resetRateLimitMsg.ChannelId
+	channelId := resetRateLimitMsg.ChannelOrClientId
 	channelValue := sdkmath.NewInt(100)
 
 	msgServer := keeper.NewMsgServerImpl(s.App.RatelimitKeeper)

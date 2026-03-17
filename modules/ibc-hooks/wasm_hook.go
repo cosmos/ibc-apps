@@ -6,18 +6,19 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/keeper"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v8/types"
 
 	errors "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 )
 
 type ContractAck struct {
@@ -92,9 +93,9 @@ func (h WasmHooks) OnRecvPacketOverride(im IBCMiddleware, ctx sdk.Context, packe
 		return ack
 	}
 
-	amount, ok := sdk.NewIntFromString(data.GetAmount())
+	amount, ok := sdkmath.NewIntFromString(data.GetAmount())
 	if !ok {
-		// This should never happen, as it should've been caught in the underlaying call to OnRecvPacket,
+		// This should never happen, as it should've been caught in the underlying call to OnRecvPacket,
 		// but returning here for completeness
 		return NewEmitErrorAcknowledgement(ctx, types.ErrInvalidPacket, "Amount is not an int")
 	}
@@ -159,11 +160,7 @@ func jsonStringHasKey(memo, key string) (found bool, jsonObject map[string]inter
 	// If the key doesn't exist, there's nothing to do on this hook. Continue by passing the packet
 	// down the stack
 	_, ok := jsonObject[key]
-	if !ok {
-		return false, jsonObject
-	}
-
-	return true, jsonObject
+	return ok, jsonObject
 }
 
 func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, contractAddr sdk.AccAddress, msgBytes []byte, err error) {
@@ -181,7 +178,6 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, "wasm metadata is not a valid JSON map object")
 	}
 
-	// Get the contract
 	contract, ok := wasm["contract"].(string)
 	if !ok {
 		// The tokens will be returned
@@ -195,19 +191,16 @@ func ValidateAndParseMemo(memo string, receiver string) (isWasmRouted bool, cont
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `wasm["contract"] is not a valid bech32 address`)
 	}
 
-	// The contract and the receiver should be the same for the packet to be valid
 	if contract != receiver {
 		return isWasmRouted, sdk.AccAddress{}, nil,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `wasm["contract"] should be the same as the receiver of the packet`)
 	}
 
-	// Ensure the message key is provided
 	if wasm["msg"] == nil {
 		return isWasmRouted, sdk.AccAddress{}, nil,
 			fmt.Errorf(types.ErrBadMetadataFormatMsg, memo, `Could not find key wasm["msg"]`)
 	}
 
-	// Make sure the msg key is a map. If it isn't, return an error
 	_, ok = wasm["msg"].(map[string]interface{})
 	if !ok {
 		return isWasmRouted, sdk.AccAddress{}, nil,
@@ -236,7 +229,8 @@ func (h WasmHooks) SendPacketOverride(i ICS4Middleware, ctx sdk.Context, chanCap
 		return i.channel.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data) // continue
 	}
 
-	// We remove the callback metadata from the memo as it has already been processed.
+	// We remove the meta.callback provides instructions for post-send processing. This instruction are saved
+	// in the keeper (at the end of this function), and  at the end - it is set as  as it has already been processed.
 
 	// If the only available key in the memo is the callback, we should remove the memo
 	// from the data completely so the packet is sent without it.
@@ -411,9 +405,9 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 
 	var denom string
 	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.Denom) {
-		// remove prefix added by sender chain
+		// if we receive back a token, that was originally sent from "this" chain, then we need to remove
+		// prefix added by the sender chain: port/channel/base_denom -> base_denom.
 		voucherPrefix := transfertypes.GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
-
 		unprefixedDenom := data.Denom[len(voucherPrefix):]
 
 		// coin denomination used in sending from the escrow address
@@ -422,7 +416,7 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 		// The denomination used to send the coins is either the native denom or the hash of the path
 		// if the denomination is not native.
 		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
-		if denomTrace.Path != "" {
+		if !denomTrace.IsNativeDenom() {
 			denom = denomTrace.IBCDenom()
 		}
 	} else {

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	connectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibctmtypes "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	connectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibctmtypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 )
 
 // Add three rate limits on different channels
@@ -38,7 +38,7 @@ func (s *KeeperTestSuite) setupQueryRateLimitTests() []types.RateLimit {
 
 		// Then add the rate limit
 		rateLimit := types.RateLimit{
-			Path: &types.Path{Denom: "denom", ChannelId: channelId},
+			Path: &types.Path{Denom: "denom", ChannelOrClientId: channelId},
 		}
 		s.App.RatelimitKeeper.SetRateLimit(s.Ctx, rateLimit)
 		rateLimits = append(rateLimits, rateLimit)
@@ -57,10 +57,10 @@ func (s *KeeperTestSuite) TestQueryRateLimit() {
 	allRateLimits := s.setupQueryRateLimitTests()
 	for _, expectedRateLimit := range allRateLimits {
 		queryResponse, err := s.QueryClient.RateLimit(context.Background(), &types.QueryRateLimitRequest{
-			Denom:     expectedRateLimit.Path.Denom,
-			ChannelId: expectedRateLimit.Path.ChannelId,
+			Denom:             expectedRateLimit.Path.Denom,
+			ChannelOrClientId: expectedRateLimit.Path.ChannelOrClientId,
 		})
-		s.Require().NoError(err, "no error expected when querying rate limit on channel: %s", expectedRateLimit.Path.ChannelId)
+		s.Require().NoError(err, "no error expected when querying rate limit on channel: %s", expectedRateLimit.Path.ChannelOrClientId)
 		s.Require().Equal(expectedRateLimit, *queryResponse.RateLimit)
 	}
 }
@@ -78,12 +78,12 @@ func (s *KeeperTestSuite) TestQueryRateLimitsByChainId() {
 	}
 }
 
-func (s *KeeperTestSuite) TestQueryRateLimitsByChannelId() {
+func (s *KeeperTestSuite) TestQueryRateLimitsByChannelOrClientId() {
 	allRateLimits := s.setupQueryRateLimitTests()
 	for i, expectedRateLimit := range allRateLimits {
 		channelId := fmt.Sprintf("channel-%d", i)
-		queryResponse, err := s.QueryClient.RateLimitsByChannelId(context.Background(), &types.QueryRateLimitsByChannelIdRequest{
-			ChannelId: channelId,
+		queryResponse, err := s.QueryClient.RateLimitsByChannelOrClientId(context.Background(), &types.QueryRateLimitsByChannelOrClientIdRequest{
+			ChannelOrClientId: channelId,
 		})
 		s.Require().NoError(err, "no error expected when querying rate limit on channel: %s", channelId)
 		s.Require().Len(queryResponse.RateLimits, 1)

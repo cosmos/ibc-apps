@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types";
+option go_package = "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types";
 
 // PacketDirection defines whether the transfer packet is being sent from
 // this chain or is being received on this chain
@@ -19,7 +19,7 @@ enum PacketDirection {
 // Path holds the denom and channelID that define the rate limited route
 message Path {
   string denom = 1;
-  string channel_id = 2;
+  string channel_or_client_id = 2;
 }
 
 // Quota defines the rate limit thresholds for transfer packets
@@ -27,13 +27,13 @@ message Quota {
   // MaxPercentSend defines the threshold for outflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_send = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // MaxPercentSend defines the threshold for inflows
   // The threshold is defined as a percentage (e.g. 10 indicates 10%)
   string max_percent_recv = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // DurationHours specifies the number of hours before the rate limit
@@ -45,13 +45,13 @@ message Flow {
   // Inflow defines the total amount of inbound transfers for the given
   // rate limit in the current window
   string inflow = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // Outflow defines the total amount of outbound transfers for the given
   // rate limit in the current window
   string outflow = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   // ChannelValue stores the total supply of the denom at the start of
@@ -59,7 +59,7 @@ message Flow {
   // the rate limit threshold
   // The ChannelValue is fixed for the duration of the rate limit window
   string channel_value = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -87,7 +87,9 @@ message HourEpoch {
     (gogoproto.stdduration) = true,
     (gogoproto.jsontag) = "duration,omitempty"
   ];
-  google.protobuf.Timestamp epoch_start_time = 3
-      [ (gogoproto.stdtime) = true, (gogoproto.nullable) = false ];
+  google.protobuf.Timestamp epoch_start_time = 3 [
+    (gogoproto.stdtime) = true,
+    (gogoproto.nullable) = false
+  ];
   int64 epoch_start_height = 4;
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v7/types"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,13 +44,6 @@ func TestValidateGenesis(t *testing.T) {
 				PendingSendPacketSequenceNumbers: []string{"channel-0/1", "channel-2|3"},
 			},
 			expectedError: "invalid pending send packet (channel-2|3), must be of form: {channelId}/{sequenceNumber}",
-		},
-		{
-			name: "invalid packet sequence - invalid channel ID",
-			genesisState: types.GenesisState{
-				PendingSendPacketSequenceNumbers: []string{"channelX/1", "channel-2/3"},
-			},
-			expectedError: "invalid channel ID (channelX) in pending send packet",
 		},
 		{
 			name: "invalid packet sequence - invalid sequence",
