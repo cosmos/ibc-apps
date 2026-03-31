@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	querytypes "github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
@@ -117,4 +118,146 @@ func (s *KeeperTestSuite) TestQueryAllWhitelistedAddresses() {
 		{Sender: "address-C", Receiver: "address-D"},
 	}
 	s.Require().Equal(expectedWhitelist, queryResponse.AddressPairs)
+}
+
+func (s *KeeperTestSuite) TestPaginatedQueries() {
+	paginateRateLimits := func(fetch func(*querytypes.PageRequest) ([]types.RateLimit, *querytypes.PageResponse, error)) []types.RateLimit {
+		firstPageItems, firstPage, err := fetch(&querytypes.PageRequest{Limit: 1})
+		s.Require().NoError(err)
+		s.Require().Len(firstPageItems, 1)
+		s.Require().NotEmpty(firstPage.NextKey)
+
+		secondPageItems, _, err := fetch(&querytypes.PageRequest{Limit: 10, Key: firstPage.NextKey})
+		s.Require().NoError(err)
+		s.Require().NotEmpty(secondPageItems)
+
+		combined := append([]types.RateLimit{}, firstPageItems...)
+		combined = append(combined, secondPageItems...)
+		return combined
+	}
+
+	s.Run("all_rate_limits", func() {
+		expectedRateLimits := s.setupQueryRateLimitTests()
+
+		combined := paginateRateLimits(func(p *querytypes.PageRequest) ([]types.RateLimit, *querytypes.PageResponse, error) {
+			resp, err := s.QueryClient.AllRateLimits(context.Background(), &types.QueryAllRateLimitsRequest{Pagination: p})
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.RateLimits, resp.Pagination, nil
+		})
+		s.Require().Len(combined, len(expectedRateLimits))
+		s.Require().ElementsMatch(expectedRateLimits, combined)
+	})
+
+	s.Run("all_blacklisted_denoms", func() {
+		s.App.RatelimitKeeper.AddDenomToBlacklist(s.Ctx, "denom-A")
+		s.App.RatelimitKeeper.AddDenomToBlacklist(s.Ctx, "denom-B")
+
+		firstPage, err := s.QueryClient.AllBlacklistedDenoms(context.Background(), &types.QueryAllBlacklistedDenomsRequest{
+			Pagination: &querytypes.PageRequest{Limit: 1},
+		})
+		s.Require().NoError(err)
+		s.Require().Len(firstPage.Denoms, 1)
+		s.Require().NotEmpty(firstPage.Pagination.NextKey)
+
+		secondPage, err := s.QueryClient.AllBlacklistedDenoms(context.Background(), &types.QueryAllBlacklistedDenomsRequest{
+			Pagination: &querytypes.PageRequest{Limit: 10, Key: firstPage.Pagination.NextKey},
+		})
+		s.Require().NoError(err)
+		s.Require().NotEmpty(secondPage.Denoms)
+
+		combined := append([]string{}, firstPage.Denoms...)
+		combined = append(combined, secondPage.Denoms...)
+		s.Require().ElementsMatch([]string{"denom-A", "denom-B"}, combined)
+	})
+
+	s.Run("all_whitelisted_addresses", func() {
+		expectedWhitelist := []types.WhitelistedAddressPair{
+			{Sender: "address-A", Receiver: "address-B"},
+			{Sender: "address-C", Receiver: "address-D"},
+		}
+		for _, pair := range expectedWhitelist {
+			s.App.RatelimitKeeper.SetWhitelistedAddressPair(s.Ctx, pair)
+		}
+
+		firstPage, err := s.QueryClient.AllWhitelistedAddresses(context.Background(), &types.QueryAllWhitelistedAddressesRequest{
+			Pagination: &querytypes.PageRequest{Limit: 1},
+		})
+		s.Require().NoError(err)
+		s.Require().Len(firstPage.AddressPairs, 1)
+		s.Require().NotEmpty(firstPage.Pagination.NextKey)
+
+		secondPage, err := s.QueryClient.AllWhitelistedAddresses(context.Background(), &types.QueryAllWhitelistedAddressesRequest{
+			Pagination: &querytypes.PageRequest{Limit: 10, Key: firstPage.Pagination.NextKey},
+		})
+		s.Require().NoError(err)
+		s.Require().NotEmpty(secondPage.AddressPairs)
+
+		combined := append([]types.WhitelistedAddressPair{}, firstPage.AddressPairs...)
+		combined = append(combined, secondPage.AddressPairs...)
+		s.Require().ElementsMatch(expectedWhitelist, combined)
+	})
+
+	addRateLimitWithChain := func(chainID, connectionID, channelID, denom string) {
+		clientID := fmt.Sprintf("07-tendermint-%s", channelID)
+		clientState := ibctmtypes.NewClientState(
+			chainID, ibctmtypes.Fraction{}, time.Duration(0), time.Duration(0), time.Duration(0), clienttypes.Height{}, nil, nil,
+		)
+		connection := connectiontypes.ConnectionEnd{ClientId: clientID}
+		channel := channeltypes.Channel{ConnectionHops: []string{connectionID}}
+
+		s.App.IBCKeeper.ClientKeeper.SetClientState(s.Ctx, clientID, clientState)
+		s.App.IBCKeeper.ConnectionKeeper.SetConnection(s.Ctx, connectionID, connection)
+		s.App.IBCKeeper.ChannelKeeper.SetChannel(s.Ctx, transfertypes.PortID, channelID, channel)
+
+		s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
+			Path: &types.Path{Denom: denom, ChannelOrClientId: channelID},
+		})
+	}
+
+	s.Run("rate_limits_by_chain_id", func() {
+		targetChainID := "chain-target"
+		addRateLimitWithChain(targetChainID, "connection-chain-pg-1", "channel-chain-pg-1", "denom-a")
+		addRateLimitWithChain(targetChainID, "connection-chain-pg-2", "channel-chain-pg-2", "denom-b")
+		addRateLimitWithChain("chain-other", "connection-chain-pg-3", "channel-chain-pg-3", "denom-c")
+
+		combined := paginateRateLimits(func(p *querytypes.PageRequest) ([]types.RateLimit, *querytypes.PageResponse, error) {
+			resp, err := s.QueryClient.RateLimitsByChainId(context.Background(), &types.QueryRateLimitsByChainIdRequest{
+				ChainId:    targetChainID,
+				Pagination: p,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.RateLimits, resp.Pagination, nil
+		})
+
+		denoms := []string{combined[0].Path.Denom, combined[1].Path.Denom}
+		s.Require().ElementsMatch([]string{"denom-a", "denom-b"}, denoms)
+	})
+
+	s.Run("rate_limits_by_channel_or_client_id", func() {
+		targetChannelID := "channel-target"
+		addRateLimitWithChain("chain-1", "connection-10", targetChannelID, "denom-a")
+		// Same channel, different denom -> distinct rate limit entries.
+		s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
+			Path: &types.Path{Denom: "denom-b", ChannelOrClientId: targetChannelID},
+		})
+		addRateLimitWithChain("chain-2", "connection-11", "channel-other", "denom-c")
+
+		combined := paginateRateLimits(func(p *querytypes.PageRequest) ([]types.RateLimit, *querytypes.PageResponse, error) {
+			resp, err := s.QueryClient.RateLimitsByChannelOrClientId(context.Background(), &types.QueryRateLimitsByChannelOrClientIdRequest{
+				ChannelOrClientId: targetChannelID,
+				Pagination:        p,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.RateLimits, resp.Pagination, nil
+		})
+
+		denoms := []string{combined[0].Path.Denom, combined[1].Path.Denom}
+		s.Require().ElementsMatch([]string{"denom-a", "denom-b"}, denoms)
+	})
 }
