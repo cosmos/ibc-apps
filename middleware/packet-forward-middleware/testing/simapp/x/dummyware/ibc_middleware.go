@@ -77,8 +77,8 @@ func (im IBCMiddleware) OnChanCloseConfirm(ctx sdk.Context, portID, channelID st
 	return im.app.OnChanCloseConfirm(ctx, portID, channelID)
 }
 
-// OnRecvPacket sets the non-refundable context value to true so that on a failed forward funds will not
-// be refunded from the intermediate chain.
+// OnRecvPacket sets the non-refundable context value to true.
+// Packet forward middleware now rejects this as an unsupported feature.
 func (im IBCMiddleware) OnRecvPacket(
 	ctx sdk.Context,
 	channelVersion string,

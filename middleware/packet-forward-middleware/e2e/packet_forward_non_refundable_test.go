@@ -89,6 +89,9 @@ func TestNonRefundable(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
+
+	t.Skip("nonrefundable feature is no longer supported")
+
 	suite.Run(t, new(TestPFMSuite))
 }
 
