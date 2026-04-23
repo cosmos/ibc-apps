@@ -229,9 +229,6 @@ ictest-storage-leak:
 ictest-upgrade:
 	cd e2e && go test -race -v -timeout 30m -run TestPFMUpgrade .
 
-ictest-nonrefundable:
-	cd e2e && go test -race -v -timeout 60m -run TestNonRefundable .
-
 ###############################################################################
 ###                                Linting                                  ###
 ###############################################################################
