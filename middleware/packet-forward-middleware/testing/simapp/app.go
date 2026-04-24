@@ -14,7 +14,6 @@ import (
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp/upgrades"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp/x/dummyware"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
@@ -498,10 +497,6 @@ func NewSimApp(
 		0, // retries on timeout
 		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
 	)
-
-	if os.Getenv("NON_REFUNDABLE_TEST") != "" {
-		transferStack = dummyware.NewIBCMiddleware(transferStack)
-	}
 
 	// Add IBC Router
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)

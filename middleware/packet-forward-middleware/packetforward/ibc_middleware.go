@@ -196,7 +196,11 @@ func (im IBCMiddleware) OnRecvPacket(
 	metadata := m.Forward
 
 	goCtx := ctx.Context()
-	nonrefundable := getBoolFromAny(goCtx.Value(types.NonrefundableKey{}))
+	nonrefundableCtxValue := goCtx.Value(types.NonrefundableKey{})
+	if nonrefundableCtxValue != nil {
+		return newErrorAcknowledgement(fmt.Errorf("unsupported feature: nonrefundable"))
+	}
+
 	disableDenomComposition := getBoolFromAny(goCtx.Value(types.DisableDenomCompositionKey{}))
 
 	if err := metadata.Validate(); err != nil {
@@ -248,7 +252,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		retries = im.retriesOnTimeout
 	}
 
-	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, overrideReceiver, metadata, token, retries, timeout, []metrics.Label{}, nonrefundable)
+	err = im.keeper.ForwardTransferPacket(ctx, nil, packet, data.Sender, overrideReceiver, metadata, token, retries, timeout, []metrics.Label{}, false)
 	if err != nil {
 		logger.Error("packetForwardMiddleware OnRecvPacket error forwarding packet", "error", err)
 		return newErrorAcknowledgement(err)

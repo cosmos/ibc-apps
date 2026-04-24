@@ -1,6 +1,7 @@
 package packetforward_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/mock/gomock"
@@ -300,6 +301,34 @@ func TestOnRecvPacket_ForwardNoFee(t *testing.T) {
 	// ack returned from chain C
 	err = forwardMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, packetFwd, successAck, senderAccAddr)
 	require.NoError(t, err)
+}
+
+func TestOnRecvPacket_NonrefundableUnsupported(t *testing.T) {
+	ctl := gomock.NewController(t)
+	defer ctl.Finish()
+	setup := test.NewTestSetup(t, ctl)
+	ctx := setup.Initializer.Ctx
+	cdc := setup.Initializer.Marshaler
+	forwardMiddleware := setup.ForwardMiddleware
+
+	senderAccAddr := test.AccAddress()
+	metadata := &types.PacketMetadata{Forward: &types.ForwardMetadata{
+		Receiver: destAddr,
+		Port:     port,
+		Channel:  channel,
+	}}
+
+	packet := transferPacket(t, senderAddr, hostAddr, metadata)
+	ctxWithFlags := context.WithValue(ctx.Context(), types.NonrefundableKey{}, true)
+	wrappedCtx := ctx.WithContext(ctxWithFlags)
+
+	ack := forwardMiddleware.OnRecvPacket(wrappedCtx, transfertypes.V1, packet, senderAccAddr)
+	require.False(t, ack.Success())
+
+	var expectedAck channeltypes.Acknowledgement
+	err := cdc.UnmarshalJSON(ack.Acknowledgement(), &expectedAck)
+	require.NoError(t, err)
+	require.Contains(t, expectedAck.GetError(), "unsupported feature: nonrefundable")
 }
 
 func TestOnRecvPacket_ForwardAmountInt256(t *testing.T) {
