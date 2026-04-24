@@ -12,7 +12,7 @@ import (
 
 	corestore "cosmossdk.io/core/store"
 	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/log"
+	"cosmossdk.io/log/v2"
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -84,6 +84,11 @@ func (k Keeper) GetAuthority() string {
 // SetTransferKeeper sets the transferKeeper
 func (k *Keeper) SetTransferKeeper(transferKeeper types.TransferKeeper) {
 	k.transferKeeper = transferKeeper
+}
+
+// SetICS4Wrapper sets the ICS4Wrapper.
+func (k *Keeper) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	k.ics4Wrapper = wrapper
 }
 
 // Logger returns a module-specific logger.
