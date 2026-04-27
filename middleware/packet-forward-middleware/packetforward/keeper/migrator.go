@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/migrations/v3"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Migrator is a struct for handling in-place state migrations.

@@ -10,6 +10,8 @@ IBC hooks are useful for a variety of use cases, including cross-chain swaps, wh
 
 ## How do IBC hooks work?
 
+<!-- Medium may return 403 to CI link check bots even when the URL is valid in browsers. -->
+<!-- markdown-link-check-disable-next-line -->
 IBC hooks are made possible through the `memo` field included in every ICS-20 transfer packet, as introduced in [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
 
 The IBC hooks IBC middleware parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a Wasm contract call.
