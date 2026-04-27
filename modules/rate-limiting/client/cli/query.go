@@ -76,7 +76,7 @@ Example:
 					return err
 				}
 
-				return clientCtx.PrintObjectLegacy(res.RateLimits)
+				return clientCtx.PrintProto(res)
 			}
 
 			req := &types.QueryRateLimitRequest{
