@@ -1,4 +1,7 @@
 # packet-forward-middleware
+
+[Audited by Zellic on Aug 13th, 2024](https://github.com/Zellic/publications/blob/master/Celestia%20Packet%20Forward%20Middleware%20-%20Zellic%20Audit%20Report.pdf). Commit: [26d8080d](https://github.com/cosmos/ibc-apps/commit/26d8080d75662ea2f1155fce446ebda7a915d521) version with patches: [v8.1.0](https://github.com/cosmos/ibc-apps/releases/tag/middleware%2Fpacket-forward-middleware%2Fv8.1.0)
+
 Middleware for forwarding IBC packets.
 
 Asynchronous acknowledgements are utilized for atomic multi-hop packet flows. The acknowledgement will only be written on the chain where the user initiated the packet flow after the forward/multi-hop sequence has completed (success or failure). This means that a user (i.e. an IBC application) only needs to monitor the chain where the initial transfer was sent for the response of the entire process.
