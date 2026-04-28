@@ -304,9 +304,40 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 		return err
 	}
 
-	sudoMsg := []byte(fmt.Sprintf(
-		`{"ibc_lifecycle_complete": {"ibc_ack": {"channel": "%s", "sequence": %d, "ack": %s, "success": %s}}}`,
-		packet.SourceChannel, packet.Sequence, ackAsJson, success))
+	// Construct message using struct to avoid unsafe quoting
+	type ibcAckMsg struct {
+		Channel  string      `json:"channel"`
+		Sequence uint64      `json:"sequence"`
+		Ack      interface{} `json:"ack"`
+		Success  string      `json:"success"`
+	}
+	type ibcLifecycleCompleteMsg struct {
+		IbcAck ibcAckMsg `json:"ibc_ack"`
+	}
+	type sudoMsgWrapper struct {
+		IbcLifecycleComplete ibcLifecycleCompleteMsg `json:"ibc_lifecycle_complete"`
+	}
+
+	// Unmarshal ackAsJson so it can be passed as a value, not a quoted string
+	var ackUnmarshaled interface{}
+	if err := json.Unmarshal(ackAsJson, &ackUnmarshaled); err != nil {
+		return err
+	}
+
+	sudoMsgStruct := sudoMsgWrapper{
+		IbcLifecycleComplete: ibcLifecycleCompleteMsg{
+			IbcAck: ibcAckMsg{
+				Channel:  packet.SourceChannel,
+				Sequence: packet.Sequence,
+				Ack:      ackUnmarshaled,
+				Success:  success,
+			},
+		},
+	}
+	sudoMsg, err := json.Marshal(sudoMsgStruct)
+	if err != nil {
+		return err
+	}
 	_, err = h.ContractKeeper.Sudo(ctx, contractAddr, sudoMsg)
 	if err != nil {
 		// error processing the callback
