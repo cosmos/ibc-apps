@@ -522,8 +522,7 @@ func NewSimApp(
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
 
 	// Create fee enabled wasm ibc Stack
-	wasmIBCModule := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
-
+	wasmIBCModule := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.TransferKeeper, app.IBCKeeper.ChannelKeeper)
 	app.IBCKeeper.SetRouter(ibcporttypes.NewRouter().
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(wasmtypes.ModuleName, wasmIBCModule))
@@ -621,6 +620,7 @@ func NewSimApp(
 		distrkeeper.NewQuerier(app.DistrKeeper),
 		app.IBCKeeper.ChannelKeeper, // ISC4 Wrapper: channel keeper directly since this is not used in a middleware stack
 		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeperV2,
 		app.TransferKeeper,
 		app.MsgServiceRouter(),
 		app.GRPCQueryRouter(),
