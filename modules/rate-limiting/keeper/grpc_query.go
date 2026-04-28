@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
@@ -15,8 +17,6 @@ import (
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 var _ types.QueryServer = Keeper{}

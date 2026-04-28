@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	querytypes "github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
+
+	querytypes "github.com/cosmos/cosmos-sdk/types/query"
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
@@ -218,7 +219,9 @@ func (s *KeeperTestSuite) TestPaginatedQueries() {
 		})
 		s.Require().NoError(err)
 
-		got := append(first.RateLimits, rest.RateLimits...)
+		got := make([]types.RateLimit, 0, len(first.RateLimits)+len(rest.RateLimits))
+		got = append(got, first.RateLimits...)
+		got = append(got, rest.RateLimits...)
 		denoms := []string{got[0].Path.Denom, got[1].Path.Denom}
 		s.Require().ElementsMatch([]string{"denom-a", "denom-b"}, denoms)
 	})
@@ -247,7 +250,9 @@ func (s *KeeperTestSuite) TestPaginatedQueries() {
 		})
 		s.Require().NoError(err)
 
-		got := append(first.RateLimits, rest.RateLimits...)
+		got := make([]types.RateLimit, 0, len(first.RateLimits)+len(rest.RateLimits))
+		got = append(got, first.RateLimits...)
+		got = append(got, rest.RateLimits...)
 		denoms := []string{got[0].Path.Denom, got[1].Path.Denom}
 		s.Require().ElementsMatch([]string{"denom-a", "denom-b"}, denoms)
 	})
