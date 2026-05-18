@@ -63,7 +63,7 @@ func (k Keeper) GetAllPendingSendPackets(ctx sdk.Context) (pendingPackets []stri
 
 	iterator := store.Iterator(nil, nil)
 	defer func() {
-		err = errors.Join(err, iterator.Close())
+		err = iterator.Close()
 	}()
 
 	pendingPackets = make([]string, 0)
@@ -96,7 +96,7 @@ func (k Keeper) RemoveAllChannelPendingSendPackets(ctx sdk.Context, channelId st
 
 	iterator := storetypes.KVStorePrefixIterator(store, channelIDBz)
 	defer func() {
-		err = errors.Join(iterator.Close())
+		err = errors.Join(err, iterator.Close())
 	}()
 
 	for ; iterator.Valid(); iterator.Next() {

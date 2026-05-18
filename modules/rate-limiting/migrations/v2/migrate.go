@@ -35,8 +35,7 @@ const (
 
 // Migrate rewrites entries under types.PendingSendPacketPrefix from the old
 // [16-byte channelID][8-byte sequence] layout to the new [64-byte channelID]
-// [8-byte sequence] layout so IBC v2 channel IDs (up to 64 bytes) fit. Entries
-// already in the new layout are skipped, making the migration idempotent.
+// [8-byte sequence] layout so IBC v2 channel IDs (up to 64 bytes) fit.
 func Migrate(ctx sdk.Context, storeService corestore.KVStoreService) error {
 	adapter := runtime.KVStoreAdapter(storeService.OpenKVStore(ctx))
 	store := prefix.NewStore(adapter, types.PendingSendPacketPrefix)
@@ -79,12 +78,7 @@ type entry struct {
 
 // collectLegacyEntries returns a list of entries in the prefix store that must
 // be migrated from the oldKeyLen to the newKeyLen.
-func collectLegacyEntries(store prefix.Store) ([]entry, error) {
-	var (
-		legacy []entry
-		err    error
-	)
-
+func collectLegacyEntries(store prefix.Store) (legacy []entry, err error) {
 	iterator := store.Iterator(nil, nil)
 	defer func() {
 		err = errors.Join(err, iterator.Close())
