@@ -3,11 +3,12 @@ package keeper_test
 import (
 	"encoding/binary"
 
-	"cosmossdk.io/store/prefix"
-	"github.com/cosmos/cosmos-sdk/runtime"
-
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
+
+	"cosmossdk.io/store/prefix"
+
+	"github.com/cosmos/cosmos-sdk/runtime"
 )
 
 func (s *KeeperTestSuite) TestMigrate1to2() {

@@ -8,13 +8,14 @@ import (
 	"slices"
 	"strings"
 
-	corestore "cosmossdk.io/core/store"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
+	corestore "cosmossdk.io/core/store"
 	"cosmossdk.io/store/prefix"
+
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 )
 
