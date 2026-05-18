@@ -5,7 +5,6 @@ import (
 
 	"cosmossdk.io/store/prefix"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
@@ -41,12 +40,6 @@ func (s *KeeperTestSuite) TestMigrate1to2() {
 		}
 		return keys
 	}
-
-	var (
-		ctx      sdk.Context
-		rlKeeper keeper.Keeper
-		migrator keeper.Migrator
-	)
 
 	tests := []struct {
 		name      string
@@ -118,9 +111,6 @@ func (s *KeeperTestSuite) TestMigrate1to2() {
 		s.Run(tc.name, func() {
 			s.SetupTest()
 
-			rlKeeper = s.App.RatelimitKeeper
-			migrator = keeper.NewMigrator(rlKeeper)
-
 			storeService := runtime.NewKVStoreService(s.App.GetKey(ratelimittypes.StoreKey))
 			adapter := runtime.KVStoreAdapter(storeService.OpenKVStore(s.Ctx))
 			prefixStore := prefix.NewStore(adapter, ratelimittypes.PendingSendPacketPrefix)
@@ -129,7 +119,7 @@ func (s *KeeperTestSuite) TestMigrate1to2() {
 			tc.malleate(prefixStore)
 
 			// perform migration
-			err := migrator.Migrate1to2(ctx)
+			err := keeper.NewMigrator(s.App.RatelimitKeeper).Migrate1to2(s.Ctx)
 
 			if tc.expectErr != "" {
 				s.Require().ErrorContains(err, tc.expectErr)
@@ -143,7 +133,7 @@ func (s *KeeperTestSuite) TestMigrate1to2() {
 				s.Require().Len(k, newKeyLen, "every post-migration key must be in the new layout")
 			}
 
-			pendingSendPackets, err := rlKeeper.GetAllPendingSendPackets(ctx)
+			pendingSendPackets, err := s.App.RatelimitKeeper.GetAllPendingSendPackets(s.Ctx)
 			s.Require().NoError(err)
 			if tc.expectAll == nil {
 				s.Require().Empty(pendingSendPackets)
