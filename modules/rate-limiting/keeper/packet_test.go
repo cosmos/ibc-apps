@@ -460,7 +460,8 @@ func (s *KeeperTestSuite) TestTimeoutRateLimitedPacket() {
 	})
 
 	// Store the pending packet for this sequence number
-	s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	err := s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error setting packet send - channel %s, sequence %d", sourceChannel, sequence)
 
 	// Build the timeout packet
 	packetData, err := json.Marshal(transfertypes.FungibleTokenPacketData{Denom: denom, Amount: packetAmount.String()})
