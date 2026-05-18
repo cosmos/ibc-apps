@@ -21,4 +21,7 @@ var (
 	ErrDenomIsBlacklisted = errorsmod.Register(ModuleName, 7,
 		"denom is blacklisted",
 	)
+	ErrInvalidChannelId = errorsmod.Register(ModuleName, 8,
+		"invalid channel",
+	)
 )

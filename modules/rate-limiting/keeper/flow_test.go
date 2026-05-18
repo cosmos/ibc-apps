@@ -408,11 +408,12 @@ func (s *KeeperTestSuite) TestUndoSendPacket() {
 	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, rateLimit2)
 
 	// Store a pending packet sequence number of 2 for the first rate limit
-	s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, channelId, 2)
+	err := s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, channelId, 2)
+	s.Require().NoError(err, "unexpected error setting pending send packet sequence - channel %s, sequence %d", channelId, 2)
 
 	// Undo a send of 10 from the first rate limit, with sequence 1
 	// If should NOT modify the outflow since sequence 1 was not sent in the current quota
-	err := s.App.RatelimitKeeper.UndoSendPacket(s.Ctx, channelId, 1, denom, packetSendAmount)
+	err = s.App.RatelimitKeeper.UndoSendPacket(s.Ctx, channelId, 1, denom, packetSendAmount)
 	s.Require().NoError(err, "no error expected when undoing send packet sequence 1")
 
 	checkOutflow(channelId, denom, initialOutflow)
@@ -428,6 +429,7 @@ func (s *KeeperTestSuite) TestUndoSendPacket() {
 	checkOutflow("different-channel", "different-denom", initialOutflow)
 
 	// Confirm sequence number was removed
-	found := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, channelId, 2)
+	found, err := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, channelId, 2)
+	s.Require().NoError(err, "unexpected error checking packet sent during current quota - channel %s, sequence %d", channelId, 2)
 	s.Require().False(found, "packet sequence number should have been removed")
 }

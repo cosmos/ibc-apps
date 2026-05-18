@@ -270,7 +270,8 @@ func (s *KeeperTestSuite) TestSendRateLimitedPacket() {
 	s.Require().NoError(err, "no error expected when sending packet after reset")
 
 	// Check that the pending packet was stored
-	found := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	found, err := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error checking packet sent during current quota - channel %s, sequence %d", sourceChannel, sequence)
 	s.Require().True(found, "pending send packet")
 }
 
@@ -319,7 +320,8 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_AckSuccess() {
 	})
 
 	// Store the pending packet for this sequence number
-	s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	err := s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error setting pending send packet sequence - channel %s, sequence %d", sourceChannel, sequence)
 
 	// Build the ack packet
 	packetData, err := json.Marshal(transfertypes.FungibleTokenPacketData{Denom: denom, Amount: "10"})
@@ -341,7 +343,8 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_AckSuccess() {
 	s.Require().NoError(err, "no error expected during AckPacket")
 
 	// Confirm the pending packet was removed
-	found := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	found, err := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error checking packet sent during current quota - channel %s, sequence %d", sourceChannel, sequence)
 	s.Require().False(found, "send packet should have been removed")
 }
 
@@ -361,7 +364,8 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_AckFailure() {
 	})
 
 	// Store the pending packet for this sequence number
-	s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	err := s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error setting pending send packet sequence - channel %s, sequence %d", sourceChannel, sequence)
 
 	// Build the ack packet
 	packetData, err := json.Marshal(transfertypes.FungibleTokenPacketData{Denom: denom, Amount: packetAmount.String()})
@@ -383,7 +387,8 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_AckFailure() {
 	s.Require().NoError(err, "no error expected during AckPacket")
 
 	// Confirm the pending packet was removed
-	found := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	found, err := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error checking packet sent during current quota - channel %s, sequence %d", sourceChannel, sequence)
 	s.Require().False(found, "send packet should have been removed")
 
 	// Confirm the flow was adjusted
@@ -408,7 +413,8 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_UniversalErrorAck() {
 	})
 
 	// Store the pending packet for this sequence number
-	s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	err := s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error setting pending send packet sequence - channel %s, sequence %d", sourceChannel, sequence)
 
 	// Build the ack packet
 	packetData, err := json.Marshal(transfertypes.FungibleTokenPacketData{Denom: denom, Amount: packetAmount.String()})
@@ -428,7 +434,8 @@ func (s *KeeperTestSuite) TestAcknowledgeRateLimitedPacket_UniversalErrorAck() {
 	s.Require().NoError(err, "no error expected during AckPacket")
 
 	// Confirm the pending packet was removed
-	found := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	found, err := s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, sourceChannel, sequence)
+	s.Require().NoError(err, "unexpected error checking packet sent during current quota - channel %s, sequence %d", sourceChannel, sequence)
 	s.Require().False(found, "send packet should have been removed")
 
 	// Confirm the flow was adjusted
@@ -477,7 +484,8 @@ func (s *KeeperTestSuite) TestTimeoutRateLimitedPacket() {
 	s.Require().Equal(expectedOutflow.Int64(), rateLimit.Flow.Outflow.Int64(), "outflow decremented")
 
 	// Check that the pending packet has been removed
-	found = s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, channelId, sequence)
+	found, err = s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, channelId, sequence)
+	s.Require().NoError(err, "unexpected error checking packet sent during current quota - channel %s, sequence %d", channelId, sequence)
 	s.Require().False(found, "pending packet should have been removed")
 
 	// Call OnTimeoutPacket again with a different sequence number
