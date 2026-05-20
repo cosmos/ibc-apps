@@ -167,6 +167,5 @@ func (k Keeper) ResetRateLimit(ctx sdk.Context, denom string, channelId string) 
 	rateLimit.Flow = &flow
 
 	k.SetRateLimit(ctx, rateLimit)
-	k.RemoveAllChannelPendingSendPackets(ctx, channelId)
-	return nil
+	return k.RemoveAllChannelPendingSendPackets(ctx, channelId)
 }
