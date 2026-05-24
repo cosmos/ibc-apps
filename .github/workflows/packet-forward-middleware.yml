@@ -6,8 +6,8 @@ on:
       - ".github/workflows/packet-forward-middleware.yml"
 
 env:
-  LINT_VERSION: v1.57.1
-  GO_VERSION: 1.22.1
+  LINT_VERSION: v1.63.1
+  GO_VERSION: 1.23.6
   WORKING_DIRECTORY: middleware/packet-forward-middleware
 
   DOCKER_TAG: pfm:local
@@ -20,6 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6

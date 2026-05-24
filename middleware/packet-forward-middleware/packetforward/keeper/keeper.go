@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -229,7 +230,7 @@ func (k *Keeper) ForwardTransferPacket(
 			k.Logger(ctx).Error("packetForwardMiddleware error marshaling next as JSON",
 				"error", err,
 			)
-			return errorsmod.Wrapf(sdkerrors.ErrJSONMarshal, err.Error())
+			return errorsmod.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 		}
 		memo = string(memoBz)
 	}
@@ -263,7 +264,7 @@ func (k *Keeper) ForwardTransferPacket(
 			"amount", token.Amount.String(), "denom", token.Denom,
 			"error", err,
 		)
-		return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
+		return errorsmod.Wrap(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
 
 	// Store the following information in keeper:
@@ -293,7 +294,9 @@ func (k *Keeper) ForwardTransferPacket(
 	key := types.RefundPacketKey(metadata.Channel, metadata.Port, res.Sequence)
 	store := k.storeService.OpenKVStore(ctx)
 	bz := k.cdc.MustMarshal(inFlightPacket)
-	store.Set(key, bz)
+	if err := store.Set(key, bz); err != nil {
+		return err
+	}
 
 	defer func() {
 		if token.Amount.IsInt64() {
@@ -388,6 +391,13 @@ func (k *Keeper) RetryTimeout(
 	token := sdk.NewCoin(ibcDenom, amount)
 
 	// srcPacket and srcPacketSender are empty because inFlightPacket is non-nil.
+	if inFlightPacket.RetriesRemaining < 0 || inFlightPacket.RetriesRemaining > math.MaxUint8 {
+		return fmt.Errorf("invalid in-flight retry count: %d", inFlightPacket.RetriesRemaining)
+	}
+	if inFlightPacket.Timeout > math.MaxInt64 {
+		return fmt.Errorf("invalid in-flight timeout nanoseconds: %d", inFlightPacket.Timeout)
+	}
+
 	return k.ForwardTransferPacket(
 		ctx,
 		inFlightPacket,
@@ -397,7 +407,7 @@ func (k *Keeper) RetryTimeout(
 		metadata,
 		token,
 		uint8(inFlightPacket.RetriesRemaining),
-		time.Duration(inFlightPacket.Timeout)*time.Nanosecond,
+		time.Duration(int64(inFlightPacket.Timeout)),
 		nil,
 		inFlightPacket.Nonrefundable,
 	)
@@ -445,7 +455,9 @@ func (k *Keeper) GetAndClearInFlightPacket(
 	}
 
 	// done with packet key now, delete.
-	store.Delete(key)
+	if err := store.Delete(key); err != nil {
+		panic(err)
+	}
 
 	var inFlightPacket types.InFlightPacket
 	k.cdc.MustUnmarshal(bz, &inFlightPacket)

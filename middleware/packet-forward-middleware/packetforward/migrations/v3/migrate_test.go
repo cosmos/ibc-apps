@@ -1,21 +1,24 @@
 package v3_test
 
 import (
-	"github.com/golang/mock/gomock"
 	"testing"
+
+	dbm "github.com/cosmos/cosmos-db"
+	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/migrations/v3"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/test/mock"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
-	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/migrations/v3"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/test/mock"
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	dbm "github.com/cosmos/cosmos-db"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
 func TestMigrate(t *testing.T) {
