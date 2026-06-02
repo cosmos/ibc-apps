@@ -264,8 +264,6 @@ func initAccountWithCoins(app *App, ctx sdk.Context, addr sdk.AccAddress, coins 
 	}
 }
 
-var emptyWasmOptions []wasmkeeper.Option
-
 // NewTestNetworkFixture returns a new App AppConstructor for network simulation tests
 func NewTestNetworkFixture() network.TestFixture {
 	dir, err := os.MkdirTemp("", "simapp")

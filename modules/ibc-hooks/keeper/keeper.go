@@ -3,13 +3,12 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
-
 	logv2 "cosmossdk.io/log/v2"
 	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 )
 
 type (
