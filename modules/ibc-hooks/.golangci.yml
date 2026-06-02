@@ -6,10 +6,8 @@ linters:
   enable:
     - dogsled
     - errcheck
-    - gci
     - goconst
     - gocritic
-    - gofumpt
     - gosec
     - govet
     - ineffassign
@@ -27,14 +25,6 @@ linters:
         - G115
         - G404
       confidence: low
-    gci:
-      sections:
-        - standard
-        - default
-        - blank
-        - dot
-        - prefix(cosmossdk.io)
-        - prefix(github.com/cosmos)
     revive:
       rules:
         - name: unhandled-error
@@ -61,3 +51,17 @@ linters:
       - text: 'Use of weak random number generator'
         linters:
           - gosec
+formatters:
+  enable:
+    - gci
+    - gofumpt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - blank
+        - dot
+        - prefix(cosmossdk.io)
+        - prefix(github.com/cosmos)
+      custom-order: true
