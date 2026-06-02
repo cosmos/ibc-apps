@@ -3,7 +3,6 @@ package ibc_hooks
 import (
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
 	// ibc-go
 	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"

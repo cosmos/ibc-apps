@@ -83,6 +83,12 @@ func (suite *HooksTestSuite) SetupEnv() {
 	suite.TestAddress = acc
 }
 
+const (
+	testDenom         = "transfer/channel-0/stake"
+	testSourcePort    = "transfer"
+	testSourceChannel = "channel-0"
+)
+
 func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 	// create en env
 	suite.SetupEnv()
@@ -90,14 +96,14 @@ func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.EchoContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"echo":{"msg":"test"}}}}`, suite.EchoContractAddr.String()),
 		}.GetBytes(),
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -153,14 +159,14 @@ func (suite *HooksTestSuite) TestOnRecvPacketCounterContract() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -232,15 +238,15 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 
 	callbackPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, suite.CounterContractAddr),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -295,15 +301,15 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 	suite.NoError(err)
 	err = wasmHooks.OnAcknowledgementPacketOverride(
@@ -331,15 +337,15 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	suite.SetupEnv()
 	callbackPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, suite.CounterContractAddr),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -394,15 +400,15 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 	suite.NoError(err)
 	err = wasmHooks.OnTimeoutPacketOverride(

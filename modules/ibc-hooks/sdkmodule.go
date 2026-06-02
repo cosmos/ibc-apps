@@ -3,12 +3,12 @@ package ibc_hooks
 import (
 	"encoding/json"
 
-	"cosmossdk.io/core/appmodule"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/client/cli"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
+
+	"cosmossdk.io/core/appmodule"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -16,8 +16,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-
-	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/client/cli"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 )
 
 var (

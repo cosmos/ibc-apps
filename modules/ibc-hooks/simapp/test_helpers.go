@@ -9,15 +9,16 @@ import (
 	"testing"
 	"time"
 
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmtjson "github.com/cometbft/cometbft/libs/json"
 	cmttypes "github.com/cometbft/cometbft/types"
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/log/v2"
 	sdkmath "cosmossdk.io/math"
 
+	dbm "github.com/cosmos/cosmos-db"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -41,8 +42,6 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 )
 
 // SetupOptions defines arguments that are passed into `App` constructor.
@@ -61,7 +60,7 @@ func setup(tb testing.TB, chainID string, withGenesis bool, invCheckPeriod uint,
 
 	snapshotDB, err := dbm.NewDB("metadata", dbm.GoLevelDBBackend, snapshotDir)
 	require.NoError(tb, err)
-	tb.Cleanup(func() { snapshotDB.Close() })
+	tb.Cleanup(func() { _ = snapshotDB.Close() })
 	snapshotStore, err := snapshots.NewStore(snapshotDB, snapshotDir)
 	require.NoError(tb, err)
 
@@ -143,7 +142,7 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) (*App, sdk.Context, *authtyp
 
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, chainID, opts, balance)
 
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.NewContext(false)
 	ctx = ctx.WithBlockTime(time.Now())
 
 	return app, ctx, acc
@@ -270,7 +269,7 @@ func NewTestNetworkFixture() network.TestFixture {
 	if err != nil {
 		panic(fmt.Sprintf("failed creating temporary directory: %v", err))
 	}
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	app := NewSimApp(log.NewNopLogger(), dbm.NewMemDB(), true, simtestutil.NewAppOptionsWithFlagHome(dir), bam.SetChainID("test"))
 	appCtr := func(val network.ValidatorI) servertypes.Application {

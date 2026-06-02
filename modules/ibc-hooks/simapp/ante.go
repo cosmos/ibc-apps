@@ -10,7 +10,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-
 	ibcante "github.com/cosmos/ibc-go/v11/modules/core/ante"
 	"github.com/cosmos/ibc-go/v11/modules/core/keeper"
 )
