@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"testing"
 
-	ibc_hooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11"
-	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/simapp"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/tests/unit/mocks"
 	"github.com/stretchr/testify/suite"
 
 	_ "embed"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-
+	ibc_hooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11"
+	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/keeper"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/simapp"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/tests/unit/mocks"
 	ibctransfer "github.com/cosmos/ibc-go/v11/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"

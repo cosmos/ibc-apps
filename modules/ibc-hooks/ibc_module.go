@@ -11,8 +11,10 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
-var _ porttypes.IBCModule = (*IBCMiddleware)(nil)
-var _ porttypes.ICS4Wrapper = (*IBCMiddleware)(nil)
+var (
+	_ porttypes.IBCModule   = (*IBCMiddleware)(nil)
+	_ porttypes.ICS4Wrapper = (*IBCMiddleware)(nil)
+)
 
 type IBCMiddleware struct {
 	App            porttypes.IBCModule
