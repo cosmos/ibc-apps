@@ -4,10 +4,10 @@ import (
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
 	// ibc-go
-	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
 var _ porttypes.ICS4Wrapper = &ICS4Middleware{}

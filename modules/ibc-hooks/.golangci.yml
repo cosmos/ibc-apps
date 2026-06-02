@@ -1,0 +1,63 @@
+version: "2"
+run:
+  tests: true
+linters:
+  default: none
+  enable:
+    - dogsled
+    - errcheck
+    - gci
+    - goconst
+    - gocritic
+    - gofumpt
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - staticcheck
+    - thelper
+    - revive
+    - unconvert
+    - unused
+  settings:
+    gosec:
+      excludes:
+        - G107
+        - G115
+        - G404
+      confidence: low
+    gci:
+      sections:
+        - standard
+        - default
+        - blank
+        - dot
+        - prefix(cosmossdk.io)
+        - prefix(github.com/cosmos)
+    revive:
+      rules:
+        - name: unhandled-error
+          disabled: false
+          arguments:
+            - fmt.Printf
+            - fmt.Print
+            - fmt.Println
+        - name: var-naming
+          disabled: false
+          arguments:
+            - []
+            - []
+            - [skipPackageNameChecks: true]
+        - name: cognitive-complexity
+          disabled: true
+        - name: add-constant
+          disabled: true
+  exclusions:
+    rules:
+      - text: 'SA1019:'
+        linters:
+          - staticcheck
+      - text: 'Use of weak random number generator'
+        linters:
+          - gosec

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/keeper"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"

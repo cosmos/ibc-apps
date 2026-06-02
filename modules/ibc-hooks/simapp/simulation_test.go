@@ -75,7 +75,7 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[flags.FlagHome] = dir // ensure a unique folder
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
-	app := NewSimApp(logger, db, nil, true, appOptions, baseapp.SetChainID(simulationAppChainID))
+	app := NewSimApp(logger, db, true, appOptions, baseapp.SetChainID(simulationAppChainID))
 	require.Equal(t, AppName, app.Name())
 	return config, db, appOptions, app
 }

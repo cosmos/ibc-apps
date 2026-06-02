@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"cosmossdk.io/core/appmodule"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/client/cli"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/client/cli"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
