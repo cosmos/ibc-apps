@@ -21,7 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       # Hack to get around requirement for audit-check to use top-level dir
-      - run: cd $GITHUB_WORKSPACE && mv ${{ env.WORKING_DIRECTORY}}/* .
+      # Use cp -rT to also include hidden directories (e.g. .cargo/audit.toml)
+      - run: cp -rT $GITHUB_WORKSPACE/${{ env.WORKING_DIRECTORY }} $GITHUB_WORKSPACE
+        working-directory: ${{ github.workspace }}
       - uses: actions-rs/audit-check@v1.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

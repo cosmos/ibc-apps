@@ -6,5 +6,10 @@
     "aliveStatusCodes": [
         200,
         206
+    ],
+    "ignorePatterns": [
+        {
+            "pattern": "^https://medium\\.com"
+        }
     ]
 }
