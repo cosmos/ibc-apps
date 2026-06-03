@@ -534,17 +534,7 @@ func NewSimApp(
 	wasmStackIBCHandler := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.TransferKeeper, app.IBCKeeper.ChannelKeeper)
 
 	// ICA controller stack
-	var icaControllerStack ibcporttypes.IBCModule
-	var noAuthzModule ibcporttypes.IBCModule
-	icaStackBuilder := ibcporttypes.NewIBCStackBuilder(app.IBCKeeper.ChannelKeeper)
-	icaStackBuilder.Base(
-		icacontroller.NewIBCMiddlewareWithAuth(noAuthzModule, app.ICAControllerKeeper)).Next(
-		icacontroller.NewIBCMiddlewareWithAuth(icaControllerStack, app.ICAControllerKeeper),
-	)
-	icaControllerStack = icaStackBuilder.Build()
-
-	icaICS4Wrapper := icaControllerStack.(ibcporttypes.ICS4Wrapper)
-	app.ICAControllerKeeper.WithICS4Wrapper(icaICS4Wrapper)
+	icaControllerStack := icacontroller.NewIBCMiddleware(app.ICAControllerKeeper)
 
 	// Transfer stack with ibc-hooks middleware
 	ibcHooksMiddleware := ibchooks.NewIBCMiddleware(ibctransfer.NewIBCModule(app.TransferKeeper), &hooksICS4Wrapper)
