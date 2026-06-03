@@ -1,5 +1,8 @@
 # IBC-hooks
 
+> [!WARNING]
+> **Deprecated.** This module has been moved to [cosmos/ibc-go](https://github.com/cosmos/ibc-go) and is no longer maintained here. Please migrate to the canonical version at `github.com/cosmos/ibc-go/v11/modules/apps/callbacks`. This repository will be archived on **2026-08-03**.
+
 > This module is forked from https://github.com/osmosis-labs/osmosis/tree/main/x/ibc-hooks
 
 ## IBC hooks

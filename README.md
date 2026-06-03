@@ -1,5 +1,8 @@
 # ibc-apps
 
+> [!WARNING]
+> **Deprecated.** The modules in this repository have been consolidated into [cosmos/ibc-go](https://github.com/cosmos/ibc-go). This repository is no longer actively maintained and will be archived on **2026-08-03**. Please migrate to the canonical implementations in ibc-go.
+
 ![IBC-APPS Header](ibc-apps.png)
 
 IBC applications and middleware for Cosmos SDK blockchains
