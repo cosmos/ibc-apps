@@ -6,5 +6,5 @@ just simtest
 ```
 
 This contract uses the Cosmos SDK's
-[simulator](https://github.com/cosmos/cosmos-sdk/blob/main/docs/build/building-apps/app-simulation.md) to test
+[simulator](https://github.com/cosmos/cosmos-sdk/blob/main/docs/docs/learn/advanced/12-simulation.md) to test
 IBC interactions between chains.
