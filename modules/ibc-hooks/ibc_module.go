@@ -3,15 +3,17 @@ package ibc_hooks
 import (
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
 	// ibc-go
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
-var _ porttypes.Middleware = &IBCMiddleware{}
+var (
+	_ porttypes.IBCModule   = (*IBCMiddleware)(nil)
+	_ porttypes.ICS4Wrapper = (*IBCMiddleware)(nil)
+)
 
 type IBCMiddleware struct {
 	App            porttypes.IBCModule
@@ -23,6 +25,19 @@ func NewIBCMiddleware(app porttypes.IBCModule, ics4 *ICS4Middleware) IBCMiddlewa
 		App:            app,
 		ICS4Middleware: ics4,
 	}
+}
+
+// SetICS4Wrapper satisfies the porttypes.Middleware interface.
+func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	if im.ICS4Middleware == nil {
+		panic("ICS4Middleware is nil")
+	}
+	im.ICS4Middleware.channel = wrapper
+}
+
+// SetUnderlyingApplication satisfies the porttypes.Middleware interface.
+func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
+	im.App = app
 }
 
 // OnChanOpenInit implements the IBCMiddleware interface

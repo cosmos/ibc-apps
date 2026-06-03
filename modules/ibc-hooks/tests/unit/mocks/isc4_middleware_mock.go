@@ -2,10 +2,9 @@ package mocks
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
-	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
+	"github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
 var _ porttypes.ICS4Wrapper = &ICS4WrapperMock{}

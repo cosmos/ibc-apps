@@ -5,22 +5,21 @@ import (
 	"fmt"
 	"testing"
 
-	ibc_hooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
-	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/simapp"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/tests/unit/mocks"
 	"github.com/stretchr/testify/suite"
 
 	_ "embed"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	ibcmock "github.com/cosmos/ibc-go/v10/testing/mock"
+	ibc_hooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11"
+	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/keeper"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/simapp"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/tests/unit/mocks"
+	ibctransfer "github.com/cosmos/ibc-go/v11/modules/apps/transfer"
+	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
+	ibcmock "github.com/cosmos/ibc-go/v11/testing/mock"
 )
 
 //go:embed testdata/counter/artifacts/counter.wasm
@@ -84,6 +83,12 @@ func (suite *HooksTestSuite) SetupEnv() {
 	suite.TestAddress = acc
 }
 
+const (
+	testDenom         = "transfer/channel-0/stake"
+	testSourcePort    = "transfer"
+	testSourceChannel = "channel-0"
+)
+
 func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 	// create en env
 	suite.SetupEnv()
@@ -91,14 +96,14 @@ func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.EchoContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"echo":{"msg":"test"}}}}`, suite.EchoContractAddr.String()),
 		}.GetBytes(),
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -108,7 +113,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketEcho() {
 	suite.NoError(err)
 
 	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
-	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+	if transferKeeper, ok := any(suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
 		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
 	}
 
@@ -154,14 +159,14 @@ func (suite *HooksTestSuite) TestOnRecvPacketCounterContract() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -171,7 +176,7 @@ func (suite *HooksTestSuite) TestOnRecvPacketCounterContract() {
 	suite.NoError(err)
 
 	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
-	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+	if transferKeeper, ok := any(suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
 		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
 	}
 
@@ -233,15 +238,15 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 
 	callbackPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, suite.CounterContractAddr),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -251,7 +256,7 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 	suite.NoError(err)
 
 	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
-	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+	if transferKeeper, ok := any(suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
 		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
 	}
 
@@ -296,15 +301,15 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 	suite.NoError(err)
 	err = wasmHooks.OnAcknowledgementPacketOverride(
@@ -332,15 +337,15 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	suite.SetupEnv()
 	callbackPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"ibc_callback": "%s"}`, suite.CounterContractAddr),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 
 	// send funds to the escrow address to simulate a transfer from the ibc module
@@ -350,7 +355,7 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	suite.NoError(err)
 
 	// since ibc-go >= 7.1.0 escrow needs to be explicitly tracked
-	if transferKeeper, ok := any(&suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
+	if transferKeeper, ok := any(suite.App.TransferKeeper).(TransferKeeperWithTotalEscrowTracking); ok {
 		transferKeeper.SetTotalEscrowForDenom(suite.Ctx, testEscrowAmount)
 	}
 
@@ -395,15 +400,15 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	// Create the packet
 	recvPacket := channeltypes.Packet{
 		Data: transfertypes.FungibleTokenPacketData{
-			Denom:    "transfer/channel-0/stake",
+			Denom:    testDenom,
 			Amount:   "1",
 			Sender:   suite.TestAddress.GetAddress().String(),
 			Receiver: suite.CounterContractAddr.String(),
 			Memo:     fmt.Sprintf(`{"wasm":{"contract": "%s", "msg":{"increment":{}}}}`, suite.CounterContractAddr.String()),
 		}.GetBytes(),
 		Sequence:      1,
-		SourcePort:    "transfer",
-		SourceChannel: "channel-0",
+		SourcePort:    testSourcePort,
+		SourceChannel: testSourceChannel,
 	}
 	suite.NoError(err)
 	err = wasmHooks.OnTimeoutPacketOverride(

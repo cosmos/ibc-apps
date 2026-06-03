@@ -6,18 +6,17 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/keeper"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
 
 	errors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/keeper"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
+	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
 type ContractAck struct {
@@ -293,12 +292,12 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 	}
 
 	success := "false"
-	if !IsJsonAckError(acknowledgement) {
+	if !IsJSONAckError(acknowledgement) {
 		success = "true"
 	}
 
 	// Notify the sender that the ack has been received
-	ackAsJson, err := json.Marshal(acknowledgement)
+	ackAsJSON, err := json.Marshal(acknowledgement)
 	if err != nil {
 		// If the ack is not a json object, error
 		return err
@@ -306,7 +305,7 @@ func (h WasmHooks) OnAcknowledgementPacketOverride(im IBCMiddleware, ctx sdk.Con
 
 	sudoMsg := []byte(fmt.Sprintf(
 		`{"ibc_lifecycle_complete": {"ibc_ack": {"channel": "%s", "sequence": %d, "ack": %s, "success": %s}}}`,
-		packet.SourceChannel, packet.Sequence, ackAsJson, success))
+		packet.SourceChannel, packet.Sequence, ackAsJSON, success))
 	_, err = h.ContractKeeper.Sudo(ctx, contractAddr, sudoMsg)
 	if err != nil {
 		// error processing the callback
@@ -383,9 +382,9 @@ func NewEmitErrorAcknowledgement(ctx sdk.Context, err error, errorContexts ...st
 	return channeltypes.NewErrorAcknowledgement(err)
 }
 
-// IsJsonAckError checks an IBC acknowledgement to see if it's an error.
+// IsJSONAckError checks an IBC acknowledgement to see if it's an error.
 // This is a replacement for ack.Success() which is currently not working on some circumstances
-func IsJsonAckError(acknowledgement []byte) bool {
+func IsJSONAckError(acknowledgement []byte) bool {
 	var ackErr channeltypes.Acknowledgement_Error
 	if err := json.Unmarshal(acknowledgement, &ackErr); err == nil && len(ackErr.Error) > 0 {
 		return true

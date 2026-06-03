@@ -3,13 +3,12 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
-
-	"cosmossdk.io/log"
+	logv2 "cosmossdk.io/log/v2"
 	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 )
 
 type (
@@ -27,8 +26,8 @@ func NewKeeper(
 	}
 }
 
-// Logger returns a logger for the x/tokenfactory module
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+// Logger returns a logger for the x/ibchooks module
+func (k Keeper) Logger(ctx sdk.Context) logv2.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 

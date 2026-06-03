@@ -6,8 +6,8 @@ on:
       - ".github/workflows/ibc-hooks.yml"
 
 env:
-  LINT_VERSION: v1.57.1
-  GO_VERSION: 1.22.1
+  LINT_VERSION: v2.11.3
+  GO_VERSION: 1.25.9
   WORKING_DIRECTORY: modules/ibc-hooks
 
 jobs:
@@ -15,27 +15,32 @@ jobs:
     name: Linter
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v9.2.1
         with:
           version: ${{ env.LINT_VERSION }}
+          only-new-issues: true
+          args: --timeout=10m
           working-directory: ${{ env.WORKING_DIRECTORY }}
-          args: --timeout=5m
 
   test:
     runs-on: ubuntu-latest
     name: test
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v4
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Test
         run: go test ./...
         working-directory: ${{ env.WORKING_DIRECTORY }}
-
