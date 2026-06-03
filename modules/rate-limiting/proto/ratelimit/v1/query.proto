@@ -1,6 +1,7 @@
 syntax = "proto3";
 package ratelimit.v1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "ratelimit/v1/ratelimit.proto";
@@ -45,9 +46,12 @@ service Query {
 }
 
 // Queries all rate limits
-message QueryAllRateLimitsRequest {}
+message QueryAllRateLimitsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
 message QueryAllRateLimitsResponse {
   repeated RateLimit rate_limits = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // Queries a specific rate limit by channel ID and denom
@@ -62,27 +66,37 @@ message QueryRateLimitResponse {
 // Queries all the rate limits for a given chain
 message QueryRateLimitsByChainIdRequest {
   string chain_id = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 message QueryRateLimitsByChainIdResponse {
   repeated RateLimit rate_limits = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // Queries all the rate limits for a given channel or client ID
 message QueryRateLimitsByChannelOrClientIdRequest {
   string channel_or_client_id = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 message QueryRateLimitsByChannelOrClientIdResponse {
   repeated RateLimit rate_limits = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // Queries all blacklisted denoms
-message QueryAllBlacklistedDenomsRequest {}
+message QueryAllBlacklistedDenomsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
 message QueryAllBlacklistedDenomsResponse {
   repeated string denoms = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // Queries all whitelisted address pairs
-message QueryAllWhitelistedAddressesRequest {}
+message QueryAllWhitelistedAddressesRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
 message QueryAllWhitelistedAddressesResponse {
   repeated WhitelistedAddressPair address_pairs = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

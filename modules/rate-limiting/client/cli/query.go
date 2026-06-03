@@ -58,6 +58,10 @@ Example:
 			if err != nil {
 				return err
 			}
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			queryClient := types.NewQueryClient(clientCtx)
@@ -65,13 +69,14 @@ Example:
 			if denom == "" {
 				req := &types.QueryRateLimitsByChannelOrClientIdRequest{
 					ChannelOrClientId: channelOrClientId,
+					Pagination:        pageReq,
 				}
 				res, err := queryClient.RateLimitsByChannelOrClientId(context.Background(), req)
 				if err != nil {
 					return err
 				}
 
-				return clientCtx.PrintObjectLegacy(res.RateLimits)
+				return clientCtx.PrintProto(res)
 			}
 
 			req := &types.QueryRateLimitRequest{
@@ -89,6 +94,7 @@ Example:
 
 	cmd.Flags().String(FlagDenom, "", "The denom identifying a specific rate limit")
 	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "rate limits")
 
 	return cmd
 }
@@ -99,11 +105,15 @@ func GetCmdQueryAllRateLimits() *cobra.Command {
 		Use:   "list-rate-limits",
 		Short: "Query all rate limits",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			queryClient := types.NewQueryClient(clientCtx)
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
-			req := &types.QueryAllRateLimitsRequest{}
+			req := &types.QueryAllRateLimitsRequest{Pagination: pageReq}
 			res, err := queryClient.AllRateLimits(context.Background(), req)
 			if err != nil {
 				return err
@@ -114,6 +124,7 @@ func GetCmdQueryAllRateLimits() *cobra.Command {
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "rate limits")
 
 	return cmd
 }
@@ -127,12 +138,17 @@ func GetCmdQueryRateLimitsByChainId() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			chainId := args[0]
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			queryClient := types.NewQueryClient(clientCtx)
 
 			req := &types.QueryRateLimitsByChainIdRequest{
-				ChainId: chainId,
+				ChainId:    chainId,
+				Pagination: pageReq,
 			}
 			res, err := queryClient.RateLimitsByChainId(context.Background(), req)
 			if err != nil {
@@ -144,6 +160,7 @@ func GetCmdQueryRateLimitsByChainId() *cobra.Command {
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "rate limits")
 
 	return cmd
 }
