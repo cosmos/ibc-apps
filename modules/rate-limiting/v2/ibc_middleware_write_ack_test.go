@@ -70,20 +70,24 @@ func TestNewIBCMiddleware(t *testing.T) {
 		{
 			name: "success",
 			instantiateFn: func() {
-				_ = ratelimitv2.NewIBCMiddleware(ratelimitkeeper.Keeper{}, mockIBCModule{}, &mockWriteAckWrapper{}, mockChannelKeeperV2{})
+				mw := ratelimitv2.NewIBCMiddleware(ratelimitkeeper.Keeper{}, mockIBCModule{})
+				mw.SetWriteAcknowledgementWrapper(&mockWriteAckWrapper{})
+				mw.SetChannelKeeperV2(mockChannelKeeperV2{})
 			},
 		},
 		{
 			name: "failure: nil write acknowledgement wrapper",
 			instantiateFn: func() {
-				_ = ratelimitv2.NewIBCMiddleware(ratelimitkeeper.Keeper{}, mockIBCModule{}, nil, mockChannelKeeperV2{})
+				mw := ratelimitv2.NewIBCMiddleware(ratelimitkeeper.Keeper{}, mockIBCModule{})
+				mw.SetWriteAcknowledgementWrapper(nil)
 			},
 			expectedPanic: "write acknowledgement wrapper cannot be nil",
 		},
 		{
 			name: "failure: nil channel keeper v2",
 			instantiateFn: func() {
-				_ = ratelimitv2.NewIBCMiddleware(ratelimitkeeper.Keeper{}, mockIBCModule{}, &mockWriteAckWrapper{}, nil)
+				mw := ratelimitv2.NewIBCMiddleware(ratelimitkeeper.Keeper{}, mockIBCModule{})
+				mw.SetChannelKeeperV2(nil)
 			},
 			expectedPanic: "channel keeper v2 cannot be nil",
 		},
@@ -210,12 +214,9 @@ func TestWriteAcknowledgement(t *testing.T) {
 			}
 
 			writeAckWrapper := &mockWriteAckWrapper{callErr: tc.writeAckErr}
-			mw := ratelimitv2.NewIBCMiddleware(
-				helper.App.RatelimitKeeper,
-				mockIBCModule{},
-				writeAckWrapper,
-				mockChannelKeeperV2{packet: packet, found: tc.asyncFound},
-			)
+			mw := ratelimitv2.NewIBCMiddleware(helper.App.RatelimitKeeper, mockIBCModule{})
+			mw.SetWriteAcknowledgementWrapper(writeAckWrapper)
+			mw.SetChannelKeeperV2(mockChannelKeeperV2{packet: packet, found: tc.asyncFound})
 
 			err = mw.WriteAcknowledgement(ctx, destinationClient, sequence, tc.ack)
 			if tc.expectedErr != "" {

@@ -29,26 +29,27 @@ type IBCMiddleware struct {
 	chanKeeperV2    ratelimittypes.ChannelKeeperV2
 }
 
-func NewIBCMiddleware(
-	k keeper.Keeper,
-	app api.IBCModule,
-	writeAckWrapper api.WriteAcknowledgementWrapper,
-	chanKeeperV2 ratelimittypes.ChannelKeeperV2,
-) IBCMiddleware {
+func NewIBCMiddleware(k keeper.Keeper, app api.IBCModule) IBCMiddleware {
+	return IBCMiddleware{
+		app:    app,
+		keeper: k,
+	}
+}
+
+func (im *IBCMiddleware) SetWriteAcknowledgementWrapper(writeAckWrapper api.WriteAcknowledgementWrapper) {
 	if writeAckWrapper == nil {
 		panic(errors.New("write acknowledgement wrapper cannot be nil"))
 	}
 
+	im.writeAckWrapper = writeAckWrapper
+}
+
+func (im *IBCMiddleware) SetChannelKeeperV2(chanKeeperV2 ratelimittypes.ChannelKeeperV2) {
 	if chanKeeperV2 == nil {
 		panic(errors.New("channel keeper v2 cannot be nil"))
 	}
 
-	return IBCMiddleware{
-		app:             app,
-		keeper:          k,
-		writeAckWrapper: writeAckWrapper,
-		chanKeeperV2:    chanKeeperV2,
-	}
+	im.chanKeeperV2 = chanKeeperV2
 }
 
 func (im IBCMiddleware) OnSendPacket(
@@ -149,6 +150,13 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 }
 
 func (im IBCMiddleware) WriteAcknowledgement(ctx sdk.Context, clientID string, sequence uint64, ack channeltypesv2.Acknowledgement) error {
+	if im.chanKeeperV2 == nil {
+		return errors.New("channel keeper v2 cannot be nil")
+	}
+	if im.writeAckWrapper == nil {
+		return errors.New("write acknowledgement wrapper cannot be nil")
+	}
+
 	packet, found := im.chanKeeperV2.GetAsyncPacket(ctx, clientID, sequence)
 	if !found {
 		im.keeper.Logger(ctx).Error("ICS20 rate limiting WriteAcknowledgement failed: async packet not found", "clientID", clientID, "sequence", sequence)
