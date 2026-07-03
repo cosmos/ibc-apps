@@ -36,6 +36,8 @@ func NewIBCMiddleware(k keeper.Keeper, app api.IBCModule) IBCMiddleware {
 	}
 }
 
+// SetWriteAcknowledgementWrapper sets the underlying IBC v2 write acknowledgement wrapper used for async acknowledgements.
+// It panics if writeAckWrapper is nil.
 func (im *IBCMiddleware) SetWriteAcknowledgementWrapper(writeAckWrapper api.WriteAcknowledgementWrapper) {
 	if writeAckWrapper == nil {
 		panic(errors.New("write acknowledgement wrapper cannot be nil"))
@@ -44,6 +46,8 @@ func (im *IBCMiddleware) SetWriteAcknowledgementWrapper(writeAckWrapper api.Writ
 	im.writeAckWrapper = writeAckWrapper
 }
 
+// SetChannelKeeperV2 sets the IBC v2 channel keeper used to retrieve async packets before writing acknowledgements.
+// It panics if chanKeeperV2 is nil.
 func (im *IBCMiddleware) SetChannelKeeperV2(chanKeeperV2 ratelimittypes.ChannelKeeperV2) {
 	if chanKeeperV2 == nil {
 		panic(errors.New("channel keeper v2 cannot be nil"))
