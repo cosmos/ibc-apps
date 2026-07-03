@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -112,8 +113,14 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	// If the packet was not rate-limited, pass it down to the Transfer OnRecvPacket callback
-	return im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
+	ack := im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
+	if ack != nil {
+		if err := im.keeper.RemovePendingReceivePacket(ctx, packet.GetDestChannel(), packet.GetSequence()); err != nil {
+			im.keeper.Logger(ctx).Error("Rate limit OnRecvPacket failed to remove pending receive packet", "error", err)
+		}
+	}
+
+	return ack
 }
 
 // OnAcknowledgementPacket implements the IBCMiddleware interface
@@ -165,12 +172,30 @@ func (im IBCMiddleware) SendPacket(
 	)
 }
 
-// WriteAcknowledgement implements the ICS4 Wrapper interface
+// WriteAcknowledgement implements the ICS4 Wrapper interface.
+// If a middleware writes an error ack for a packet that was previously received
+// with a nil async ack, reverse the inflow that was already committed.
 func (im IBCMiddleware) WriteAcknowledgement(
 	ctx sdk.Context,
 	packet exported.PacketI,
 	ack exported.Acknowledgement,
 ) error {
+	if chanPacket, ok := packet.(channeltypes.Packet); ok {
+		if ack == nil {
+			return types.ErrAsyncAckNil.Wrapf("cannot write nil ack for packet %s/%d", packet.GetDestChannel(), packet.GetSequence())
+		}
+
+		if ack.Success() {
+			if err := im.keeper.RemovePendingReceivePacket(ctx, chanPacket.GetDestChannel(), chanPacket.GetSequence()); err != nil {
+				return err
+			}
+		} else {
+			if err := im.keeper.UndoReceivePacket(ctx, chanPacket); err != nil {
+				return err
+			}
+		}
+	}
+
 	return im.keeper.WriteAcknowledgement(ctx, packet, ack)
 }
 

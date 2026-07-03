@@ -493,7 +493,12 @@ func NewSimApp(
 	var transferStack ibcporttypes.IBCModule = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = ratelimit.NewIBCMiddleware(app.RatelimitKeeper, transferStack)
 
-	transferStackV2 := ratelimitv2.NewIBCMiddleware(app.RatelimitKeeper, transferv2.NewIBCModule(app.TransferKeeper))
+	transferStackV2 := ratelimitv2.NewIBCMiddleware(
+		app.RatelimitKeeper,
+		transferv2.NewIBCModule(app.TransferKeeper),
+		app.IBCKeeper.ChannelKeeperV2,
+		app.IBCKeeper.ChannelKeeperV2,
+	)
 
 	// Add IBC Router
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)

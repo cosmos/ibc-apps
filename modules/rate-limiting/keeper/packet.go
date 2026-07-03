@@ -220,8 +220,16 @@ func (k Keeper) ReceiveRateLimitedPacket(ctx sdk.Context, packet channeltypes.Pa
 		return err
 	}
 
-	_, err = k.CheckRateLimitAndUpdateFlow(ctx, types.PACKET_RECV, packetInfo)
-	return err
+	updatedFlow, err := k.CheckRateLimitAndUpdateFlow(ctx, types.PACKET_RECV, packetInfo)
+	if err != nil {
+		return err
+	}
+
+	if updatedFlow {
+		return k.SetPendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence)
+	}
+
+	return nil
 }
 
 // Middleware implementation for OnAckPacket with rate limiting
@@ -257,6 +265,41 @@ func (k Keeper) TimeoutRateLimitedPacket(ctx sdk.Context, packet channeltypes.Pa
 	}
 
 	return k.UndoSendPacket(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom, packetInfo.Amount)
+}
+
+// UndoReceivePacket reverses the inflow increment from a receive that was later
+// invalidated, for example when PFM writes an async error acknowledgement for a
+// failed forward.
+func (k Keeper) UndoReceivePacket(ctx sdk.Context, packet channeltypes.Packet) error {
+	packetInfo, err := ParsePacketInfo(packet, types.PACKET_RECV)
+	if err != nil {
+		// If no inflow was recorded, there is nothing to undo.
+		k.Logger(ctx).Error("Unable to parse packet data for rate limiting", "error", err)
+		return nil
+	}
+
+	rateLimit, found := k.GetRateLimit(ctx, packetInfo.Denom, packetInfo.ChannelID)
+	if !found {
+		return nil
+	}
+
+	found, err = k.CheckPacketReceivedDuringCurrentQuota(ctx, packetInfo.ChannelID, packet.Sequence)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return nil
+	}
+
+	newInflow := rateLimit.Flow.Inflow.Sub(packetInfo.Amount)
+	if newInflow.IsNegative() {
+		newInflow = sdkmath.ZeroInt()
+	}
+
+	rateLimit.Flow.Inflow = newInflow
+	k.SetRateLimit(ctx, rateLimit)
+
+	return k.RemovePendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence)
 }
 
 // SendPacket wraps IBC ChannelKeeper's SendPacket function

@@ -34,6 +34,15 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 			panic(err)
 		}
 	}
+	for _, pendingPacketId := range genState.PendingRecvPacketSequenceNumbers {
+		channelOrClientId, sequence, err := types.ParsePendingPacketId(pendingPacketId)
+		if err != nil {
+			panic(err.Error())
+		}
+		if err := k.SetPendingReceivePacket(ctx, channelOrClientId, sequence); err != nil {
+			panic(err)
+		}
+	}
 
 	// If the hour epoch has been initialized already (epoch number != 0), validate and then use it
 	if genState.HourEpoch.EpochNumber > 0 {
@@ -56,12 +65,17 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	if err != nil {
 		panic(err)
 	}
+	pendingReceivePackets, err := k.GetAllPendingReceivePackets(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	genesis.Params = k.GetParams(ctx)
 	genesis.RateLimits = k.GetAllRateLimits(ctx)
 	genesis.BlacklistedDenoms = k.GetAllBlacklistedDenoms(ctx)
 	genesis.WhitelistedAddressPairs = k.GetAllWhitelistedAddressPairs(ctx)
 	genesis.PendingSendPacketSequenceNumbers = pendingSendPackets
+	genesis.PendingRecvPacketSequenceNumbers = pendingReceivePackets
 	genesis.HourEpoch = k.GetHourEpoch(ctx)
 
 	return genesis
