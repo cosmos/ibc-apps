@@ -2,7 +2,6 @@ package v2
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
@@ -29,6 +28,10 @@ type IBCMiddleware struct {
 	chanKeeperV2    ratelimittypes.ChannelKeeperV2
 }
 
+// NewIBCMiddleware creates a new IBCMiddleware instance.
+//
+// Deprecated: use NewIBCMiddlewareWithAsyncAcknowledgements when the middleware
+// may be used in the IBC v2 async acknowledgement path.
 func NewIBCMiddleware(k keeper.Keeper, app api.IBCModule) IBCMiddleware {
 	return IBCMiddleware{
 		app:    app,
@@ -36,11 +39,26 @@ func NewIBCMiddleware(k keeper.Keeper, app api.IBCModule) IBCMiddleware {
 	}
 }
 
+// NewIBCMiddlewareWithAsyncAcknowledgements creates a new IBCMiddleware instance
+// with the dependencies required to process IBC v2 async acknowledgements.
+// It panics if writeAckWrapper or chanKeeperV2 is nil.
+func NewIBCMiddlewareWithAsyncAcknowledgements(
+	k keeper.Keeper,
+	app api.IBCModule,
+	writeAckWrapper api.WriteAcknowledgementWrapper,
+	chanKeeperV2 ratelimittypes.ChannelKeeperV2,
+) IBCMiddleware {
+	im := NewIBCMiddleware(k, app)
+	im.SetWriteAcknowledgementWrapper(writeAckWrapper)
+	im.SetChannelKeeperV2(chanKeeperV2)
+	return im
+}
+
 // SetWriteAcknowledgementWrapper sets the underlying IBC v2 write acknowledgement wrapper used for async acknowledgements.
 // It panics if writeAckWrapper is nil.
 func (im *IBCMiddleware) SetWriteAcknowledgementWrapper(writeAckWrapper api.WriteAcknowledgementWrapper) {
 	if writeAckWrapper == nil {
-		panic(errors.New("write acknowledgement wrapper cannot be nil"))
+		panic(ratelimittypes.ErrWriteAcknowledgementWrapperNil)
 	}
 
 	im.writeAckWrapper = writeAckWrapper
@@ -50,7 +68,7 @@ func (im *IBCMiddleware) SetWriteAcknowledgementWrapper(writeAckWrapper api.Writ
 // It panics if chanKeeperV2 is nil.
 func (im *IBCMiddleware) SetChannelKeeperV2(chanKeeperV2 ratelimittypes.ChannelKeeperV2) {
 	if chanKeeperV2 == nil {
-		panic(errors.New("channel keeper v2 cannot be nil"))
+		panic(ratelimittypes.ErrChannelKeeperV2Nil)
 	}
 
 	im.chanKeeperV2 = chanKeeperV2
@@ -155,10 +173,10 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 
 func (im IBCMiddleware) WriteAcknowledgement(ctx sdk.Context, clientID string, sequence uint64, ack channeltypesv2.Acknowledgement) error {
 	if im.chanKeeperV2 == nil {
-		return errors.New("channel keeper v2 cannot be nil")
+		return ratelimittypes.ErrChannelKeeperV2Nil
 	}
 	if im.writeAckWrapper == nil {
-		return errors.New("write acknowledgement wrapper cannot be nil")
+		return ratelimittypes.ErrWriteAcknowledgementWrapperNil
 	}
 
 	packet, found := im.chanKeeperV2.GetAsyncPacket(ctx, clientID, sequence)

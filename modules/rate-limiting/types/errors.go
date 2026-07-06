@@ -30,4 +30,10 @@ var (
 	ErrAsyncAckNil = errorsmod.Register(ModuleName, 10,
 		"async ack is nil",
 	)
+	ErrWriteAcknowledgementWrapperNil = errorsmod.Register(ModuleName, 11,
+		"write acknowledgement wrapper cannot be nil",
+	)
+	ErrChannelKeeperV2Nil = errorsmod.Register(ModuleName, 12,
+		"channel keeper v2 cannot be nil",
+	)
 )
