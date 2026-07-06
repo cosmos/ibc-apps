@@ -13,11 +13,31 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	tmbytes "github.com/cometbft/cometbft/libs/bytes"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
+
+type mockICS4Wrapper struct {
+	writeAckCalled bool
+}
+
+func (m *mockICS4Wrapper) WriteAcknowledgement(sdk.Context, ibcexported.PacketI, ibcexported.Acknowledgement) error {
+	m.writeAckCalled = true
+	return nil
+}
+
+func (*mockICS4Wrapper) SendPacket(sdk.Context, string, string, clienttypes.Height, uint64, []byte) (uint64, error) {
+	return 0, nil
+}
+
+func (*mockICS4Wrapper) GetAppVersion(sdk.Context, string, string) (string, bool) {
+	return "", false
+}
 
 const (
 	transferPort    = "transfer"
@@ -649,4 +669,43 @@ func (s *KeeperTestSuite) TestUndoReceivePacket() {
 			s.Require().False(found, "pending receive packet should not remain")
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestWriteAcknowledgement_UndoReceivePacket() {
+	packetAmount := sdkmath.NewInt(10)
+	sequence := uint64(10)
+	rateLimitDenom := hashDenomTrace(fmt.Sprintf("%s/%s/%s", transferPort, channelOnStride, uosmo))
+	initialInflow := sdkmath.NewInt(100)
+
+	s.App.RatelimitKeeper.SetRateLimit(s.Ctx, types.RateLimit{
+		Path: &types.Path{Denom: rateLimitDenom, ChannelOrClientId: channelOnStride},
+		Flow: &types.Flow{Inflow: initialInflow},
+	})
+	err := s.App.RatelimitKeeper.SetPendingReceivePacket(s.Ctx, channelOnStride, sequence)
+	s.Require().NoError(err)
+
+	packetData, err := json.Marshal(transfertypes.FungibleTokenPacketData{Denom: uosmo, Amount: packetAmount.String()})
+	s.Require().NoError(err)
+	packet := channeltypes.Packet{
+		Sequence:           sequence,
+		SourcePort:         transferPort,
+		SourceChannel:      channelOnHost,
+		DestinationPort:    transferPort,
+		DestinationChannel: channelOnStride,
+		Data:               packetData,
+	}
+
+	ics4Wrapper := &mockICS4Wrapper{}
+	s.App.RatelimitKeeper.SetIBCKeepers(nil, nil, ics4Wrapper)
+	err = s.App.RatelimitKeeper.WriteAcknowledgement(s.Ctx, packet, channeltypes.NewErrorAcknowledgement(fmt.Errorf("error")))
+	s.Require().NoError(err)
+	s.Require().True(ics4Wrapper.writeAckCalled, "underlying ICS4 wrapper should be called")
+
+	rateLimit, found := s.App.RatelimitKeeper.GetRateLimit(s.Ctx, rateLimitDenom, channelOnStride)
+	s.Require().True(found)
+	s.Require().Equal(initialInflow.Sub(packetAmount), rateLimit.Flow.Inflow)
+
+	found, err = s.App.RatelimitKeeper.CheckPacketReceivedDuringCurrentQuota(s.Ctx, channelOnStride, sequence)
+	s.Require().NoError(err)
+	s.Require().False(found, "pending receive packet should be removed")
 }

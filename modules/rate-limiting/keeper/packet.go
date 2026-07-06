@@ -17,8 +17,11 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
+
+var _ porttypes.ICS4Wrapper = (*Keeper)(nil)
 
 type RateLimitedPacketInfo struct {
 	ChannelID string
@@ -340,8 +343,26 @@ func (k Keeper) SendPacket(
 	return sequence, err
 }
 
-// WriteAcknowledgement wraps IBC ChannelKeeper's WriteAcknowledgement function
+// WriteAcknowledgement wraps IBC ChannelKeeper's WriteAcknowledgement function.
+// If an async error acknowledgement is written for a packet received through
+// rate limiting, reverse the inflow that was already committed.
 func (k Keeper) WriteAcknowledgement(ctx sdk.Context, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
+	if chanPacket, ok := packet.(channeltypes.Packet); ok {
+		if acknowledgement == nil {
+			return types.ErrAsyncAckNil.Wrapf("cannot write nil ack for packet %s/%d", packet.GetDestChannel(), packet.GetSequence())
+		}
+
+		if acknowledgement.Success() {
+			if err := k.RemovePendingReceivePacket(ctx, chanPacket.GetDestChannel(), chanPacket.GetSequence()); err != nil {
+				return err
+			}
+		} else {
+			if err := k.UndoReceivePacket(ctx, chanPacket); err != nil {
+				return err
+			}
+		}
+	}
+
 	return k.ics4Wrapper.WriteAcknowledgement(ctx, packet, acknowledgement)
 }
 
