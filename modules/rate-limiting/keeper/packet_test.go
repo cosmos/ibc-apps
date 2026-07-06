@@ -12,8 +12,9 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
-	tmbytes "github.com/cometbft/cometbft/libs/bytes"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	tmbytes "github.com/cometbft/cometbft/libs/bytes"
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
