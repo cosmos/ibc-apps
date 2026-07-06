@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -15,18 +16,62 @@ import (
 	"github.com/cosmos/ibc-go/v10/modules/core/api"
 )
 
-var _ api.IBCModule = (*IBCMiddleware)(nil)
+var (
+	_ api.IBCModule                   = (*IBCMiddleware)(nil)
+	_ api.WriteAcknowledgementWrapper = (*IBCMiddleware)(nil)
+)
 
 type IBCMiddleware struct {
-	app    api.IBCModule
-	keeper keeper.Keeper
+	app             api.IBCModule
+	keeper          keeper.Keeper
+	writeAckWrapper api.WriteAcknowledgementWrapper
+	chanKeeperV2    ratelimittypes.ChannelKeeperV2
 }
 
+// NewIBCMiddleware creates a new IBCMiddleware instance.
+//
+// Deprecated: use NewIBCMiddlewareWithAsyncAcknowledgements when the middleware
+// may be used in the IBC v2 async acknowledgement path.
 func NewIBCMiddleware(k keeper.Keeper, app api.IBCModule) IBCMiddleware {
 	return IBCMiddleware{
 		app:    app,
 		keeper: k,
 	}
+}
+
+// NewIBCMiddlewareWithAsyncAcknowledgements creates a new IBCMiddleware instance
+// with the dependencies required to process IBC v2 async acknowledgements.
+// It panics if writeAckWrapper or chanKeeperV2 is nil.
+func NewIBCMiddlewareWithAsyncAcknowledgements(
+	k keeper.Keeper,
+	app api.IBCModule,
+	writeAckWrapper api.WriteAcknowledgementWrapper,
+	chanKeeperV2 ratelimittypes.ChannelKeeperV2,
+) IBCMiddleware {
+	im := NewIBCMiddleware(k, app)
+	im.SetWriteAcknowledgementWrapper(writeAckWrapper)
+	im.SetChannelKeeperV2(chanKeeperV2)
+	return im
+}
+
+// SetWriteAcknowledgementWrapper sets the underlying IBC v2 write acknowledgement wrapper used for async acknowledgements.
+// It panics if writeAckWrapper is nil.
+func (im *IBCMiddleware) SetWriteAcknowledgementWrapper(writeAckWrapper api.WriteAcknowledgementWrapper) {
+	if writeAckWrapper == nil {
+		panic(ratelimittypes.ErrWriteAcknowledgementWrapperNil)
+	}
+
+	im.writeAckWrapper = writeAckWrapper
+}
+
+// SetChannelKeeperV2 sets the IBC v2 channel keeper used to retrieve async packets before writing acknowledgements.
+// It panics if chanKeeperV2 is nil.
+func (im *IBCMiddleware) SetChannelKeeperV2(chanKeeperV2 ratelimittypes.ChannelKeeperV2) {
+	if chanKeeperV2 == nil {
+		panic(ratelimittypes.ErrChannelKeeperV2Nil)
+	}
+
+	im.chanKeeperV2 = chanKeeperV2
 }
 
 func (im IBCMiddleware) OnSendPacket(
@@ -75,8 +120,14 @@ func (im IBCMiddleware) OnRecvPacket(
 		}
 	}
 
-	// If the packet was not rate-limited, pass it down to the Transfer OnRecvPacket callback
-	return im.app.OnRecvPacket(ctx, sourceClient, destinationClient, sequence, payload, relayer)
+	result := im.app.OnRecvPacket(ctx, sourceClient, destinationClient, sequence, payload, relayer)
+	if result.Status != channeltypesv2.PacketStatus_Async {
+		if err := im.keeper.RemovePendingReceivePacket(ctx, destinationClient, sequence); err != nil {
+			im.keeper.Logger(ctx).Error("ICS20 rate limiting OnRecvPacket failed to remove pending receive packet", "error", err)
+		}
+	}
+
+	return result
 }
 
 func (im IBCMiddleware) OnTimeoutPacket(
@@ -118,6 +169,46 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 		return err
 	}
 	return im.app.OnAcknowledgementPacket(ctx, sourceClient, destinationClient, sequence, acknowledgement, payload, relayer)
+}
+
+func (im IBCMiddleware) WriteAcknowledgement(ctx sdk.Context, clientID string, sequence uint64, ack channeltypesv2.Acknowledgement) error {
+	if im.chanKeeperV2 == nil {
+		return ratelimittypes.ErrChannelKeeperV2Nil
+	}
+	if im.writeAckWrapper == nil {
+		return ratelimittypes.ErrWriteAcknowledgementWrapperNil
+	}
+
+	packet, found := im.chanKeeperV2.GetAsyncPacket(ctx, clientID, sequence)
+	if !found {
+		im.keeper.Logger(ctx).Error("ICS20 rate limiting WriteAcknowledgement failed: async packet not found", "clientID", clientID, "sequence", sequence)
+		return ratelimittypes.ErrAsyncPacketNotFound.Wrapf("clientID: %s, sequence: %d", clientID, sequence)
+	}
+
+	// Async acknowledgements can only be for single payload packets.
+	if len(ack.AppAcknowledgements) != 1 || len(packet.Payloads) != 1 {
+		im.keeper.Logger(ctx).Error("ICS20 rate limiting WriteAcknowledgement failed: async acknowledgements can only be for single payload packets", "clientID", clientID, "sequence", sequence)
+		return im.writeAckWrapper.WriteAcknowledgement(ctx, clientID, sequence, ack)
+	}
+
+	if ack.Success() {
+		if err := im.keeper.RemovePendingReceivePacket(ctx, clientID, sequence); err != nil {
+			im.keeper.Logger(ctx).Error("ICS20 rate limiting WriteAcknowledgement failed to remove pending receive packet", "error", err)
+			return err
+		}
+	} else {
+		v1Packet, err := v2ToV1Packet(packet.Payloads[0], packet.SourceClient, packet.DestinationClient, packet.Sequence)
+		if err != nil {
+			im.keeper.Logger(ctx).Error("ICS20 rate limiting WriteAcknowledgement failed to convert v2 packet to v1 packet", "error", err)
+			return err
+		}
+		if err := im.keeper.UndoReceivePacket(ctx, v1Packet); err != nil {
+			im.keeper.Logger(ctx).Error("ICS20 rate limiting WriteAcknowledgement failed to undo receive packet", "error", err)
+			return err
+		}
+	}
+
+	return im.writeAckWrapper.WriteAcknowledgement(ctx, clientID, sequence, ack)
 }
 
 func v2ToV1Packet(payload channeltypesv2.Payload, sourceClient, destinationClient string, sequence uint64) (channeltypes.Packet, error) {

@@ -7,6 +7,7 @@ import (
 
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
@@ -21,6 +22,11 @@ type BankKeeper interface {
 type ChannelKeeper interface {
 	GetChannel(ctx sdk.Context, portID string, channelID string) (channeltypes.Channel, bool)
 	GetChannelClientState(ctx sdk.Context, portID string, channelID string) (string, ibcexported.ClientState, error)
+}
+
+// ChannelKeeperV2 defines the expected IBC v2 channel keeper methods.
+type ChannelKeeperV2 interface {
+	GetAsyncPacket(ctx sdk.Context, clientID string, sequence uint64) (channeltypesv2.Packet, bool)
 }
 
 type ClientKeeper interface {

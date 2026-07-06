@@ -207,6 +207,52 @@ func (x *_GenesisState_5_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_GenesisState_7_list)(nil)
+
+type _GenesisState_7_list struct {
+	list *[]string
+}
+
+func (x *_GenesisState_7_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_GenesisState_7_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_GenesisState_7_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_GenesisState_7_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_GenesisState_7_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message GenesisState at list field PendingRecvPacketSequenceNumbers as it is not of Message kind"))
+}
+
+func (x *_GenesisState_7_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_GenesisState_7_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_GenesisState_7_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
 	md_GenesisState                                      protoreflect.MessageDescriptor
 	fd_GenesisState_params                               protoreflect.FieldDescriptor
@@ -215,6 +261,7 @@ var (
 	fd_GenesisState_blacklisted_denoms                   protoreflect.FieldDescriptor
 	fd_GenesisState_pending_send_packet_sequence_numbers protoreflect.FieldDescriptor
 	fd_GenesisState_hour_epoch                           protoreflect.FieldDescriptor
+	fd_GenesisState_pending_recv_packet_sequence_numbers protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -226,6 +273,7 @@ func init() {
 	fd_GenesisState_blacklisted_denoms = md_GenesisState.Fields().ByName("blacklisted_denoms")
 	fd_GenesisState_pending_send_packet_sequence_numbers = md_GenesisState.Fields().ByName("pending_send_packet_sequence_numbers")
 	fd_GenesisState_hour_epoch = md_GenesisState.Fields().ByName("hour_epoch")
+	fd_GenesisState_pending_recv_packet_sequence_numbers = md_GenesisState.Fields().ByName("pending_recv_packet_sequence_numbers")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -329,6 +377,12 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
+	if len(x.PendingRecvPacketSequenceNumbers) != 0 {
+		value := protoreflect.ValueOfList(&_GenesisState_7_list{list: &x.PendingRecvPacketSequenceNumbers})
+		if !f(fd_GenesisState_pending_recv_packet_sequence_numbers, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -356,6 +410,8 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return len(x.PendingSendPacketSequenceNumbers) != 0
 	case "ratelimit.v1.GenesisState.hour_epoch":
 		return x.HourEpoch != nil
+	case "ratelimit.v1.GenesisState.pending_recv_packet_sequence_numbers":
+		return len(x.PendingRecvPacketSequenceNumbers) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: ratelimit.v1.GenesisState"))
@@ -384,6 +440,8 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.PendingSendPacketSequenceNumbers = nil
 	case "ratelimit.v1.GenesisState.hour_epoch":
 		x.HourEpoch = nil
+	case "ratelimit.v1.GenesisState.pending_recv_packet_sequence_numbers":
+		x.PendingRecvPacketSequenceNumbers = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: ratelimit.v1.GenesisState"))
@@ -430,6 +488,12 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 	case "ratelimit.v1.GenesisState.hour_epoch":
 		value := x.HourEpoch
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "ratelimit.v1.GenesisState.pending_recv_packet_sequence_numbers":
+		if len(x.PendingRecvPacketSequenceNumbers) == 0 {
+			return protoreflect.ValueOfList(&_GenesisState_7_list{})
+		}
+		listValue := &_GenesisState_7_list{list: &x.PendingRecvPacketSequenceNumbers}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: ratelimit.v1.GenesisState"))
@@ -470,6 +534,10 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		x.PendingSendPacketSequenceNumbers = *clv.list
 	case "ratelimit.v1.GenesisState.hour_epoch":
 		x.HourEpoch = value.Message().Interface().(*HourEpoch)
+	case "ratelimit.v1.GenesisState.pending_recv_packet_sequence_numbers":
+		lv := value.List()
+		clv := lv.(*_GenesisState_7_list)
+		x.PendingRecvPacketSequenceNumbers = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: ratelimit.v1.GenesisState"))
@@ -524,6 +592,12 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 			x.HourEpoch = new(HourEpoch)
 		}
 		return protoreflect.ValueOfMessage(x.HourEpoch.ProtoReflect())
+	case "ratelimit.v1.GenesisState.pending_recv_packet_sequence_numbers":
+		if x.PendingRecvPacketSequenceNumbers == nil {
+			x.PendingRecvPacketSequenceNumbers = []string{}
+		}
+		value := &_GenesisState_7_list{list: &x.PendingRecvPacketSequenceNumbers}
+		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: ratelimit.v1.GenesisState"))
@@ -555,6 +629,9 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 	case "ratelimit.v1.GenesisState.hour_epoch":
 		m := new(HourEpoch)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "ratelimit.v1.GenesisState.pending_recv_packet_sequence_numbers":
+		list := []string{}
+		return protoreflect.ValueOfList(&_GenesisState_7_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: ratelimit.v1.GenesisState"))
@@ -656,6 +733,12 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 			l = options.Size(x.HourEpoch)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		if len(x.PendingRecvPacketSequenceNumbers) > 0 {
+			for _, s := range x.PendingRecvPacketSequenceNumbers {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -684,6 +767,15 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.PendingRecvPacketSequenceNumbers) > 0 {
+			for iNdEx := len(x.PendingRecvPacketSequenceNumbers) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.PendingRecvPacketSequenceNumbers[iNdEx])
+				copy(dAtA[i:], x.PendingRecvPacketSequenceNumbers[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PendingRecvPacketSequenceNumbers[iNdEx])))
+				i--
+				dAtA[i] = 0x3a
+			}
 		}
 		if x.HourEpoch != nil {
 			encoded, err := options.Marshal(x.HourEpoch)
@@ -1016,6 +1108,38 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PendingRecvPacketSequenceNumbers", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PendingRecvPacketSequenceNumbers = append(x.PendingRecvPacketSequenceNumbers, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1076,6 +1200,7 @@ type GenesisState struct {
 	BlacklistedDenoms                []string                  `protobuf:"bytes,4,rep,name=blacklisted_denoms,json=blacklistedDenoms,proto3" json:"blacklisted_denoms,omitempty"`
 	PendingSendPacketSequenceNumbers []string                  `protobuf:"bytes,5,rep,name=pending_send_packet_sequence_numbers,json=pendingSendPacketSequenceNumbers,proto3" json:"pending_send_packet_sequence_numbers,omitempty"`
 	HourEpoch                        *HourEpoch                `protobuf:"bytes,6,opt,name=hour_epoch,json=hourEpoch,proto3" json:"hour_epoch,omitempty"`
+	PendingRecvPacketSequenceNumbers []string                  `protobuf:"bytes,7,rep,name=pending_recv_packet_sequence_numbers,json=pendingRecvPacketSequenceNumbers,proto3" json:"pending_recv_packet_sequence_numbers,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -1140,6 +1265,13 @@ func (x *GenesisState) GetHourEpoch() *HourEpoch {
 	return nil
 }
 
+func (x *GenesisState) GetPendingRecvPacketSequenceNumbers() []string {
+	if x != nil {
+		return x.PendingRecvPacketSequenceNumbers
+	}
+	return nil
+}
+
 var File_ratelimit_v1_genesis_proto protoreflect.FileDescriptor
 
 var file_ratelimit_v1_genesis_proto_rawDesc = []byte{
@@ -1150,7 +1282,7 @@ var file_ratelimit_v1_genesis_proto_rawDesc = []byte{
 	0x1a, 0x19, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2f, 0x76, 0x31, 0x2f, 0x70,
 	0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1c, 0x72, 0x61, 0x74,
 	0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x61, 0x74, 0x65, 0x6c, 0x69,
-	0x6d, 0x69, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x88, 0x04, 0x0a, 0x0c, 0x47, 0x65,
+	0x6d, 0x69, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd8, 0x04, 0x0a, 0x0c, 0x47, 0x65,
 	0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x43, 0x0a, 0x06, 0x70, 0x61,
 	0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x72, 0x61, 0x74,
 	0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73,
@@ -1183,7 +1315,12 @@ var file_ratelimit_v1_genesis_proto_rawDesc = []byte{
 	0x74, 0x2e, 0x76, 0x31, 0x2e, 0x48, 0x6f, 0x75, 0x72, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x42, 0x19,
 	0xc8, 0xde, 0x1f, 0x00, 0xf2, 0xde, 0x1f, 0x11, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x68, 0x6f,
 	0x75, 0x72, 0x5f, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x22, 0x52, 0x09, 0x68, 0x6f, 0x75, 0x72, 0x45,
-	0x70, 0x6f, 0x63, 0x68, 0x42, 0xc4, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x72, 0x61, 0x74,
+	0x70, 0x6f, 0x63, 0x68, 0x12, 0x4e, 0x0a, 0x24, 0x70, 0x65, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x5f,
+	0x72, 0x65, 0x63, 0x76, 0x5f, 0x70, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x5f, 0x73, 0x65, 0x71, 0x75,
+	0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x73, 0x18, 0x07, 0x20, 0x03,
+	0x28, 0x09, 0x52, 0x20, 0x70, 0x65, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x63, 0x76, 0x50,
+	0x61, 0x63, 0x6b, 0x65, 0x74, 0x53, 0x65, 0x71, 0x75, 0x65, 0x6e, 0x63, 0x65, 0x4e, 0x75, 0x6d,
+	0x62, 0x65, 0x72, 0x73, 0x42, 0xc4, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x72, 0x61, 0x74,
 	0x65, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x2e, 0x76, 0x31, 0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73,
 	0x69, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75,
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x69, 0x62, 0x63,

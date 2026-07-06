@@ -24,12 +24,13 @@ func KeyPrefix(p string) []byte {
 }
 
 var (
-	PathKeyPrefix             = KeyPrefix("path")
-	RateLimitKeyPrefix        = KeyPrefix("rate-limit")
-	PendingSendPacketPrefix   = KeyPrefix("pending-send-packet")
-	DenomBlacklistKeyPrefix   = KeyPrefix("denom-blacklist")
-	AddressWhitelistKeyPrefix = KeyPrefix("address-blacklist")
-	HourEpochKey              = KeyPrefix("hour-epoch")
+	PathKeyPrefix              = KeyPrefix("path")
+	RateLimitKeyPrefix         = KeyPrefix("rate-limit")
+	PendingSendPacketPrefix    = KeyPrefix("pending-send-packet")
+	PendingReceivePacketPrefix = KeyPrefix("pending-receive-packet")
+	DenomBlacklistKeyPrefix    = KeyPrefix("denom-blacklist")
+	AddressWhitelistKeyPrefix  = KeyPrefix("address-blacklist")
+	HourEpochKey               = KeyPrefix("hour-epoch")
 
 	PendingSendPacketChannelLength int = 64
 )
@@ -39,10 +40,10 @@ func GetRateLimitItemKey(denom string, channelId string) []byte {
 	return append(KeyPrefix(denom), KeyPrefix(channelId)...)
 }
 
-// Get the pending send packet key from the channel ID and sequence number
+// Get the pending packet key from the channel ID and sequence number
 // The channel ID must be fixed length to allow for extracting the underlying
 // values from a key
-func GetPendingSendPacketKey(channelId string, sequenceNumber uint64) ([]byte, error) {
+func GetPendingPacketKey(channelId string, sequenceNumber uint64) ([]byte, error) {
 	if len(channelId) > PendingSendPacketChannelLength {
 		return nil, errorsmod.Wrapf(ErrInvalidChannelId, "channel %s with length %d is greater than the allowed length %d", channelId, len(channelId), PendingSendPacketChannelLength)
 	}
@@ -53,6 +54,12 @@ func GetPendingSendPacketKey(channelId string, sequenceNumber uint64) ([]byte, e
 	binary.BigEndian.PutUint64(sequenceNumberBz, sequenceNumber)
 
 	return append(channelIdBz, sequenceNumberBz...), nil
+}
+
+// GetPendingSendPacketKey returns the pending packet key for a send packet.
+// Deprecated: use GetPendingPacketKey instead.
+func GetPendingSendPacketKey(channelId string, sequenceNumber uint64) ([]byte, error) {
+	return GetPendingPacketKey(channelId, sequenceNumber)
 }
 
 // Get the whitelist path key from a sender and receiver address

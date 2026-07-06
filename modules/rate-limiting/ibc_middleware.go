@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
-var _ porttypes.Middleware = &IBCMiddleware{}
+var _ porttypes.Middleware = (*IBCMiddleware)(nil)
 
 type IBCMiddleware struct {
 	app    porttypes.IBCModule
@@ -112,8 +112,14 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	// If the packet was not rate-limited, pass it down to the Transfer OnRecvPacket callback
-	return im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
+	ack := im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
+	if ack != nil {
+		if err := im.keeper.RemovePendingReceivePacket(ctx, packet.GetDestChannel(), packet.GetSequence()); err != nil {
+			im.keeper.Logger(ctx).Error("Rate limit OnRecvPacket failed to remove pending receive packet", "error", err)
+		}
+	}
+
+	return ack
 }
 
 // OnAcknowledgementPacket implements the IBCMiddleware interface
@@ -165,7 +171,7 @@ func (im IBCMiddleware) SendPacket(
 	)
 }
 
-// WriteAcknowledgement implements the ICS4 Wrapper interface
+// WriteAcknowledgement implements the ICS4 Wrapper interface.
 func (im IBCMiddleware) WriteAcknowledgement(
 	ctx sdk.Context,
 	packet exported.PacketI,

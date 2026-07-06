@@ -17,8 +17,11 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
+
+var _ porttypes.ICS4Wrapper = (*Keeper)(nil)
 
 type RateLimitedPacketInfo struct {
 	ChannelID string
@@ -220,8 +223,16 @@ func (k Keeper) ReceiveRateLimitedPacket(ctx sdk.Context, packet channeltypes.Pa
 		return err
 	}
 
-	_, err = k.CheckRateLimitAndUpdateFlow(ctx, types.PACKET_RECV, packetInfo)
-	return err
+	updatedFlow, err := k.CheckRateLimitAndUpdateFlow(ctx, types.PACKET_RECV, packetInfo)
+	if err != nil {
+		return err
+	}
+
+	if updatedFlow {
+		return k.SetPendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence)
+	}
+
+	return nil
 }
 
 // Middleware implementation for OnAckPacket with rate limiting
@@ -257,6 +268,41 @@ func (k Keeper) TimeoutRateLimitedPacket(ctx sdk.Context, packet channeltypes.Pa
 	}
 
 	return k.UndoSendPacket(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom, packetInfo.Amount)
+}
+
+// UndoReceivePacket reverses the inflow increment from a receive that was later
+// invalidated, for example when PFM writes an async error acknowledgement for a
+// failed forward.
+func (k Keeper) UndoReceivePacket(ctx sdk.Context, packet channeltypes.Packet) error {
+	packetInfo, err := ParsePacketInfo(packet, types.PACKET_RECV)
+	if err != nil {
+		// If no inflow was recorded, there is nothing to undo.
+		k.Logger(ctx).Error("Unable to parse packet data for rate limiting", "error", err)
+		return nil
+	}
+
+	rateLimit, found := k.GetRateLimit(ctx, packetInfo.Denom, packetInfo.ChannelID)
+	if !found {
+		return nil
+	}
+
+	found, err = k.CheckPacketReceivedDuringCurrentQuota(ctx, packetInfo.ChannelID, packet.Sequence)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return nil
+	}
+
+	newInflow := rateLimit.Flow.Inflow.Sub(packetInfo.Amount)
+	if newInflow.IsNegative() {
+		newInflow = sdkmath.ZeroInt()
+	}
+
+	rateLimit.Flow.Inflow = newInflow
+	k.SetRateLimit(ctx, rateLimit)
+
+	return k.RemovePendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence)
 }
 
 // SendPacket wraps IBC ChannelKeeper's SendPacket function
@@ -297,8 +343,26 @@ func (k Keeper) SendPacket(
 	return sequence, err
 }
 
-// WriteAcknowledgement wraps IBC ChannelKeeper's WriteAcknowledgement function
+// WriteAcknowledgement wraps IBC ChannelKeeper's WriteAcknowledgement function.
+// If an async error acknowledgement is written for a packet received through
+// rate limiting, reverse the inflow that was already committed.
 func (k Keeper) WriteAcknowledgement(ctx sdk.Context, packet ibcexported.PacketI, acknowledgement ibcexported.Acknowledgement) error {
+	if chanPacket, ok := packet.(channeltypes.Packet); ok {
+		if acknowledgement == nil {
+			return types.ErrAsyncAckNil.Wrapf("cannot write nil ack for packet %s/%d", packet.GetDestChannel(), packet.GetSequence())
+		}
+
+		if acknowledgement.Success() {
+			if err := k.RemovePendingReceivePacket(ctx, chanPacket.GetDestChannel(), chanPacket.GetSequence()); err != nil {
+				return err
+			}
+		} else {
+			if err := k.UndoReceivePacket(ctx, chanPacket); err != nil {
+				return err
+			}
+		}
+	}
+
 	return k.ics4Wrapper.WriteAcknowledgement(ctx, packet, acknowledgement)
 }
 

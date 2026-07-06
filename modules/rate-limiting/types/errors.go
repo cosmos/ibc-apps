@@ -24,4 +24,16 @@ var (
 	ErrInvalidChannelId = errorsmod.Register(ModuleName, 8,
 		"invalid channel",
 	)
+	ErrAsyncPacketNotFound = errorsmod.Register(ModuleName, 9,
+		"async packet not found",
+	)
+	ErrAsyncAckNil = errorsmod.Register(ModuleName, 10,
+		"async ack is nil",
+	)
+	ErrWriteAcknowledgementWrapperNil = errorsmod.Register(ModuleName, 11,
+		"write acknowledgement wrapper cannot be nil",
+	)
+	ErrChannelKeeperV2Nil = errorsmod.Register(ModuleName, 12,
+		"channel keeper v2 cannot be nil",
+	)
 )

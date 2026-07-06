@@ -105,7 +105,7 @@ func collectLegacyEntries(store prefix.Store) (legacy []entry, err error) {
 // error if not.
 func validateMigratedKey(newKey []byte, oldKey [oldKeyLen]byte) error {
 	// channelID is right-padded with null bytes in the key (see
-	// types.PendingSendPacketKey), so trim them before validating.
+	// types.GetPendingPacketKey), so trim them before validating.
 	rawChannelID := string(newKey[:newPendingSendPacketChannelLength])
 	channelID := strings.TrimRight(rawChannelID, "\x00")
 

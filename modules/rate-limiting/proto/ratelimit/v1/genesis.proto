@@ -31,4 +31,6 @@ message GenesisState {
     (gogoproto.moretags) = "yaml:\"hour_epoch\"",
     (gogoproto.nullable) = false
   ];
+
+  repeated string pending_recv_packet_sequence_numbers = 7;
 }
