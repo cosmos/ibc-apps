@@ -57,6 +57,7 @@ func GetPendingPacketKey(channelId string, sequenceNumber uint64) ([]byte, error
 }
 
 // GetPendingSendPacketKey returns the pending packet key for a send packet.
+// Deprecated: use GetPendingPacketKey instead.
 func GetPendingSendPacketKey(channelId string, sequenceNumber uint64) ([]byte, error) {
 	return GetPendingPacketKey(channelId, sequenceNumber)
 }
