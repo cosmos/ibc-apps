@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/testing/simapp"
 
-	"cosmossdk.io/log"
+	"cosmossdk.io/log/v2"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 )

@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	"cosmossdk.io/core/store"
-	"cosmossdk.io/log"
+	"cosmossdk.io/log/v2"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -59,6 +59,13 @@ func (k Keeper) GetAuthority() string {
 func (k *Keeper) SetIBCKeepers(channelKeeper types.ChannelKeeper, clientKeeper types.ClientKeeper, ics4Wrapper types.ICS4Wrapper) {
 	k.channelKeeper = channelKeeper
 	k.clientKeeper = clientKeeper
+	k.ics4Wrapper = ics4Wrapper
+}
+
+// SetICS4Wrapper sets the ICS4Wrapper used to send packets and write
+// acknowledgements. It allows the rate limit middleware to satisfy the
+// porttypes.Middleware interface introduced in ibc-go v11.
+func (k *Keeper) SetICS4Wrapper(ics4Wrapper types.ICS4Wrapper) {
 	k.ics4Wrapper = ics4Wrapper
 }
 

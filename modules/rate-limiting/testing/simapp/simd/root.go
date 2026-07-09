@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"io"
 	"os"
 
 	dbm "github.com/cosmos/cosmos-db"
@@ -11,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"cosmossdk.io/log"
+	"cosmossdk.io/log/v2"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -19,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/contrib/x/crisis"
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -26,7 +26,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
 	tmcfg "github.com/cometbft/cometbft/config"
@@ -192,7 +191,6 @@ type appCreator struct {
 func (ac appCreator) newApp(
 	logger log.Logger,
 	db dbm.DB,
-	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
 	skipUpgradeHeights := make(map[int64]bool)
@@ -206,7 +204,7 @@ func (ac appCreator) newApp(
 	return app.NewSimApp(
 		logger,
 		db,
-		traceStore,
+		nil,
 		loadLatest,
 		skipUpgradeHeights,
 		app.DefaultNodeHome,
@@ -219,7 +217,6 @@ func (ac appCreator) newApp(
 func (ac appCreator) appExport(
 	logger log.Logger,
 	db dbm.DB,
-	traceStore io.Writer,
 	height int64,
 	forZeroHeight bool,
 	jailAllowedAddrs []string,
@@ -241,7 +238,7 @@ func (ac appCreator) appExport(
 	pfmApp = app.NewSimApp(
 		logger,
 		db,
-		traceStore,
+		nil,
 		loadLatest,
 		skipUpgradeHeights,
 		homePath,

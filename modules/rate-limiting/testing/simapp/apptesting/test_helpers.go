@@ -4,7 +4,7 @@ import (
 	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/testing/simapp"
 	"github.com/stretchr/testify/suite"
 
-	upgradetypes "cosmossdk.io/x/upgrade/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"

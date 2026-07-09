@@ -1,9 +1,9 @@
 # make local-image
 # docker run --rm -it rate-limiting:local q
 
-FROM golang:1.23-alpine3.21 AS builder
+FROM golang:1.26-alpine AS builder
 
-RUN set -eux; apk add --no-cache git libusb-dev linux-headers gcc musl-dev make go;
+RUN set -eux; apk add --no-cache git libusb-dev linux-headers gcc musl-dev make;
 
 ENV GOPATH=""
 
@@ -16,7 +16,7 @@ COPY . .
 
 RUN make build
 
-FROM alpine:3.18
+FROM alpine:3.21
 
 COPY --from=builder /go/build/* /bin/simd
 

@@ -7,10 +7,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
-	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+	clienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
+	"github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
 var _ porttypes.Middleware = (*IBCMiddleware)(nil)
@@ -20,11 +20,23 @@ type IBCMiddleware struct {
 	keeper keeper.Keeper
 }
 
-func NewIBCMiddleware(k keeper.Keeper, app porttypes.IBCModule) IBCMiddleware {
-	return IBCMiddleware{
+func NewIBCMiddleware(k keeper.Keeper, app porttypes.IBCModule) *IBCMiddleware {
+	return &IBCMiddleware{
 		app:    app,
 		keeper: k,
 	}
+}
+
+// SetICS4Wrapper sets the ICS4Wrapper for the rate limit middleware.
+// It implements the porttypes.Middleware interface.
+func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	im.keeper.SetICS4Wrapper(wrapper)
+}
+
+// SetUnderlyingApplication sets the underlying IBC application.
+// It implements the porttypes.Middleware interface.
+func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
+	im.app = app
 }
 
 // OnChanOpenInit implements the IBCMiddleware interface

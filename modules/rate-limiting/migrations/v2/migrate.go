@@ -11,12 +11,12 @@ import (
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	corestore "cosmossdk.io/core/store"
-	"cosmossdk.io/store/prefix"
+	"github.com/cosmos/cosmos-sdk/store/v2/prefix"
 
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
+	host "github.com/cosmos/ibc-go/v11/modules/core/24-host"
 )
 
 const (
