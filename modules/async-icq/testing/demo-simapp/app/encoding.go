@@ -1,4 +1,4 @@
-package simapp
+package app
 
 import (
 	"github.com/cosmos/gogoproto/proto"
@@ -39,8 +39,6 @@ func MakeEncodingConfig() EncodingConfig {
 	return encodingConfig
 }
 
-// makeDefaultEncodingConfig creates a base EncodingConfig. This should not be used for anything other than
-// to register interfaces and amino codecs.
 func makeDefaultEncodingConfig() EncodingConfig {
 	amino := codec.NewLegacyAmino()
 	interfaceRegistry, _ := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{

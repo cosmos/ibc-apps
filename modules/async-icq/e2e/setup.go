@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/cosmos/interchaintest/v11/chain/cosmos"
+	"github.com/cosmos/interchaintest/v11/ibc"
 
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
@@ -16,7 +16,7 @@ var (
 	ICQImage            = ibc.DockerImage{
 		Repository: icqRepo,
 		Version:    icqVersion,
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	Denom         = "utoken"
@@ -39,7 +39,7 @@ var (
 	DefaultRelayer = ibc.DockerImage{
 		Repository: "ghcr.io/cosmos/relayer",
 		Version:    "v2.4.2",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 )
 

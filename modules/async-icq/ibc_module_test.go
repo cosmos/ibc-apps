@@ -15,11 +15,9 @@ import (
 	tmprotostate "github.com/cometbft/cometbft/proto/tendermint/state"
 	tmstate "github.com/cometbft/cometbft/state"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	clienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v11/testing"
 )
 
 var (
@@ -86,7 +84,6 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 	var (
 		channel      *channeltypes.Channel
 		path         *ibctesting.Path
-		chanCap      *capabilitytypes.Capability
 		counterparty channeltypes.Counterparty
 	)
 
@@ -118,12 +115,6 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 				channel.Version = version
 			}, false,
 		},
-		{
-			"capability already claimed", func() {
-				err := simapp.GetSimApp(suite.chainA).ScopedICQKeeper.ClaimCapability(suite.chainA.GetContext(), chanCap, host.ChannelCapabilityPath(path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID))
-				suite.Require().NoError(err)
-			}, false,
-		},
 	}
 
 	for _, tc := range testCases {
@@ -144,15 +135,11 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 				Version:        types.Version,
 			}
 
-			var err error
-			chanCap, err = suite.chainA.App.GetScopedIBCKeeper().NewCapability(suite.chainA.GetContext(), host.ChannelCapabilityPath(types.PortID, path.EndpointA.ChannelID))
-			suite.Require().NoError(err)
-
 			tc.malleate() // explicitly change fields in channel and testChannel
 
 			icqModule := icq.NewIBCModule(simapp.GetSimApp(suite.chainA).ICQKeeper)
-			version, err := icqModule.OnChanOpenInit(suite.chainA.GetContext(), channel.Ordering, channel.GetConnectionHops(),
-				path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID, chanCap, counterparty, channel.GetVersion(),
+			version, err := icqModule.OnChanOpenInit(suite.chainA.GetContext(), channel.Ordering, channel.ConnectionHops,
+				path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID, counterparty, channel.Version,
 			)
 
 			if tc.expPass {
@@ -169,7 +156,6 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 	var (
 		channel             *channeltypes.Channel
-		chanCap             *capabilitytypes.Capability
 		path                *ibctesting.Path
 		counterparty        channeltypes.Counterparty
 		counterpartyVersion string
@@ -220,19 +206,11 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 			}
 			counterpartyVersion = types.Version
 
-			module, _, err := suite.chainA.App.GetIBCKeeper().PortKeeper.LookupModuleByPort(suite.chainA.GetContext(), types.PortID)
-			suite.Require().NoError(err)
-
-			chanCap, err = suite.chainA.App.GetScopedIBCKeeper().NewCapability(suite.chainA.GetContext(), host.ChannelCapabilityPath(types.PortID, path.EndpointA.ChannelID))
-			suite.Require().NoError(err)
-
-			cbs, ok := suite.chainA.App.GetIBCKeeper().Router.GetRoute(module)
-			suite.Require().True(ok)
-
 			tc.malleate() // explicitly change fields in channel and testChannel
 
-			version, err := cbs.OnChanOpenTry(suite.chainA.GetContext(), channel.Ordering, channel.GetConnectionHops(),
-				path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID, chanCap, channel.Counterparty, counterpartyVersion,
+			icqModule := icq.NewIBCModule(simapp.GetSimApp(suite.chainA).ICQKeeper)
+			version, err := icqModule.OnChanOpenTry(suite.chainA.GetContext(), channel.Ordering, channel.ConnectionHops,
+				path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID, channel.Counterparty, counterpartyVersion,
 			)
 
 			if tc.expPass {
@@ -275,15 +253,10 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenAck() {
 			path.EndpointA.ChannelID = ibctesting.FirstChannelID
 			counterpartyVersion = types.Version
 
-			module, _, err := suite.chainA.App.GetIBCKeeper().PortKeeper.LookupModuleByPort(suite.chainA.GetContext(), types.PortID)
-			suite.Require().NoError(err)
-
-			cbs, ok := suite.chainA.App.GetIBCKeeper().Router.GetRoute(module)
-			suite.Require().True(ok)
-
 			tc.malleate() // explicitly change fields in channel and testChannel
 
-			err = cbs.OnChanOpenAck(suite.chainA.GetContext(), path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID, path.EndpointA.Counterparty.ChannelID, counterpartyVersion)
+			icqModule := icq.NewIBCModule(simapp.GetSimApp(suite.chainA).ICQKeeper)
+			err := icqModule.OnChanOpenAck(suite.chainA.GetContext(), path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID, path.EndpointA.Counterparty.ChannelID, counterpartyVersion)
 
 			if tc.expPass {
 				suite.Require().NoError(err)
@@ -319,12 +292,6 @@ func (suite *InterchainQueriesTestSuite) TestOnAcknowledgementPacket() {
 
 			tc.malleate() // malleate mutates test data
 
-			module, _, err := suite.chainB.App.GetIBCKeeper().PortKeeper.LookupModuleByPort(suite.chainB.GetContext(), path.EndpointB.ChannelConfig.PortID)
-			suite.Require().NoError(err)
-
-			cbs, ok := suite.chainB.App.GetIBCKeeper().Router.GetRoute(module)
-			suite.Require().True(ok)
-
 			packet := channeltypes.NewPacket(
 				[]byte("empty packet data"),
 				suite.chainA.SenderAccount.GetSequence(),
@@ -336,7 +303,8 @@ func (suite *InterchainQueriesTestSuite) TestOnAcknowledgementPacket() {
 				0,
 			)
 
-			err = cbs.OnAcknowledgementPacket(suite.chainB.GetContext(), packet, []byte("ackBytes"), nil)
+			icqModule := icq.NewIBCModule(simapp.GetSimApp(suite.chainB).ICQKeeper)
+			err = icqModule.OnAcknowledgementPacket(suite.chainB.GetContext(), types.Version, packet, []byte("ackBytes"), nil)
 
 			if tc.expPass {
 				suite.Require().NoError(err)
@@ -372,12 +340,6 @@ func (suite *InterchainQueriesTestSuite) TestOnTimeoutPacket() {
 
 			tc.malleate() // malleate mutates test data
 
-			module, _, err := suite.chainA.App.GetIBCKeeper().PortKeeper.LookupModuleByPort(suite.chainA.GetContext(), path.EndpointB.ChannelConfig.PortID)
-			suite.Require().NoError(err)
-
-			cbs, ok := suite.chainA.App.GetIBCKeeper().Router.GetRoute(module)
-			suite.Require().True(ok)
-
 			packet := channeltypes.NewPacket(
 				[]byte("empty packet data"),
 				suite.chainA.SenderAccount.GetSequence(),
@@ -389,7 +351,8 @@ func (suite *InterchainQueriesTestSuite) TestOnTimeoutPacket() {
 				0,
 			)
 
-			err = cbs.OnTimeoutPacket(suite.chainA.GetContext(), packet, nil)
+			icqModule := icq.NewIBCModule(simapp.GetSimApp(suite.chainA).ICQKeeper)
+			err = icqModule.OnTimeoutPacket(suite.chainA.GetContext(), types.Version, packet, nil)
 
 			if tc.expPass {
 				suite.Require().NoError(err)

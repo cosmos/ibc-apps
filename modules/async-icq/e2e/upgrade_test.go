@@ -3,16 +3,19 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
-	upgradetypes "cosmossdk.io/x/upgrade/types"
-	cosmosproto "github.com/cosmos/gogoproto/proto"
-	"github.com/docker/docker/client"
-	"github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	"github.com/strangelove-ventures/interchaintest/v8/testutil"
+	"cosmossdk.io/math"
+
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/moby/moby/client"
+	"github.com/cosmos/interchaintest/v11"
+	"github.com/cosmos/interchaintest/v11/chain/cosmos"
+	"github.com/cosmos/interchaintest/v11/ibc"
+	"github.com/cosmos/interchaintest/v11/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +36,7 @@ var (
 	baseChain = ibc.DockerImage{
 		Repository: "icq-host",
 		Version:    "v7.1.1",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	// make local-image-icq
@@ -91,7 +94,7 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 		ic.Close()
 	})
 
-	const userFunds = int64(10_000_000_000)
+	userFunds := math.NewInt(10_000_000_000)
 	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, chain)
 	chainUser := users[0]
 
@@ -99,15 +102,15 @@ func CosmosChainUpgradeTest(t *testing.T, chainName, upgradeRepo, upgradeDockerT
 	height, err := chain.Height(ctx)
 	require.NoError(t, err, "error fetching height before submit upgrade proposal")
 
-	haltHeight := height + haltHeightDelta
+	haltHeight := uint64(height) + haltHeightDelta
 	proposalID := SubmitUpgradeProposal(t, ctx, chain, chainUser, upgradeName, haltHeight)
 
-	ValidatorVoting(t, ctx, chain, proposalID, height, haltHeight)
+	ValidatorVoting(t, ctx, chain, proposalID, uint64(height), haltHeight)
 	UpgradeNodes(t, ctx, chain, client, haltHeight, upgradeRepo, upgradeDockerTag)
 }
 
 func SubmitUpgradeProposal(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, upgradeName string, haltHeight uint64) string {
-	upgradeMsg := []cosmosproto.Message{
+	upgradeMsg := []cosmos.ProtoMessage{
 		&upgradetypes.MsgSoftwareUpgrade{
 			// Gov Module account
 			Authority: "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn",
@@ -160,24 +163,27 @@ func UpgradeNodes(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, 
 }
 
 func ValidatorVoting(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, proposalID string, height uint64, haltHeight uint64) {
-	err := chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
+	propID, err := strconv.ParseUint(proposalID, 10, 64)
+	require.NoError(t, err, "failed to parse proposal ID")
+
+	err = chain.VoteOnProposalAllValidators(ctx, propID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
-	_, err = cosmos.PollForProposalStatusV8(ctx, chain, height, height+haltHeightDelta, proposalID, cosmos.ProposalStatusPassedV8)
+	_, err = cosmos.PollForProposalStatusV1(ctx, chain, int64(height), int64(height+haltHeightDelta), propID, govv1.StatusPassed)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
 
 	timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, time.Second*45)
 	defer timeoutCtxCancel()
 
-	height, err = chain.Height(ctx)
+	curHeight, err := chain.Height(ctx)
 	require.NoError(t, err, "error fetching height before upgrade")
 
 	// this should timeout due to chain halt at upgrade height.
-	_ = testutil.WaitForBlocks(timeoutCtx, int(haltHeight-height), chain)
+	_ = testutil.WaitForBlocks(timeoutCtx, int(haltHeight-uint64(curHeight)), chain)
 
-	height, err = chain.Height(ctx)
+	curHeight, err = chain.Height(ctx)
 	require.NoError(t, err, "error fetching height after chain should have halted")
 
 	// make sure that chain is halted
-	require.Equal(t, haltHeight, height, "height is not equal to halt height")
+	require.Equal(t, haltHeight, uint64(curHeight), "height is not equal to halt height")
 }

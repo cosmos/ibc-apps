@@ -21,14 +21,14 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
 )
 
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
 
-	_ porttypes.IBCModule = IBCModule{}
+	_ porttypes.IBCModule = (*IBCModule)(nil)
 )
 
 // AppModuleBasic is the IBC interchain query AppModuleBasic
@@ -108,13 +108,6 @@ func NewAppModule(keeper keeper.Keeper, ss exported.Subspace) AppModule {
 func (am AppModule) InitModule(ctx sdk.Context, params types.Params) {
 	if err := am.keeper.SetParams(ctx, params); err != nil {
 		panic(fmt.Sprintf("could not set params: %v", err))
-	}
-
-	if am.keeper.IsHostEnabled(ctx) {
-		err := am.keeper.BindPort(ctx, types.PortID)
-		if err != nil {
-			panic(fmt.Sprintf("could not claim port capability: %v", err))
-		}
 	}
 }
 

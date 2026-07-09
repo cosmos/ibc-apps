@@ -5,21 +5,23 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	"github.com/strangelove-ventures/interchaintest/v8/relayer"
-	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
-	"github.com/strangelove-ventures/interchaintest/v8/testutil"
+	"github.com/cosmos/interchaintest/v11"
+	"github.com/cosmos/interchaintest/v11/chain/cosmos"
+	"github.com/cosmos/interchaintest/v11/ibc"
+	"github.com/cosmos/interchaintest/v11/relayer"
+	"github.com/cosmos/interchaintest/v11/testreporter"
+	"github.com/cosmos/interchaintest/v11/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+
+	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
-	ibccore "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibccore "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	ibctm "github.com/cosmos/ibc-go/v11/modules/light-clients/07-tendermint"
 )
 
 func hostEncoding() *moduletestutil.TestEncodingConfig {
@@ -56,19 +58,19 @@ func TestInterchainQueries(t *testing.T) {
 	controllerImage := ibc.DockerImage{
 		Repository: "icq-demo",
 		Version:    "local",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	hostImage := ibc.DockerImage{
 		Repository: "icq-host",
 		Version:    "local",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	relayerImage := ibc.DockerImage{
 		Repository: "ghcr.io/cosmos/relayer",
 		Version:    "main",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
@@ -157,7 +159,7 @@ func TestInterchainQueries(t *testing.T) {
 	})
 
 	// Fund user accounts, so we can query balances and make assertions.
-	const userFunds = int64(10_000_000_000)
+	userFunds := math.NewInt(10_000_000_000)
 	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, controllerChain, hostChain)
 	controllerUser := users[0]
 	hostUser := users[1]

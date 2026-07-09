@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/exported"
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
-	storetypes "cosmossdk.io/store/types"
+	storetypes "github.com/cosmos/cosmos-sdk/store/v2/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
