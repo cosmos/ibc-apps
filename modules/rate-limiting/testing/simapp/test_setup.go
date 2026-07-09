@@ -5,6 +5,7 @@ import (
 	"time"
 
 	cometbftdb "github.com/cosmos/cosmos-db"
+	"github.com/stretchr/testify/require"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -26,8 +27,6 @@ import (
 	tmtypes "github.com/cometbft/cometbft/types"
 
 	ibctesting "github.com/cosmos/ibc-go/v10/testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 const Bech32Prefix = "stride"

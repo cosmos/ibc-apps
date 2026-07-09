@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/cosmos/gogoproto/proto"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/testing/simapp"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	"github.com/stretchr/testify/suite"
 
 	sdkmath "cosmossdk.io/math"
@@ -14,9 +16,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-
-	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/testing/simapp"
-	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
