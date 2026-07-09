@@ -12,10 +12,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
-	"cosmossdk.io/log"
-	"cosmossdk.io/store"
-	"cosmossdk.io/store/metrics"
-	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/log/v2"
+	"github.com/cosmos/cosmos-sdk/store/v2"
+	storetypes "github.com/cosmos/cosmos-sdk/store/v2/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -24,7 +23,7 @@ import (
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
 )
 
 func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
@@ -64,7 +63,7 @@ type Setup struct {
 	Keepers *testKeepers
 	Mocks   *testMocks
 
-	ForwardMiddleware packetforward.IBCMiddleware
+	ForwardMiddleware *packetforward.IBCMiddleware
 }
 
 type testKeepers struct {
@@ -93,7 +92,7 @@ func newInitializer(t *testing.T) initializer {
 	logger.Debug("initializing test setup")
 
 	db := dbm.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger())
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 	interfaceRegistry := cdctypes.NewInterfaceRegistry()
@@ -133,6 +132,6 @@ func (i initializer) packetforwardKeeper(
 	return packetforwardKeeper
 }
 
-func (i initializer) forwardMiddleware(app porttypes.IBCModule, k *keeper.Keeper, retriesOnTimeout uint8, forwardTimeout time.Duration) packetforward.IBCMiddleware {
+func (i initializer) forwardMiddleware(app porttypes.IBCModule, k *keeper.Keeper, retriesOnTimeout uint8, forwardTimeout time.Duration) *packetforward.IBCMiddleware {
 	return packetforward.NewIBCMiddleware(app, k, retriesOnTimeout, forwardTimeout)
 }

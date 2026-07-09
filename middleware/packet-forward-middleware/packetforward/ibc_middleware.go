@@ -16,11 +16,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/address"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
 var _ porttypes.Middleware = &IBCMiddleware{}
@@ -41,13 +41,33 @@ func NewIBCMiddleware(
 	k *keeper.Keeper,
 	retriesOnTimeout uint8,
 	forwardTimeout time.Duration,
-) IBCMiddleware {
-	return IBCMiddleware{
+) *IBCMiddleware {
+	return &IBCMiddleware{
 		app:              app,
 		keeper:           k,
 		retriesOnTimeout: retriesOnTimeout,
 		forwardTimeout:   forwardTimeout,
 	}
+}
+
+// SetICS4Wrapper sets the ICS4Wrapper. This function may be used after the
+// middleware's initialization to set the middleware which is above this module
+// in the IBC application stack.
+func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	if wrapper == nil {
+		panic("ICS4Wrapper cannot be nil")
+	}
+	im.keeper.SetICS4Wrapper(wrapper)
+}
+
+// SetUnderlyingApplication sets the underlying IBC application. This function
+// may be used after the middleware's initialization to set the IBC module which
+// is below this middleware.
+func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
+	if im.app != nil {
+		panic("underlying application already set")
+	}
+	im.app = app
 }
 
 // OnChanOpenInit implements the IBCModule interface.

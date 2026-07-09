@@ -13,7 +13,7 @@ import (
 
 	bytes "github.com/cometbft/cometbft/libs/bytes"
 	types "github.com/cosmos/cosmos-sdk/types"
-	types0 "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	types0 "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
 	gomock "github.com/golang/mock/gomock"
 )
 

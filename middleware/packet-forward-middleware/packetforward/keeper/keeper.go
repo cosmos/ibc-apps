@@ -11,7 +11,7 @@ import (
 
 	corestore "cosmossdk.io/core/store"
 	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/log"
+	"cosmossdk.io/log/v2"
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -19,12 +19,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
-	coremetrics "github.com/cosmos/ibc-go/v10/modules/core/metrics"
+	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
+	coremetrics "github.com/cosmos/ibc-go/v11/modules/core/metrics"
 )
 
 var (
@@ -72,6 +72,13 @@ func NewKeeper(
 		ics4Wrapper:    ics4Wrapper,
 		authority:      authority,
 	}
+}
+
+// SetICS4Wrapper sets the ICS4Wrapper. This function may be used after the
+// keeper's initialization to set the middleware which is above this module in
+// the IBC application stack.
+func (k *Keeper) SetICS4Wrapper(ics4Wrapper porttypes.ICS4Wrapper) {
+	k.ics4Wrapper = ics4Wrapper
 }
 
 // GetAuthority returns the module's authority.
@@ -229,7 +236,7 @@ func (k *Keeper) ForwardTransferPacket(
 			k.Logger(ctx).Error("packetForwardMiddleware error marshaling next as JSON",
 				"error", err,
 			)
-			return errorsmod.Wrapf(sdkerrors.ErrJSONMarshal, err.Error())
+			return errorsmod.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 		}
 		memo = string(memoBz)
 	}
@@ -263,7 +270,7 @@ func (k *Keeper) ForwardTransferPacket(
 			"amount", token.Amount.String(), "denom", token.Denom,
 			"error", err,
 		)
-		return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
+		return errorsmod.Wrap(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
 
 	// Store the following information in keeper:

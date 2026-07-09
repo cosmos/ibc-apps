@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
 
-	upgradetypes "cosmossdk.io/x/upgrade/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -4,13 +4,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"testing"
 
-	"cosmossdk.io/log"
-	"cosmossdk.io/store"
-	"cosmossdk.io/store/metrics"
+	"cosmossdk.io/log/v2"
+	"github.com/cosmos/cosmos-sdk/store/v2"
 	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/migrations/v3"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/test/mock"
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -29,7 +28,7 @@ func TestMigrate(t *testing.T) {
 	logger.Debug("initializing test setup")
 
 	db := dbm.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger())
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, logger)
 

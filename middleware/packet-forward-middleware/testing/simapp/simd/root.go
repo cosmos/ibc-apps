@@ -8,7 +8,7 @@ import (
 	appparams "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp/params"
 	"github.com/spf13/cobra"
 
-	"cosmossdk.io/log"
+	"cosmossdk.io/log/v2"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/testing/simapp"
 
-	"cosmossdk.io/log"
+	"cosmossdk.io/log/v2"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 )
