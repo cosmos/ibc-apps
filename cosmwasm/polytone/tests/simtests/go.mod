@@ -4,7 +4,9 @@ go 1.19
 
 require (
 	github.com/CosmWasm/wasmd v0.31.0
+	github.com/CosmWasm/wasmvm v1.2.1
 	github.com/cosmos/cosmos-sdk v0.45.14
+	github.com/cosmos/gogoproto v1.4.6
 	github.com/cosmos/ibc-go/v4 v4.3.0
 	github.com/stretchr/testify v1.8.2
 )
@@ -17,7 +19,6 @@ require (
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
 	github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d // indirect
-	github.com/CosmWasm/wasmvm v1.2.1 // indirect
 	github.com/DataDog/zstd v1.4.5 // indirect
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/Workiva/go-datastructures v1.0.53 // indirect
@@ -38,7 +39,6 @@ require (
 	github.com/cosmos/cosmos-db v0.0.0-20221226095112-f3c38ecb5e32 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.2 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
-	github.com/cosmos/gogoproto v1.4.6 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/iavl v0.19.5 // indirect
 	github.com/cosmos/interchain-accounts v0.2.6 // indirect
