@@ -24,22 +24,28 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		k.SetWhitelistedAddressPair(ctx, addressPair)
 	}
 
-	// Set pending sequence numbers - validating that they're in right format of {channelId}/{sequenceNumber}
+	// Set pending sequence numbers - validating that they're in right format of {channelId}/{sequenceNumber}/{denom}
 	for _, pendingPacketId := range genState.PendingSendPacketSequenceNumbers {
-		channelOrClientId, sequence, err := types.ParsePendingPacketId(pendingPacketId)
+		channelOrClientId, sequence, denom, err := types.ParsePendingPacketId(pendingPacketId)
 		if err != nil {
+			if types.IsLegacyPendingPacketId(pendingPacketId) {
+				continue
+			}
 			panic(err.Error())
 		}
-		if err := k.SetPendingSendPacket(ctx, channelOrClientId, sequence); err != nil {
+		if err := k.SetPendingSendPacket(ctx, channelOrClientId, sequence, denom); err != nil {
 			panic(err)
 		}
 	}
 	for _, pendingPacketId := range genState.PendingRecvPacketSequenceNumbers {
-		channelOrClientId, sequence, err := types.ParsePendingPacketId(pendingPacketId)
+		channelOrClientId, sequence, denom, err := types.ParsePendingPacketId(pendingPacketId)
 		if err != nil {
+			if types.IsLegacyPendingPacketId(pendingPacketId) {
+				continue
+			}
 			panic(err.Error())
 		}
-		if err := k.SetPendingReceivePacket(ctx, channelOrClientId, sequence); err != nil {
+		if err := k.SetPendingReceivePacket(ctx, channelOrClientId, sequence, denom); err != nil {
 			panic(err)
 		}
 	}

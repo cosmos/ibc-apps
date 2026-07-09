@@ -79,7 +79,7 @@ func (s *RateLimitMiddlewareTestSuite) TestV2TransferSuccessUpdatesFlows() {
 	s.Require().NoError(err)
 
 	s.assertFlow(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, sdkmath.ZeroInt(), amount)
-	s.assertPendingPacket(s.chainA, s.path.EndpointA.ClientID, packet.Sequence, true)
+	s.assertPendingPacket(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, packet.Sequence, true)
 
 	ack, err := s.msgRecvPacketWithAck(s.path.EndpointB, packet)
 	s.Require().NoError(err)
@@ -93,7 +93,7 @@ func (s *RateLimitMiddlewareTestSuite) TestV2TransferSuccessUpdatesFlows() {
 	s.Require().NoError(err)
 
 	s.assertFlow(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, sdkmath.ZeroInt(), amount)
-	s.assertPendingPacket(s.chainA, s.path.EndpointA.ClientID, packet.Sequence, false)
+	s.assertPendingPacket(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, packet.Sequence, false)
 	s.Require().Equal(senderInitialBalance.Amount.Sub(amount), s.balance(s.chainA, s.chainA.SenderAccount.GetAddress(), sdk.DefaultBondDenom).Amount)
 }
 
@@ -109,7 +109,7 @@ func (s *RateLimitMiddlewareTestSuite) TestV2TransferSendDenied() {
 	s.Require().Contains(err.Error(), ratelimittypes.ErrQuotaExceeded.Error())
 
 	s.assertFlow(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, sdkmath.ZeroInt(), sdkmath.ZeroInt())
-	s.assertPendingPacket(s.chainA, s.path.EndpointA.ClientID, 1, false)
+	s.assertPendingPacket(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, 1, false)
 	s.Require().Equal(senderInitialBalance, s.balance(s.chainA, s.chainA.SenderAccount.GetAddress(), sdk.DefaultBondDenom))
 }
 
@@ -126,7 +126,7 @@ func (s *RateLimitMiddlewareTestSuite) TestV2TransferReceiveDeniedUndoSendOnErro
 	packet, err := s.path.EndpointA.MsgSendPacket(s.timeoutTimestamp(time.Hour), payload)
 	s.Require().NoError(err)
 	s.assertFlow(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, sdkmath.ZeroInt(), amount)
-	s.assertPendingPacket(s.chainA, s.path.EndpointA.ClientID, packet.Sequence, true)
+	s.assertPendingPacket(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, packet.Sequence, true)
 
 	ack, err := s.msgRecvPacketWithAck(s.path.EndpointB, packet)
 	s.Require().NoError(err)
@@ -139,7 +139,7 @@ func (s *RateLimitMiddlewareTestSuite) TestV2TransferReceiveDeniedUndoSendOnErro
 	s.Require().NoError(err)
 
 	s.assertFlow(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, sdkmath.ZeroInt(), sdkmath.ZeroInt())
-	s.assertPendingPacket(s.chainA, s.path.EndpointA.ClientID, packet.Sequence, false)
+	s.assertPendingPacket(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, packet.Sequence, false)
 	s.Require().Equal(senderInitialBalance, s.balance(s.chainA, s.chainA.SenderAccount.GetAddress(), sdk.DefaultBondDenom))
 }
 
@@ -153,7 +153,7 @@ func (s *RateLimitMiddlewareTestSuite) TestV2TransferTimeoutUndoSend() {
 	packet, err := s.path.EndpointA.MsgSendPacket(s.timeoutTimestamp(time.Second), payload)
 	s.Require().NoError(err)
 	s.assertFlow(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, sdkmath.ZeroInt(), amount)
-	s.assertPendingPacket(s.chainA, s.path.EndpointA.ClientID, packet.Sequence, true)
+	s.assertPendingPacket(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, packet.Sequence, true)
 	s.Require().Equal(senderInitialBalance.Amount.Sub(amount), s.balance(s.chainA, s.chainA.SenderAccount.GetAddress(), sdk.DefaultBondDenom).Amount)
 
 	s.Require().NoError(s.path.EndpointA.UpdateClient())
@@ -161,7 +161,7 @@ func (s *RateLimitMiddlewareTestSuite) TestV2TransferTimeoutUndoSend() {
 	s.Require().NoError(err)
 
 	s.assertFlow(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, sdkmath.ZeroInt(), sdkmath.ZeroInt())
-	s.assertPendingPacket(s.chainA, s.path.EndpointA.ClientID, packet.Sequence, false)
+	s.assertPendingPacket(s.chainA, sdk.DefaultBondDenom, s.path.EndpointA.ClientID, packet.Sequence, false)
 	s.Require().Equal(senderInitialBalance, s.balance(s.chainA, s.chainA.SenderAccount.GetAddress(), sdk.DefaultBondDenom))
 }
 
@@ -259,8 +259,8 @@ func (s *RateLimitMiddlewareTestSuite) assertFlow(chain *ibctesting.TestChain, d
 	s.Require().True(rateLimit.Flow.Outflow.Equal(expectedOutflow), "expected outflow %s, got %s", expectedOutflow, rateLimit.Flow.Outflow)
 }
 
-func (s *RateLimitMiddlewareTestSuite) assertPendingPacket(chain *ibctesting.TestChain, clientID string, sequence uint64, expected bool) {
-	found, err := simapp.GetSimApp(chain).RatelimitKeeper.CheckPacketSentDuringCurrentQuota(chain.GetContext(), clientID, sequence)
+func (s *RateLimitMiddlewareTestSuite) assertPendingPacket(chain *ibctesting.TestChain, denom, clientID string, sequence uint64, expected bool) {
+	found, err := simapp.GetSimApp(chain).RatelimitKeeper.CheckPacketSentDuringCurrentQuota(chain.GetContext(), clientID, sequence, denom)
 	s.Require().NoError(err)
 	s.Require().Equal(expected, found)
 }

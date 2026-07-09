@@ -77,11 +77,16 @@ func (s *KeeperTestSuite) TestResetRateLimit() {
 	rateLimitToReset := rateLimits[0]
 	denomToRemove := rateLimitToReset.Path.Denom
 	channelIdToRemove := rateLimitToReset.Path.ChannelOrClientId
+	denomToKeep := "different-denom"
 	sequence := uint64(10)
 
-	err := s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, channelIdToRemove, sequence)
+	err := s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, channelIdToRemove, sequence, denomToRemove)
 	s.Require().NoError(err)
-	err = s.App.RatelimitKeeper.SetPendingReceivePacket(s.Ctx, channelIdToRemove, sequence)
+	err = s.App.RatelimitKeeper.SetPendingReceivePacket(s.Ctx, channelIdToRemove, sequence, denomToRemove)
+	s.Require().NoError(err)
+	err = s.App.RatelimitKeeper.SetPendingSendPacket(s.Ctx, channelIdToRemove, sequence, denomToKeep)
+	s.Require().NoError(err)
+	err = s.App.RatelimitKeeper.SetPendingReceivePacket(s.Ctx, channelIdToRemove, sequence, denomToKeep)
 	s.Require().NoError(err)
 
 	err = s.App.RatelimitKeeper.ResetRateLimit(s.Ctx, denomToRemove, channelIdToRemove)
@@ -92,12 +97,18 @@ func (s *KeeperTestSuite) TestResetRateLimit() {
 	s.Require().Zero(rateLimit.Flow.Inflow.Int64(), "Inflow should have been reset to 0")
 	s.Require().Zero(rateLimit.Flow.Outflow.Int64(), "Outflow should have been reset to 0")
 
-	found, err = s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, channelIdToRemove, sequence)
+	found, err = s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, channelIdToRemove, sequence, denomToRemove)
 	s.Require().NoError(err)
 	s.Require().False(found, "pending send packet should have been reset")
-	found, err = s.App.RatelimitKeeper.CheckPacketReceivedDuringCurrentQuota(s.Ctx, channelIdToRemove, sequence)
+	found, err = s.App.RatelimitKeeper.CheckPacketReceivedDuringCurrentQuota(s.Ctx, channelIdToRemove, sequence, denomToRemove)
 	s.Require().NoError(err)
 	s.Require().False(found, "pending receive packet should have been reset")
+	found, err = s.App.RatelimitKeeper.CheckPacketSentDuringCurrentQuota(s.Ctx, channelIdToRemove, sequence, denomToKeep)
+	s.Require().NoError(err)
+	s.Require().True(found, "pending send packet for different denom should not have been reset")
+	found, err = s.App.RatelimitKeeper.CheckPacketReceivedDuringCurrentQuota(s.Ctx, channelIdToRemove, sequence, denomToKeep)
+	s.Require().NoError(err)
+	s.Require().True(found, "pending receive packet for different denom should not have been reset")
 }
 
 func (s *KeeperTestSuite) TestGetAllRateLimits() {

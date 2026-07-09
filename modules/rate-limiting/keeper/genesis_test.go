@@ -9,6 +9,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 )
 
+const pendingGenesisPacketId = "channel-0/1/denomA"
+
 func createRateLimits() []types.RateLimit {
 	rateLimits := []types.RateLimit{}
 	for i := int64(1); i <= 3; i++ {
@@ -50,8 +52,8 @@ func (s *KeeperTestSuite) TestGenesis() {
 					{Sender: "senderB", Receiver: "receiverB"},
 				},
 				BlacklistedDenoms:                []string{"denomA", "denomB"},
-				PendingSendPacketSequenceNumbers: []string{"channel-0/1", "channel-2/3"},
-				PendingRecvPacketSequenceNumbers: []string{"channel-4/5", "channel-6/7"},
+				PendingSendPacketSequenceNumbers: []string{pendingGenesisPacketId, "channel-2/3/denomB"},
+				PendingRecvPacketSequenceNumbers: []string{"channel-4/5/denomC", "channel-6/7/transfer/channel-0/denomD"},
 				HourEpoch: types.HourEpoch{
 					EpochNumber:      1,
 					EpochStartTime:   blockTime,
@@ -65,17 +67,17 @@ func (s *KeeperTestSuite) TestGenesis() {
 			name: "invalid packet sequence - wrong delimiter",
 			genesisState: types.GenesisState{
 				RateLimits:                       createRateLimits(),
-				PendingSendPacketSequenceNumbers: []string{"channel-0/1", "channel-2|3"},
+				PendingSendPacketSequenceNumbers: []string{pendingGenesisPacketId, "channel-2|3"},
 			},
-			expectedError: "invalid pending packet (channel-2|3), must be of form: {channelId}/{sequenceNumber}",
+			expectedError: "invalid pending packet (channel-2|3), must be of form: {channelId}/{sequenceNumber}/{denom}",
 		},
 		{
 			name: "invalid receive packet sequence - wrong delimiter",
 			genesisState: types.GenesisState{
 				RateLimits:                       createRateLimits(),
-				PendingRecvPacketSequenceNumbers: []string{"channel-0/1", "channel-2|3"},
+				PendingRecvPacketSequenceNumbers: []string{pendingGenesisPacketId, "channel-2|3"},
 			},
-			expectedError: "invalid pending packet (channel-2|3), must be of form: {channelId}/{sequenceNumber}",
+			expectedError: "invalid pending packet (channel-2|3), must be of form: {channelId}/{sequenceNumber}/{denom}",
 		},
 	}
 
@@ -106,4 +108,18 @@ func (s *KeeperTestSuite) TestGenesis() {
 			s.Require().Equal(expectedGenesis, *exportedState, "exported genesis state")
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestInitGenesisDropsLegacyPendingPackets() {
+	genesisState := *types.DefaultGenesis()
+	genesisState.PendingSendPacketSequenceNumbers = []string{"channel-0/1", pendingGenesisPacketId}
+	genesisState.PendingRecvPacketSequenceNumbers = []string{"channel-2/3", "channel-4/5/denomB"}
+
+	s.Require().NotPanics(func() {
+		s.App.RatelimitKeeper.InitGenesis(s.Ctx, genesisState)
+	})
+
+	exportedState := s.App.RatelimitKeeper.ExportGenesis(s.Ctx)
+	s.Require().Equal([]string{pendingGenesisPacketId}, exportedState.PendingSendPacketSequenceNumbers)
+	s.Require().Equal([]string{"channel-4/5/denomB"}, exportedState.PendingRecvPacketSequenceNumbers)
 }

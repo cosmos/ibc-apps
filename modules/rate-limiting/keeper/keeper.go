@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 
@@ -19,6 +20,16 @@ type (
 		storeService store.KVStoreService
 		paramstore   paramtypes.Subspace
 		authority    string
+		Schema       collections.Schema
+
+		// PendingSendPackets stores packets whose send flow was applied and may need
+		// to be reverted on timeout or error acknowledgement. The key order is
+		// (channelId, denom, sequence) to support efficient channel+denom range resets.
+		PendingSendPackets collections.KeySet[collections.Triple[string, string, uint64]]
+		// PendingReceivePackets stores packets whose receive flow was applied and may
+		// need to be reverted when an async acknowledgement fails. The key order is
+		// (channelId, denom, sequence) to support efficient channel+denom range resets.
+		PendingReceivePackets collections.KeySet[collections.Triple[string, string, uint64]]
 
 		bankKeeper    types.BankKeeper
 		channelKeeper types.ChannelKeeper
@@ -37,16 +48,30 @@ func NewKeeper(
 	clientKeeper types.ClientKeeper,
 	ics4Wrapper types.ICS4Wrapper,
 ) *Keeper {
-	return &Keeper{
-		cdc:           cdc,
-		storeService:  storeService,
-		paramstore:    ps,
-		authority:     authority,
+	sb := collections.NewSchemaBuilder(storeService)
+	pendingPacketKeyCodec := collections.TripleKeyCodec(collections.StringKey, collections.StringKey, collections.Uint64Key)
+	k := Keeper{
+		cdc:          cdc,
+		storeService: storeService,
+		paramstore:   ps,
+		authority:    authority,
+
+		PendingSendPackets:    collections.NewKeySet(sb, types.PendingSendPacketsKey, "pending_send_packets", pendingPacketKeyCodec),
+		PendingReceivePackets: collections.NewKeySet(sb, types.PendingReceivePacketsKey, "pending_receive_packets", pendingPacketKeyCodec),
+
 		bankKeeper:    bankKeeper,
 		channelKeeper: channelKeeper,
 		clientKeeper:  clientKeeper,
 		ics4Wrapper:   ics4Wrapper,
 	}
+
+	schema, err := sb.Build()
+	if err != nil {
+		panic(err)
+	}
+	k.Schema = schema
+
+	return &k
 }
 
 // GetAuthority returns the module's authority.

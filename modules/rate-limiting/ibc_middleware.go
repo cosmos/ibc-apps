@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -114,7 +115,12 @@ func (im IBCMiddleware) OnRecvPacket(
 
 	ack := im.app.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	if ack != nil {
-		if err := im.keeper.RemovePendingReceivePacket(ctx, packet.GetDestChannel(), packet.GetSequence()); err != nil {
+		packetInfo, err := keeper.ParsePacketInfo(packet, types.PACKET_RECV)
+		if err != nil {
+			im.keeper.Logger(ctx).Error("Rate limit OnRecvPacket failed to parse packet data for pending receive cleanup", "error", err)
+			return ack
+		}
+		if err := im.keeper.RemovePendingReceivePacket(ctx, packetInfo.ChannelID, packet.GetSequence(), packetInfo.Denom); err != nil {
 			im.keeper.Logger(ctx).Error("Rate limit OnRecvPacket failed to remove pending receive packet", "error", err)
 		}
 	}
