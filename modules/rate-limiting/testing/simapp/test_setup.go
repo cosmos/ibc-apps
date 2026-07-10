@@ -5,6 +5,7 @@ import (
 	"time"
 
 	cometbftdb "github.com/cosmos/cosmos-db"
+	"github.com/stretchr/testify/require"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log/v2"
@@ -24,6 +25,8 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	tmtypes "github.com/cometbft/cometbft/types"
+
+	ibctesting "github.com/cosmos/ibc-go/v11/testing"
 )
 
 const Bech32Prefix = "stride"
@@ -54,6 +57,32 @@ func SetupConfig() {
 
 		return nil
 	})
+}
+
+// SetupTestingApp initializes a new SimApp for use with the ibctesting package.
+// Set ibctesting.DefaultTestingAppInit to this function to run IBC integration
+// tests against a chain that includes the rate-limiting module.
+func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
+	db := cometbftdb.NewMemDB()
+	app := NewSimApp(
+		log.NewNopLogger(),
+		db,
+		nil,
+		true,
+		map[int64]bool{},
+		DefaultNodeHome,
+		5,
+		simtestutil.EmptyAppOptions{},
+	)
+	return app, NewDefaultGenesisState()
+}
+
+// GetSimApp returns the SimApp backing the given ibctesting chain.
+func GetSimApp(chain *ibctesting.TestChain) *SimApp {
+	app, ok := chain.App.(*SimApp)
+	require.True(chain.TB, ok)
+
+	return app
 }
 
 // Initializes a new SimApp for testing

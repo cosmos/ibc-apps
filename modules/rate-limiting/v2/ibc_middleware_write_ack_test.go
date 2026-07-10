@@ -236,7 +236,7 @@ func TestWriteAcknowledgement(t *testing.T) {
 					Flow: &ratelimittypes.Flow{Inflow: sdkmath.NewInt(100)},
 				})
 				if tc.asyncFound {
-					err = helper.App.RatelimitKeeper.SetPendingReceivePacket(ctx, destinationClient, sequence)
+					err = helper.App.RatelimitKeeper.SetPendingReceivePacket(ctx, destinationClient, sequence, rateLimitDenom)
 					require.NoError(t, err)
 				}
 			}
@@ -268,7 +268,7 @@ func TestWriteAcknowledgement(t *testing.T) {
 				require.True(t, found)
 				require.Equal(t, tc.expectedInflow, rateLimit.Flow.Inflow)
 
-				found, err = helper.App.RatelimitKeeper.CheckPacketReceivedDuringCurrentQuota(ctx, destinationClient, sequence)
+				found, err = helper.App.RatelimitKeeper.CheckPacketReceivedDuringCurrentQuota(ctx, destinationClient, sequence, rateLimitDenom)
 				require.NoError(t, err)
 				require.False(t, found)
 			}

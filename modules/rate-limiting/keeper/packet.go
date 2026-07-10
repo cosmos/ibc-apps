@@ -209,7 +209,7 @@ func (k Keeper) SendRateLimitedPacket(ctx sdk.Context, packet channeltypes.Packe
 	// Store the sequence number of the packet so that if the transfer fails,
 	// we can identify if it was sent during this quota and can revert the outflow
 	if updatedFlow {
-		return k.SetPendingSendPacket(ctx, packetInfo.ChannelID, packet.Sequence)
+		return k.SetPendingSendPacket(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom)
 	}
 
 	return nil
@@ -229,7 +229,7 @@ func (k Keeper) ReceiveRateLimitedPacket(ctx sdk.Context, packet channeltypes.Pa
 	}
 
 	if updatedFlow {
-		return k.SetPendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence)
+		return k.SetPendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom)
 	}
 
 	return nil
@@ -252,7 +252,7 @@ func (k Keeper) AcknowledgeRateLimitedPacket(ctx sdk.Context, packet channeltype
 
 	// If the ack was successful, remove the pending packet
 	if ackSuccess {
-		return k.RemovePendingSendPacket(ctx, packetInfo.ChannelID, packet.Sequence)
+		return k.RemovePendingSendPacket(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom)
 	}
 
 	// If the ack failed, undo the change to the rate limit Outflow
@@ -283,10 +283,10 @@ func (k Keeper) UndoReceivePacket(ctx sdk.Context, packet channeltypes.Packet) e
 
 	rateLimit, found := k.GetRateLimit(ctx, packetInfo.Denom, packetInfo.ChannelID)
 	if !found {
-		return nil
+		return k.RemovePendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom)
 	}
 
-	found, err = k.CheckPacketReceivedDuringCurrentQuota(ctx, packetInfo.ChannelID, packet.Sequence)
+	found, err = k.CheckPacketReceivedDuringCurrentQuota(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom)
 	if err != nil {
 		return err
 	}
@@ -302,7 +302,7 @@ func (k Keeper) UndoReceivePacket(ctx sdk.Context, packet channeltypes.Packet) e
 	rateLimit.Flow.Inflow = newInflow
 	k.SetRateLimit(ctx, rateLimit)
 
-	return k.RemovePendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence)
+	return k.RemovePendingReceivePacket(ctx, packetInfo.ChannelID, packet.Sequence, packetInfo.Denom)
 }
 
 // SendPacket wraps IBC ChannelKeeper's SendPacket function
@@ -353,7 +353,12 @@ func (k Keeper) WriteAcknowledgement(ctx sdk.Context, packet ibcexported.PacketI
 		}
 
 		if acknowledgement.Success() {
-			if err := k.RemovePendingReceivePacket(ctx, chanPacket.GetDestChannel(), chanPacket.GetSequence()); err != nil {
+			packetInfo, err := ParsePacketInfo(chanPacket, types.PACKET_RECV)
+			if err != nil {
+				k.Logger(ctx).Error("Rate limit WriteAcknowledgement failed to parse packet data for pending receive cleanup", "error", err)
+				return k.ics4Wrapper.WriteAcknowledgement(ctx, packet, acknowledgement)
+			}
+			if err := k.RemovePendingReceivePacket(ctx, packetInfo.ChannelID, chanPacket.GetSequence(), packetInfo.Denom); err != nil {
 				return err
 			}
 		} else {

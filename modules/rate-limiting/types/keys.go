@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/binary"
 
-	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/collections"
 )
 
 const (
@@ -24,13 +24,20 @@ func KeyPrefix(p string) []byte {
 }
 
 var (
-	PathKeyPrefix              = KeyPrefix("path")
-	RateLimitKeyPrefix         = KeyPrefix("rate-limit")
-	PendingSendPacketPrefix    = KeyPrefix("pending-send-packet")
+	PathKeyPrefix      = KeyPrefix("path")
+	RateLimitKeyPrefix = KeyPrefix("rate-limit")
+	// PendingSendPacketPrefix is the legacy pending send packet prefix. It is
+	// only used by migrations that clear old pending packet state.
+	PendingSendPacketPrefix = KeyPrefix("pending-send-packet")
+	// PendingReceivePacketPrefix is the legacy pending receive packet prefix. It
+	// is only used by migrations that clear old pending packet state.
 	PendingReceivePacketPrefix = KeyPrefix("pending-receive-packet")
 	DenomBlacklistKeyPrefix    = KeyPrefix("denom-blacklist")
 	AddressWhitelistKeyPrefix  = KeyPrefix("address-blacklist")
 	HourEpochKey               = KeyPrefix("hour-epoch")
+
+	PendingSendPacketsKey    = collections.NewPrefix(0)
+	PendingReceivePacketsKey = collections.NewPrefix(1)
 
 	PendingSendPacketChannelLength int = 64
 )
@@ -44,8 +51,8 @@ func GetRateLimitItemKey(denom string, channelId string) []byte {
 // The channel ID must be fixed length to allow for extracting the underlying
 // values from a key
 func GetPendingPacketKey(channelId string, sequenceNumber uint64) ([]byte, error) {
-	if len(channelId) > PendingSendPacketChannelLength {
-		return nil, errorsmod.Wrapf(ErrInvalidChannelId, "channel %s with length %d is greater than the allowed length %d", channelId, len(channelId), PendingSendPacketChannelLength)
+	if err := validatePendingPacketChannelId(channelId); err != nil {
+		return nil, err
 	}
 	channelIdBz := make([]byte, PendingSendPacketChannelLength)
 	copy(channelIdBz, channelId)
