@@ -2,6 +2,7 @@ package v2
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
@@ -18,6 +19,7 @@ import (
 
 var (
 	_ api.IBCModule                   = (*IBCMiddleware)(nil)
+	_ api.PacketDataUnmarshaler       = (*IBCMiddleware)(nil)
 	_ api.WriteAcknowledgementWrapper = (*IBCMiddleware)(nil)
 )
 
@@ -72,6 +74,16 @@ func (im *IBCMiddleware) SetChannelKeeperV2(chanKeeperV2 ratelimittypes.ChannelK
 	}
 
 	im.chanKeeperV2 = chanKeeperV2
+}
+
+// UnmarshalPacketData delegates packet data unmarshaling to the underlying application.
+func (im IBCMiddleware) UnmarshalPacketData(payload channeltypesv2.Payload) (any, error) {
+	packetDataUnmarshaler, ok := im.app.(api.PacketDataUnmarshaler)
+	if !ok {
+		return nil, errors.New("underlying application does not implement packet data unmarshaler")
+	}
+
+	return packetDataUnmarshaler.UnmarshalPacketData(payload)
 }
 
 func (im IBCMiddleware) OnSendPacket(
