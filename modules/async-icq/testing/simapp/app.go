@@ -454,8 +454,9 @@ func NewSimApp(
 		paramstypes.ModuleName, vestingtypes.ModuleName, icqtypes.ModuleName, consensusparamtypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
+		banktypes.ModuleName,
 		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName,
-		authtypes.ModuleName, banktypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
+		authtypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
 		minttypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName, feegrant.ModuleName, paramstypes.ModuleName,
 		upgradetypes.ModuleName, vestingtypes.ModuleName, icqtypes.ModuleName, consensusparamtypes.ModuleName,
 	)

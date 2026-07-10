@@ -592,6 +592,7 @@ func NewSimApp(
 		consensusparamtypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
+		banktypes.ModuleName,
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -599,7 +600,6 @@ func NewSimApp(
 		packetforwardtypes.ModuleName,
 		ibctransfertypes.StoreKey,
 		authtypes.ModuleName,
-		banktypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		minttypes.ModuleName,
