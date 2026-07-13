@@ -64,6 +64,9 @@ func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
 // may be used after the middleware's initialization to set the IBC module which
 // is below this middleware.
 func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
+	if app == nil {
+		panic("underlying application cannot be nil")
+	}
 	if im.app != nil {
 		panic("underlying application already set")
 	}

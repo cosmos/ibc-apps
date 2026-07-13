@@ -31,12 +31,21 @@ func NewIBCMiddleware(k keeper.Keeper, app porttypes.IBCModule) *IBCMiddleware {
 // SetICS4Wrapper sets the ICS4Wrapper for the rate limit middleware.
 // It implements the porttypes.Middleware interface.
 func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	if wrapper == nil {
+		panic("ICS4Wrapper cannot be nil")
+	}
 	im.keeper.SetICS4Wrapper(wrapper)
 }
 
 // SetUnderlyingApplication sets the underlying IBC application.
 // It implements the porttypes.Middleware interface.
 func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
+	if app == nil {
+		panic("underlying application cannot be nil")
+	}
+	if im.app != nil {
+		panic("underlying application already set")
+	}
 	im.app = app
 }
 
