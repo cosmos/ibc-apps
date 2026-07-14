@@ -6,7 +6,7 @@ on:
       - ".github/workflows/rate-limiting.yml"
 
 env:
-  LINT_VERSION: v1.57.1
+  LINT_VERSION: v2.12.2
   GO_VERSION: 1.25.9
   WORKING_DIRECTORY: modules/rate-limiting
 
@@ -19,25 +19,21 @@ jobs:
     name: Linter
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: "1.25.9"
-          check-latest: true
-      - uses: technote-space/get-diff-action@v6.1.2
-        id: git_diff
+          go-version: ${{ env.GO_VERSION }}
+
+      - uses: actions/checkout@v6
         with:
-          PATTERNS: |
-            **/*.go
-            go.mod
-            go.sum
-            **/go.mod
-            **/go.sum
-      - name: run linting
-        if: env.GIT_DIFF
-        run: |
-          cd ${{ env.WORKING_DIRECTORY }}
-          make lint
+          fetch-depth: 0
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9.2.1
+        with:
+          version: ${{ env.LINT_VERSION }}
+          only-new-issues: true
+          args: --timeout=10m
+          working-directory: ${{ env.WORKING_DIRECTORY }}
 
   test:
     runs-on: ubuntu-latest

@@ -1,78 +1,86 @@
+version: "2"
 run:
   tests: true
-  #   # timeout for analysis, e.g. 30s, 5m, default is 1m
-  timeout: 5m
-
 linters:
-  disable-all: true
+  default: none
   enable:
+    - copyloopvar
     - dogsled
-    - exportloopref
     - errcheck
-    - gci
     - goconst
     - gocritic
-    - gofumpt
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - misspell
     - nakedret
+    - revive
     - staticcheck
     - thelper
-    - stylecheck
-    - revive
-    - typecheck
     - unconvert
     - unused
-    - misspell
-
+  settings:
+    dogsled:
+      max-blank-identifiers: 3
+    nolintlint:
+      require-explanation: false
+      require-specific: false
+      allow-unused: false
+    revive:
+      rules:
+        - name: if-return
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - revive
+        text: unused-parameter
+      - linters:
+          - staticcheck
+        text: 'SA1019:'
+      - linters:
+          - gosec
+        text: Use of weak random number generator
+      - linters:
+          - staticcheck
+        text: 'ST1003:'
+      # FIXME: Disabled until golangci-lint updates staticcheck with this fix:
+      # https://github.com/dominikh/go-tools/issues/389
+      - linters:
+          - staticcheck
+        text: 'ST1016:'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-rules:
-    - text: 'unused-parameter'
-      linters:
-        - revive
-    - text: 'SA1019:'
-      linters:
-        - staticcheck
-    - text: 'Use of weak random number generator'
-      linters:
-        - gosec
-    - text: 'ST1003:'
-      linters:
-        - stylecheck
-    # FIXME: Disabled until golangci-lint updates stylecheck with this fix:
-    # https://github.com/dominikh/go-tools/issues/389
-    - text: 'ST1016:'
-      linters:
-        - stylecheck
   max-issues-per-linter: 10000
   max-same-issues: 10000
-
-linters-settings:
-  gci:
-    sections:
-      - standard # Standard section: captures all standard packages.
-      - default # Default section: contains all imports that could not be matched to another section type.
-      - blank # blank imports
-      - dot # dot imports
-      - prefix(cosmossdk.io)
-      - prefix(github.com/cosmos/cosmos-sdk)
-      - prefix(github.com/cometbft/cometbft)
-      - prefix(github.com/cosmos/ibc-go)
-    custom-order: true
-  dogsled:
-    max-blank-identifiers: 3
-  maligned:
-    # print struct with more effective memory layout or not, false by default
-    suggest-new: true
-  nolintlint:
-    allow-unused: false
-    allow-leading-space: true
-    require-explanation: false
-    require-specific: false
-  revive:
-    rules:
-      - name: if-return
-        disabled: true
+formatters:
+  enable:
+    - gci
+    - gofumpt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - blank
+        - dot
+        - prefix(cosmossdk.io)
+        - prefix(github.com/cosmos/cosmos-sdk)
+        - prefix(github.com/cometbft/cometbft)
+        - prefix(github.com/cosmos/ibc-go)
+      custom-order: true
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

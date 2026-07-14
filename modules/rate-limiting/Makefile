@@ -91,11 +91,11 @@ gosec:
 	gosec -exclude-dir=deps -severity=high ./...
 
 golangci_lint_cmd=golangci-lint
-golangci_version=v1.60.1
+golangci_version=v2.12.2
 
 lint:
 	@echo "--> Running linter"
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
+	@go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(golangci_version)
 	@$(golangci_lint_cmd) run --timeout=10m
 
 ###############################################################################

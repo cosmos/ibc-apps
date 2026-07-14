@@ -6,7 +6,7 @@ on:
       - ".github/workflows/ibc-hooks.yml"
 
 env:
-  LINT_VERSION: v2.11.3
+  LINT_VERSION: v2.12.2
   GO_VERSION: 1.25.9
   WORKING_DIRECTORY: modules/ibc-hooks
 
