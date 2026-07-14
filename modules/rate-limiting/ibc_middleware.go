@@ -21,15 +21,27 @@ type IBCMiddleware struct {
 	keeper keeper.Keeper
 }
 
+// NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application.
+// A nil app is permitted so that the underlying application may instead be wired later via
+// SetUnderlyingApplication, as ibc-go's porttypes.IBCStackBuilder does.
 func NewIBCMiddleware(k keeper.Keeper, app porttypes.IBCModule) *IBCMiddleware {
-	return &IBCMiddleware{
-		app:    app,
+	im := &IBCMiddleware{
 		keeper: k,
 	}
+	if app != nil {
+		im.SetUnderlyingApplication(app)
+	}
+
+	return im
 }
 
 // SetICS4Wrapper sets the ICS4Wrapper for the rate limit middleware.
 // It implements the porttypes.Middleware interface.
+//
+// Note the middleware holds its own copy of the keeper: this call configures
+// that copy only. A keeper instance wired elsewhere (for example as transfer's
+// ICS4Wrapper) does not observe it, so construct such a keeper with its
+// ICS4Wrapper rather than relying on late injection.
 func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
 	if wrapper == nil {
 		panic("ICS4Wrapper cannot be nil")

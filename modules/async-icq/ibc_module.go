@@ -197,5 +197,8 @@ func (im *IBCModule) OnTimeoutPacket(
 
 // SetICS4Wrapper sets the ICS4Wrapper for the IBCModule.
 func (im *IBCModule) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	if wrapper == nil {
+		panic("ICS4Wrapper cannot be nil")
+	}
 	im.keeper.SetICS4Wrapper(wrapper)
 }

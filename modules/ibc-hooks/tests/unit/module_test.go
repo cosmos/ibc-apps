@@ -313,7 +313,7 @@ func (suite *HooksTestSuite) TestOnAcknowledgementPacketCounterContract() {
 	}
 	suite.NoError(err)
 	err = wasmHooks.OnAcknowledgementPacketOverride(
-		ibcmiddleware,
+		*ibcmiddleware,
 		suite.Ctx,
 		transfertypes.V1,
 		recvPacket,
@@ -412,7 +412,7 @@ func (suite *HooksTestSuite) TestOnTimeoutPacketOverrideCounterContract() {
 	}
 	suite.NoError(err)
 	err = wasmHooks.OnTimeoutPacketOverride(
-		ibcmiddleware,
+		*ibcmiddleware,
 		suite.Ctx,
 		transfertypes.V1,
 		recvPacket,

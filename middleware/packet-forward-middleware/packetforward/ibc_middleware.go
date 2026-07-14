@@ -36,18 +36,27 @@ type IBCMiddleware struct {
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application.
+// A nil app is permitted so that the underlying application may instead be wired later via
+// SetUnderlyingApplication, as ibc-go's porttypes.IBCStackBuilder does.
 func NewIBCMiddleware(
 	app porttypes.IBCModule,
 	k *keeper.Keeper,
 	retriesOnTimeout uint8,
 	forwardTimeout time.Duration,
 ) *IBCMiddleware {
-	return &IBCMiddleware{
-		app:              app,
+	if k == nil {
+		panic("keeper cannot be nil")
+	}
+	im := &IBCMiddleware{
 		keeper:           k,
 		retriesOnTimeout: retriesOnTimeout,
 		forwardTimeout:   forwardTimeout,
 	}
+	if app != nil {
+		im.SetUnderlyingApplication(app)
+	}
+
+	return im
 }
 
 // SetICS4Wrapper sets the ICS4Wrapper. This function may be used after the

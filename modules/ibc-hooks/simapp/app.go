@@ -492,9 +492,12 @@ func NewSimApp(
 		keys[ibchookstypes.StoreKey],
 	)
 	ics20WasmHooks := ibchooks.NewWasmHooks(&app.IBCHooksKeeper, nil, AccountAddressPrefix) // contract keeper set later
+	// pass the hooks by pointer: the contract keeper is assigned after this point,
+	// and a value would box a copy with a permanently nil ContractKeeper, silently
+	// disabling every wasm hook
 	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		ics20WasmHooks,
+		&ics20WasmHooks,
 	)
 	app.TransferKeeper.WithICS4Wrapper(&hooksICS4Wrapper)
 
@@ -544,7 +547,7 @@ func NewSimApp(
 
 	// Set IBC router
 	ibcRouter := ibcporttypes.NewRouter().
-		AddRoute(ibctransfertypes.ModuleName, &ibcHooksMiddleware).
+		AddRoute(ibctransfertypes.ModuleName, ibcHooksMiddleware).
 		AddRoute(wasmtypes.ModuleName, wasmStackIBCHandler).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack)

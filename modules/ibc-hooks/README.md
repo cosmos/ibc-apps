@@ -249,13 +249,19 @@ Follow these steps to install the IBC hooks module. The following lines are all 
 	// Pass the contract keeper to all the structs (generally ICS4Wrappers for ibc middlewares) that need it
 	app.ContractKeeper = wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
 	app.Ics20WasmHooks.ContractKeeper = app.ContractKeeper
+	// Pass the hooks by pointer so that fields assigned after this point (such
+	// as a late-bound ContractKeeper) are visible to the middleware; a value
+	// would box a copy and silently disable the hooks.
 	app.HooksICS4Wrapper = ibchooks.NewICS4Middleware(
 		app.IBCKeeper.ChannelKeeper,
-		app.Ics20WasmHooks,
+		&app.Ics20WasmHooks,
 	)
 	// Hooks Middleware
+	// Pass the underlying application here or wire it later via
+	// SetUnderlyingApplication (e.g. through ibc-go's porttypes.IBCStackBuilder),
+	// not both: setting it twice panics.
 	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
-	app.TransferStack = ibchooks.NewIBCMiddleware(&transferIBCModule, &app.HooksICS4Wrapper)
+	app.TransferStack = ibchooks.NewIBCMiddleware(transferIBCModule, &app.HooksICS4Wrapper)
 
 ...
 ```

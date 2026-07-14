@@ -10,25 +10,38 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
-var (
-	_ porttypes.IBCModule   = (*IBCMiddleware)(nil)
-	_ porttypes.ICS4Wrapper = (*IBCMiddleware)(nil)
-)
+var _ porttypes.Middleware = (*IBCMiddleware)(nil)
 
 type IBCMiddleware struct {
 	App            porttypes.IBCModule
 	ICS4Middleware *ICS4Middleware
 }
 
-func NewIBCMiddleware(app porttypes.IBCModule, ics4 *ICS4Middleware) IBCMiddleware {
-	return IBCMiddleware{
-		App:            app,
+// NewIBCMiddleware creates a new IBCMiddleware given the ICS4Middleware and underlying
+// application. A nil app is permitted so that the underlying application may instead be
+// wired later via SetUnderlyingApplication, as ibc-go's porttypes.IBCStackBuilder does.
+//
+// It returns a pointer, as the other ibc-apps middlewares do: the setters required by
+// porttypes.Middleware have pointer receivers, so only *IBCMiddleware satisfies it.
+func NewIBCMiddleware(app porttypes.IBCModule, ics4 *ICS4Middleware) *IBCMiddleware {
+	if ics4 == nil {
+		panic("ICS4Middleware cannot be nil")
+	}
+	im := &IBCMiddleware{
 		ICS4Middleware: ics4,
 	}
+	if app != nil {
+		im.SetUnderlyingApplication(app)
+	}
+
+	return im
 }
 
 // SetICS4Wrapper satisfies the porttypes.Middleware interface.
 func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
+	if wrapper == nil {
+		panic("ICS4Wrapper cannot be nil")
+	}
 	if im.ICS4Middleware == nil {
 		panic("ICS4Middleware is nil")
 	}
@@ -37,6 +50,12 @@ func (im *IBCMiddleware) SetICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
 
 // SetUnderlyingApplication satisfies the porttypes.Middleware interface.
 func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
+	if app == nil {
+		panic("underlying application cannot be nil")
+	}
+	if im.App != nil {
+		panic("underlying application already set")
+	}
 	im.App = app
 }
 

@@ -34,8 +34,8 @@ type IBCMiddleware struct {
 //
 // Deprecated: use NewIBCMiddlewareWithAsyncAcknowledgements when the middleware
 // may be used in the IBC v2 async acknowledgement path.
-func NewIBCMiddleware(k keeper.Keeper, app api.IBCModule) IBCMiddleware {
-	return IBCMiddleware{
+func NewIBCMiddleware(k keeper.Keeper, app api.IBCModule) *IBCMiddleware {
+	return &IBCMiddleware{
 		app:    app,
 		keeper: k,
 	}
@@ -49,7 +49,7 @@ func NewIBCMiddlewareWithAsyncAcknowledgements(
 	app api.IBCModule,
 	writeAckWrapper api.WriteAcknowledgementWrapper,
 	chanKeeperV2 ratelimittypes.ChannelKeeperV2,
-) IBCMiddleware {
+) *IBCMiddleware {
 	im := NewIBCMiddleware(k, app)
 	im.SetWriteAcknowledgementWrapper(writeAckWrapper)
 	im.SetChannelKeeperV2(chanKeeperV2)
