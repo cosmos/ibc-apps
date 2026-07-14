@@ -12,4 +12,6 @@ var (
 	ErrBadResponse   = errors.Register("wasm-hooks", 5, "cannot create response")
 	ErrWasmError     = errors.Register("wasm-hooks", 6, "wasm error")
 	ErrBadSender     = errors.Register("wasm-hooks", 7, "bad sender")
+
+	ErrPacketDataUnmarshaler = errors.Register("wasm-hooks", 8, "underlying application does not implement PacketDataUnmarshaler")
 )

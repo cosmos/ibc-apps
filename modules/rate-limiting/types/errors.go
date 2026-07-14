@@ -36,4 +36,7 @@ var (
 	ErrChannelKeeperV2Nil = errorsmod.Register(ModuleName, 12,
 		"channel keeper v2 cannot be nil",
 	)
+	ErrPacketDataUnmarshaler = errorsmod.Register(ModuleName, 13,
+		"underlying application does not implement PacketDataUnmarshaler",
+	)
 )

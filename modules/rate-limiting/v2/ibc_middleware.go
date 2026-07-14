@@ -2,7 +2,6 @@ package v2
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
@@ -80,7 +79,7 @@ func (im *IBCMiddleware) SetChannelKeeperV2(chanKeeperV2 ratelimittypes.ChannelK
 func (im IBCMiddleware) UnmarshalPacketData(payload channeltypesv2.Payload) (any, error) {
 	packetDataUnmarshaler, ok := im.app.(api.PacketDataUnmarshaler)
 	if !ok {
-		return nil, errors.New("underlying application does not implement packet data unmarshaler")
+		return nil, ratelimittypes.ErrPacketDataUnmarshaler
 	}
 
 	return packetDataUnmarshaler.UnmarshalPacketData(payload)

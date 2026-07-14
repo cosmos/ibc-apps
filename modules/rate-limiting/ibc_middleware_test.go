@@ -19,6 +19,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v11/modules/core/exported"
+	ibcmock "github.com/cosmos/ibc-go/v11/testing/mock"
 )
 
 const (
@@ -54,6 +55,22 @@ func (m *mockICS4Wrapper) WriteAcknowledgement(sdk.Context, ibcexported.PacketI,
 
 func (*mockICS4Wrapper) GetAppVersion(sdk.Context, string, string) (string, bool) {
 	return "", false
+}
+
+func TestUnmarshalPacketData(t *testing.T) {
+	middleware := ratelimit.NewIBCMiddleware(keeper.Keeper{}, &ibcmock.IBCModule{})
+
+	packetData, version, err := middleware.UnmarshalPacketData(sdk.Context{}, testTransferPort, "channel-0", ibcmock.MockPacketData)
+	require.NoError(t, err)
+	require.Equal(t, ibcmock.Version, version)
+	require.Equal(t, ibcmock.MockPacketData, packetData)
+}
+
+func TestUnmarshalPacketData_AppDoesNotImplementUnmarshaler(t *testing.T) {
+	middleware := ratelimit.NewIBCMiddleware(keeper.Keeper{}, struct{ porttypes.IBCModule }{})
+
+	_, _, err := middleware.UnmarshalPacketData(sdk.Context{}, testTransferPort, "channel-0", nil)
+	require.ErrorIs(t, err, types.ErrPacketDataUnmarshaler)
 }
 
 func TestWriteAcknowledgement_NilAck(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	"github.com/stretchr/testify/require"
 
 	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
@@ -45,7 +46,7 @@ func TestUnmarshalPacketData_AppDoesNotImplementUnmarshaler(t *testing.T) {
 	middleware := NewIBCMiddleware(keeper.Keeper{}, struct{ api.IBCModule }{})
 
 	_, err := middleware.UnmarshalPacketData(channeltypesv2.Payload{})
-	require.ErrorContains(t, err, "underlying application does not implement packet data unmarshaler")
+	require.ErrorIs(t, err, ratelimittypes.ErrPacketDataUnmarshaler)
 }
 
 func TestV2ToV1Packet_WithJSONEncoding(t *testing.T) {

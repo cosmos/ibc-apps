@@ -14,7 +14,10 @@ import (
 	"github.com/cosmos/ibc-go/v11/modules/core/exported"
 )
 
-var _ porttypes.Middleware = (*IBCMiddleware)(nil)
+var (
+	_ porttypes.Middleware              = (*IBCMiddleware)(nil)
+	_ porttypes.PacketUnmarshalerModule = (*IBCMiddleware)(nil)
+)
 
 type IBCMiddleware struct {
 	app    porttypes.IBCModule
@@ -59,6 +62,22 @@ func (im *IBCMiddleware) SetUnderlyingApplication(app porttypes.IBCModule) {
 		panic("underlying application already set")
 	}
 	im.app = app
+}
+
+// UnmarshalPacketData delegates to the underlying application, allowing middleware
+// which requires a porttypes.PacketUnmarshalerModule (such as ibc-go's callbacks)
+// to be stacked above this one.
+//
+// The underlying application is not required to be a packet data unmarshaler: this
+// middleware may be wired above any IBC module in a chain's stack, so the capability
+// is resolved here rather than asserted at wiring time.
+func (im IBCMiddleware) UnmarshalPacketData(ctx sdk.Context, portID string, channelID string, bz []byte) (any, string, error) {
+	unmarshaler, ok := im.app.(porttypes.PacketDataUnmarshaler)
+	if !ok {
+		return nil, "", types.ErrPacketDataUnmarshaler
+	}
+
+	return unmarshaler.UnmarshalPacketData(ctx, portID, channelID, bz)
 }
 
 // OnChanOpenInit implements the IBCMiddleware interface
