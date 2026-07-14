@@ -6,9 +6,8 @@ import (
 	"github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 
-	"github.com/cosmos/cosmos-sdk/store/v2/prefix"
-
 	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/store/v2/prefix"
 )
 
 func (s *KeeperTestSuite) TestMigrate1to2() {

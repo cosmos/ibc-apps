@@ -3,18 +3,21 @@ package v3_test
 import (
 	"testing"
 
-	"cosmossdk.io/log/v2"
-	"github.com/cosmos/cosmos-sdk/store/v2"
+	dbm "github.com/cosmos/cosmos-db"
 	v3 "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/migrations/v3"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/test/mock"
-	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	dbm "github.com/cosmos/cosmos-db"
+	"cosmossdk.io/log/v2"
+
+	"github.com/cosmos/cosmos-sdk/store/v2"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
+	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
 )
 
 func TestMigrate(t *testing.T) {

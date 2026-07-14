@@ -57,7 +57,7 @@ func (k msgServer) RemoveRateLimit(goCtx context.Context, msg *types.MsgRemoveRa
 		return nil, errorsmod.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
 	}
 
-	_, found := k.Keeper.GetRateLimit(ctx, msg.Denom, msg.ChannelOrClientId)
+	_, found := k.GetRateLimit(ctx, msg.Denom, msg.ChannelOrClientId)
 	if !found {
 		return nil, types.ErrRateLimitNotFound
 	}

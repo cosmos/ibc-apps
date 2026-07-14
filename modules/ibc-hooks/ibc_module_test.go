@@ -3,12 +3,11 @@ package ibc_hooks_test
 import (
 	"testing"
 
-	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11"
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v11"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"
 	ibcmock "github.com/cosmos/ibc-go/v11/testing/mock"
 )

@@ -118,8 +118,6 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenInit() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
 		suite.Run(tc.name, func() {
 			suite.SetupTest() // reset
 			path = NewICQPath(suite.chainA, suite.chainB)
@@ -187,8 +185,6 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenTry() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
 		suite.Run(tc.name, func() {
 			suite.SetupTest() // reset
 
@@ -243,8 +239,6 @@ func (suite *InterchainQueriesTestSuite) TestOnChanOpenAck() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
 		suite.Run(tc.name, func() {
 			suite.SetupTest() // reset
 
@@ -279,8 +273,6 @@ func (suite *InterchainQueriesTestSuite) TestOnAcknowledgementPacket() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
 		suite.Run(tc.name, func() {
 			suite.SetupTest() // reset
 
@@ -327,8 +319,6 @@ func (suite *InterchainQueriesTestSuite) TestOnTimeoutPacket() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
-
 		suite.Run(tc.name, func() {
 			suite.SetupTest() // reset
 

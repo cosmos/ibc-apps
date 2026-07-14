@@ -65,4 +65,3 @@ func SetupICQPath(path *ibctesting.Path) error {
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
-

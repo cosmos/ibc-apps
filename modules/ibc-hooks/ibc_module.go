@@ -1,10 +1,9 @@
 package ibc_hooks
 
 import (
-	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
-
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/ibc-apps/modules/ibc-hooks/v11/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v11/modules/core/02-client/types"
 	// ibc-go
 	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"

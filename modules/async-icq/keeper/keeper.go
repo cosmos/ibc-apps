@@ -6,10 +6,10 @@ import (
 	"github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	"cosmossdk.io/log/v2"
-	storetypes "github.com/cosmos/cosmos-sdk/store/v2/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/v2/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	porttypes "github.com/cosmos/ibc-go/v11/modules/core/05-port/types"

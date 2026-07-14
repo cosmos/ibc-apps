@@ -300,7 +300,9 @@ func (k *Keeper) ForwardTransferPacket(
 	key := types.RefundPacketKey(metadata.Channel, metadata.Port, res.Sequence)
 	store := k.storeService.OpenKVStore(ctx)
 	bz := k.cdc.MustMarshal(inFlightPacket)
-	store.Set(key, bz)
+	if err := store.Set(key, bz); err != nil {
+		return err
+	}
 
 	defer func() {
 		if token.Amount.IsInt64() {
@@ -452,7 +454,9 @@ func (k *Keeper) GetAndClearInFlightPacket(
 	}
 
 	// done with packet key now, delete.
-	store.Delete(key)
+	if err := store.Delete(key); err != nil {
+		panic(err)
+	}
 
 	var inFlightPacket types.InFlightPacket
 	k.cdc.MustUnmarshal(bz, &inFlightPacket)

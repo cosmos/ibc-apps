@@ -22,6 +22,11 @@ linters:
   settings:
     dogsled:
       max-blank-identifiers: 3
+    gosec:
+      excludes:
+        - G107
+        - G115
+        - G404
     nolintlint:
       require-explanation: false
       require-specific: false
@@ -41,6 +46,10 @@ linters:
       - linters:
           - revive
         text: unused-parameter
+      # Repeated literals in table-driven tests are fixtures, not constants.
+      - linters:
+          - goconst
+        path: _test\.go
       - linters:
           - staticcheck
         text: 'SA1019:'

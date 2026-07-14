@@ -9,6 +9,15 @@ test-unit:
 	
 .PHONY: simulate test-unit
 
+# Everything related to linting
+lint:
+	golangci-lint run
+
+lint-fix:
+	golangci-lint run --fix --issues-exit-code=0
+
+.PHONY: lint lint-fix
+
 # Eveyrhing related to building the smart contracts
 optimize-workspace: 
 	docker run --rm -v "$(shell pwd)/tests/unit/testdata":/code \

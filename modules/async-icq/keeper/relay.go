@@ -93,7 +93,7 @@ func (k Keeper) authenticateQuery(ctx sdk.Context, q abci.RequestQuery) error {
 	if !types.ContainsQueryPath(allowQueries, q.Path) {
 		return errors.Wrapf(sdkerrors.ErrUnauthorized, "query path not allowed: %s", q.Path)
 	}
-	if !(q.Height == 0 || q.Height == ctx.BlockHeight()) {
+	if q.Height != 0 && q.Height != ctx.BlockHeight() {
 		return errors.Wrapf(sdkerrors.ErrUnauthorized, "query height not allowed: %d", q.Height)
 	}
 	if q.Prove {

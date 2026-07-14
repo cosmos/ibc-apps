@@ -4,10 +4,9 @@ import (
 	app "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/testing/simapp"
 	"github.com/stretchr/testify/suite"
 
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/cometbft/cometbft/crypto/ed25519"
 )
@@ -26,7 +25,7 @@ type AppTestHelper struct {
 // AppTestHelper Constructor
 func (s *AppTestHelper) Setup() {
 	s.App = app.InitTestingApp()
-	s.Ctx = s.App.BaseApp.NewContext(false)
+	s.Ctx = s.App.NewContext(false)
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
