@@ -1,7 +1,6 @@
 package v3_test
 
 import (
-	"github.com/golang/mock/gomock"
 	"testing"
 
 	"cosmossdk.io/log/v2"
@@ -11,6 +10,7 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v11/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v11/modules/core/04-channel/types"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"

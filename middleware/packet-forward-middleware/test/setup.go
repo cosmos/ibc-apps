@@ -9,8 +9,8 @@ import (
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/test/mock"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"cosmossdk.io/log/v2"
 	"github.com/cosmos/cosmos-sdk/store/v2"
@@ -33,7 +33,7 @@ func NewTestSetup(t *testing.T, ctl *gomock.Controller) *Setup {
 	transferKeeperMock := mock.NewMockTransferKeeper(ctl)
 	channelKeeperMock := mock.NewMockChannelKeeper(ctl)
 	bankKeeperMock := mock.NewMockBankKeeper(ctl)
-	ibcModuleMock := mock.NewMockIBCModule(ctl)
+	ibcModuleMock := mock.NewMockPacketUnmarshalerModule(ctl)
 	ics4WrapperMock := mock.NewMockICS4Wrapper(ctl)
 
 	packetforwardKeeper := initializer.packetforwardKeeper(transferKeeperMock, channelKeeperMock, bankKeeperMock, ics4WrapperMock)
@@ -72,7 +72,7 @@ type testKeepers struct {
 
 type testMocks struct {
 	TransferKeeperMock *mock.MockTransferKeeper
-	IBCModuleMock      *mock.MockIBCModule
+	IBCModuleMock      *mock.MockPacketUnmarshalerModule
 	ICS4WrapperMock    *mock.MockICS4Wrapper
 }
 
