@@ -7,15 +7,19 @@ RUN set -eux; apk add --no-cache git libusb-dev linux-headers gcc musl-dev make;
 
 ENV GOPATH=""
 
-COPY go.mod .
-COPY go.sum .
-COPY Makefile .
+# The demo module replaces async-icq with ../../, so keep that layout.
+WORKDIR /src/async-icq
+
+COPY go.mod go.sum ./
+COPY testing/demo-simapp/go.mod testing/demo-simapp/go.sum ./testing/demo-simapp/
+
+WORKDIR /src/async-icq/testing/demo-simapp
 
 RUN go mod download
 
-COPY ./testing/demo-simapp .
+COPY . /src/async-icq
 
-RUN make build
+RUN make build BUILDDIR=/go/build
 
 FROM alpine:3.21
 
